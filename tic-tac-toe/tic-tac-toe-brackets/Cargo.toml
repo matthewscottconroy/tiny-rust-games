@@ -2,7 +2,7 @@
 name = "tic-tac-toe-brackets"
 version = "0.1.0"
 authors = ["Matthew Scott Conroy <matthewscottconroy@gmail.com>"]
-edition = "2018"
+edition = "2021"
 
 [dependencies]
 bracket-lib = "~0.8.1"
