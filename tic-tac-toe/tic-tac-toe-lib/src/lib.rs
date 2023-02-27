@@ -53,7 +53,7 @@ impl Board {
     }
 
     pub fn is_game_over(&self) -> bool {
-        self.do_full_win_check() && self.is_full()
+        self.do_full_win_check() || self.is_full()
     }
 
     pub fn is_full(&self) -> bool {
