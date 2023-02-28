@@ -44,18 +44,6 @@ impl Board {
         self.board[row][column] = val;
     }
 
-    pub fn check_for_win(&self, row: usize, column: usize) -> bool {
-        false
-    }
-
-    pub fn do_full_win_check(&self) -> bool {
-        false
-    }
-
-    pub fn is_game_over(&self) -> bool {
-        self.do_full_win_check() || self.is_full()
-    }
-
     pub fn is_full(&self) -> bool {
         let mut is_empty = false;
 
@@ -127,5 +115,15 @@ impl TicTacToeGame {
         self.turn_history.push(turn);
     }
 
-    pub fn check_for_win(&self) {}
+    pub fn check_for_win(&self, row: usize, column: usize) -> bool {
+        false
+    }
+
+    pub fn do_full_win_check(&self) -> bool {
+        false
+    }
+
+    pub fn is_game_over(&self) -> bool {
+        self.do_full_win_check() || self.board.is_full()
+    }
 }
