@@ -61,6 +61,56 @@ impl Board {
     pub fn is_entry_empty(&self, row: usize, column: usize) -> bool {
         self.board[row][column] == EMPTY_SYMBOL
     }
+
+    pub fn get_vec(&self) -> &Vec<Vec<char>> {
+        &self.board
+    }
+
+    pub fn get_width(&self) -> usize {
+        self.board[0].len()
+    }
+
+    pub fn get_height(&self) -> usize {
+        self.board.len()
+    }
+
+    fn to_string(&self) -> String {
+        let mut result = String::new();
+
+        for row in &self.board {
+            result.push_str(&row.iter().collect::<String>());
+            result.push('\n');
+        }
+
+        result
+    }
+
+    fn to_pretty_string(&self) -> String {
+        let mut result = String::new();
+
+        for i in 0..self.get_height() {
+            for j in 0..self.get_width() {
+                result.push(self.get_vec()[i][j]);
+                if j != self.get_width() - 1 {
+                    result.push('|');
+                }
+            }
+            result.push('\n');
+
+            if i != self.get_height() - 1 {
+                for j in 0..self.get_width() {
+                    result.push('-');
+
+                    if j != self.get_width() - 1 {
+                        result.push('+');
+                    }
+                }
+                result.push('\n');
+            }
+        }
+
+        result
+    }
 }
 
 impl fmt::Display for Board {
@@ -115,6 +165,22 @@ impl TicTacToeGame {
         self.turn_history.push(turn);
     }
 
+    pub fn get_board(&self) -> &Board {
+        &self.board
+    }
+
+    pub fn get_board_string(&self) -> String {
+        self.board.to_string()
+    }
+
+    pub fn get_pretty_board(&self) -> String {
+        self.board.to_pretty_string()
+    }
+
+    pub fn get_val_at(&self, row: usize, column: usize) -> char {
+        self.get_board().get_vec()[row][column]
+    }
+
     pub fn check_for_win(&self, row: usize, column: usize) -> bool {
         false
     }
@@ -125,5 +191,14 @@ impl TicTacToeGame {
 
     pub fn is_game_over(&self) -> bool {
         self.do_full_win_check() || self.board.is_full()
+    }
+}
+
+impl Player {
+    pub fn new(name: String, symbol: char) -> Self {
+        Self {
+            name: name,
+            symbol: symbol,
+        }
     }
 }
