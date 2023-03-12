@@ -45,11 +45,14 @@ struct State {
     mode: GameMode,
     frame_time: f32,
     game: TicTacToeGame,
+    was_left_mouse_pressed: bool,
 }
 
 impl State {
     fn play(&mut self, ctx: &mut BTerm) {
+        ctx.mouse_visible = true;
         ctx.cls_bg(WHITE_SMOKE);
+
         self.frame_time += ctx.frame_time_ms;
 
         if self.frame_time > FRAME_DURATION {
@@ -57,6 +60,26 @@ impl State {
         }
 
         self.game.render(10, 10, ctx);
+
+        let mouse_pos = INPUT.lock().mouse_tile(0);
+        let mut cursor_color = WHITE;
+
+        let is_left_pressed = INPUT.lock().is_mouse_button_pressed(0);
+        let mut draw_batch = DrawBatch::new();
+
+        if is_left_pressed {
+            self.was_left_mouse_pressed = true;
+            cursor_color = FOREGROUND_COLOR;
+            draw_batch.print_color(mouse_pos, " ", ColorPair::new(cursor_color, cursor_color));
+        } else {
+            if self.was_left_mouse_pressed {
+                self.game.take_turn(1, 1);
+                self.was_left_mouse_pressed = false;
+            }
+        }
+
+        draw_batch.submit(0).expect("Batch error");
+        render_draw_buffer(ctx).expect("Render error");
 
         //self.mode = GameMode::End;
     }
@@ -103,10 +126,6 @@ impl GameState for State {
             GameMode::End => self.end_game(ctx),
             GameMode::Playing => self.play(ctx),
         }
-        /*
-                ctx.cls();
-                ctx.print(1, 1, "Hello, Bracket Terminal!");
-        */
     }
 }
 
@@ -135,6 +154,7 @@ fn main() -> BError {
             mode: GameMode::Menu,
             frame_time: 0.0,
             game: TicTacToeGame::new(b, players, how_many_to_win),
+            was_left_mouse_pressed: false,
         },
     )
 }
