@@ -4,6 +4,8 @@ struct State {}
 
 impl GameState for State {
     fn tick(&mut self, ctx: &mut BTerm) {
+        ctx.mouse_visible = false;
+
         let mut draw_batch = DrawBatch::new();
         draw_batch.cls();
         let mouse_pos = INPUT.lock().mouse_tile(0);
