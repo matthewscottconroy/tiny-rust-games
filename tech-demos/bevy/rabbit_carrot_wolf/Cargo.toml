@@ -1,0 +1,10 @@
+[package]
+name = "rabbit_carrot_wolf"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+bevy = "0.10"         # or whichever version you want to use
+bevy_egui = "0.20"     # check for the latest compatible version
+rand = "0.8"
+

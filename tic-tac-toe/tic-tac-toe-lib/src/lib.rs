@@ -40,6 +40,19 @@ impl Board {
         }
     }
 
+    /*
+    pub fn from_String(b String) -> Board {
+
+    }
+    */
+
+    /*
+    pub fn from_str(b str) -> Board {
+
+
+    }
+    */
+
     pub fn place(&mut self, val: char, row: usize, column: usize) {
         self.board[row][column] = val;
     }
@@ -167,6 +180,14 @@ impl TicTacToeGame {
 
     pub fn get_board(&self) -> &Board {
         &self.board
+    }
+
+    pub fn get_width(&self) -> usize {
+        self.board.get_width()
+    }
+
+    pub fn get_height(&self) -> usize {
+        self.board.get_height()
     }
 
     pub fn get_board_string(&self) -> String {

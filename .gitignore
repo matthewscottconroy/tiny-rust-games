@@ -63,4 +63,5 @@ tech-demos/brackets/mouse-control/target/
 tic-tac-toe/tic-tac-toe-brackets/target/
 tic-tac-toe/tic-tac-toe-cli/target/
 tic-tac-toe/tic-tac-toe-lib/target/
-
+tech-demos/bevy/rabbit_carrot_wolf/target/
+tech-demos/bevy/two-players/target/
