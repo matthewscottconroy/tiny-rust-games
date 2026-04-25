@@ -52,3 +52,15 @@ desktop.ini
 # Environment / secrets
 .env
 .env.local
+
+
+tech-demos/bevy/draw-window/target/
+tech-demos/bevy/hello-plugin/target/
+tech-demos/bevy/hello-world/target/
+tech-demos/bevy/movable-sprite/target/
+tech-demos/bevy/sprite-demo/target/
+tech-demos/brackets/mouse-control/target/
+tic-tac-toe/tic-tac-toe-brackets/target/
+tic-tac-toe/tic-tac-toe-cli/target/
+tic-tac-toe/tic-tac-toe-lib/target/
+
