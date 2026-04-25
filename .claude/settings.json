@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(sed -i 's/resolution: WindowResolution::new\\(COLS as f32 \\\\* TILE_PX, ROWS as f32 \\\\* TILE_PX + 30\\\\.0\\)/resolution: \\(864u32, 534u32\\).into\\(\\)/' /home/matthewscott/Development/tiny-rust-games/tech-demos/bevy/procedural-dungeon/src/main.rs)",
+      "Bash(sed -i 's/resolution: WindowResolution::new\\(COLS as f32 \\\\* TILE_PX, ROWS as f32 \\\\* TILE_PX + 28\\\\.0\\)/resolution: \\(780u32, 548u32\\).into\\(\\)/' /home/matthewscott/Development/tiny-rust-games/tech-demos/bevy/line-of-sight/src/main.rs)",
+      "Bash(sed -i 's/resolution: WindowResolution::new\\(700\\\\.0, 400\\\\.0\\)/resolution: \\(700u32, 400u32\\).into\\(\\)/' /home/matthewscott/Development/tiny-rust-games/tech-demos/bevy/combo-system/src/main.rs)",
+      "Bash(sed -i 's/resolution: WindowResolution::new\\(COLS as f32 \\\\* TILE_PX, ROWS as f32 \\\\* TILE_PX + 28\\\\.0\\)/resolution: \\(768u32, 556u32\\).into\\(\\)/' /home/matthewscott/Development/tiny-rust-games/tech-demos/bevy/fog-of-war/src/main.rs)",
+      "Bash(sed -i 's/resolution: WindowResolution::new\\(800\\\\.0, 500\\\\.0\\)/resolution: \\(800u32, 500u32\\).into\\(\\)/' /home/matthewscott/Development/tiny-rust-games/tech-demos/bevy/stealth-ai/src/main.rs)"
+    ]
+  }
+}
