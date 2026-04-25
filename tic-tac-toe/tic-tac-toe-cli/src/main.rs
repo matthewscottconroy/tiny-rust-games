@@ -4,7 +4,7 @@ use tic_tac_toe_lib::TicTacToeGame;
 
 fn main() {
     println!("Program has started");
-    let mut b = Board::new(5, 3);
+    let b = Board::new(5, 3);
     let mut g = TicTacToeGame::new(
         b,
         vec![

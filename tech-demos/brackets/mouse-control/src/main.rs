@@ -1,9 +1,6 @@
 use bracket_terminal::prelude::*;
 
-struct State {
-    x: i32,
-    y: i32,
-}
+struct State {}
 
 impl GameState for State {
     fn tick(&mut self, ctx: &mut BTerm) {
@@ -42,6 +39,6 @@ fn main() -> BError {
     let context = BTermBuilder::simple80x50()
         .with_title("Mouse Control")
         .build()?;
-    let gs = State { x: 0, y: 0 };
+    let gs = State {};
     main_loop(context, gs)
 }
