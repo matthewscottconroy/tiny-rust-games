@@ -20,7 +20,7 @@ fn main() {
         .add_plugins(DefaultPlugins.set(WindowPlugin {
             primary_window: Some(Window {
                 title: "Menu Navigation".to_string(),
-                resolution: (800.0, 500.0).into(),
+                resolution: (800_u32, 500_u32).into(),
                 ..default()
             }),
             ..default()
