@@ -218,10 +218,21 @@ fn handle_player_turn(
     }).copied();
     let Some(pe) = player_entity else { return };
     let Ok((_, player, _, _)) = actors.get(pe) else { return };
-    if player.hp <= 0 || player.ap <= 0 {
+    if player.hp <= 0 {
+        drop(player);
         advance_turn(&mut ts, &actors);
         return;
     }
+    // AP is 0 at the start of a fresh turn — restore it before accepting input.
+    // (Mid-turn depletion is handled below and correctly ends the turn there.)
+    if player.ap <= 0 {
+        drop(player);
+        if let Ok((_, mut p, _, _)) = actors.get_mut(pe) {
+            p.ap = p.max_ap;
+        }
+        return;
+    }
+    drop(player);
 
     let dirs = [
         (KeyCode::KeyW, IVec2::NEG_Y), (KeyCode::ArrowUp, IVec2::NEG_Y),
@@ -233,9 +244,6 @@ fn handle_player_turn(
         advance_turn(&mut ts, &actors);
         return;
     }
-
-    let player_cell = player.ap; // borrow ends
-    drop(player);
 
     for (key, delta) in dirs {
         if !input.just_pressed(key) {
@@ -279,7 +287,6 @@ fn handle_player_turn(
         }
         break;
     }
-    let _ = player_cell;
 
     // Auto-end if AP runs out.
     if let Ok((_, player, _, _)) = actors.get(pe) {
