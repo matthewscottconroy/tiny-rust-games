@@ -1,0 +1,9 @@
+[gd_scene format=3]
+
+[node name="Main" type="GroupManager"]
+
+[node name="Enemy1" type="Enemy" parent="."]
+
+[node name="Enemy2" type="Enemy" parent="."]
+
+[node name="Enemy3" type="Enemy" parent="."]

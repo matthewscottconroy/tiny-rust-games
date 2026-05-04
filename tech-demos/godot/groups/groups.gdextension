@@ -1,0 +1,11 @@
+[configuration]
+entry_symbol = "gdext_rust_init"
+compatibility_minimum = "4.1"
+
+[libraries]
+linux.debug.x86_64 = "res://target/debug/libgroups.so"
+linux.release.x86_64 = "res://target/release/libgroups.so"
+windows.debug.x86_64 = "res://target/debug/groups.dll"
+windows.release.x86_64 = "res://target/release/groups.dll"
+macos.debug = "res://target/debug/libgroups.dylib"
+macos.release = "res://target/release/libgroups.dylib"

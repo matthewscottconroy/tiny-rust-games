@@ -1,0 +1,11 @@
+[package]
+name = "groups"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+name = "groups"
+crate-type = ["cdylib", "lib"]
+
+[dependencies]
+godot = "0.5"

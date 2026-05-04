@@ -1,0 +1,6 @@
+[gd_scene format=3]
+
+[node name="Main" type="HelloWorld"]
+
+[node name="Label" type="Label" parent="."]
+position = Vector2(100, 100)

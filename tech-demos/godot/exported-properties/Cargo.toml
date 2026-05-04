@@ -1,0 +1,11 @@
+[package]
+name = "exported-properties"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+name = "exported_properties"
+crate-type = ["cdylib", "lib"]
+
+[dependencies]
+godot = "0.5"

@@ -1,0 +1,11 @@
+[configuration]
+entry_symbol = "gdext_rust_init"
+compatibility_minimum = "4.1"
+
+[libraries]
+linux.debug.x86_64 = "res://target/debug/libsignals.so"
+linux.release.x86_64 = "res://target/release/libsignals.so"
+windows.debug.x86_64 = "res://target/debug/signals.dll"
+windows.release.x86_64 = "res://target/release/signals.dll"
+macos.debug = "res://target/debug/libsignals.dylib"
+macos.release = "res://target/release/libsignals.dylib"
