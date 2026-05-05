@@ -1,0 +1,9 @@
+[gd_resource type="ProjectSettings" format=3]
+
+[application]
+config/name="Event Bus"
+run/main_scene="res://scenes/main.tscn"
+config/features=PackedStringArray("4.3")
+
+[autoload]
+EventBus="*res://scenes/event_bus.tscn"

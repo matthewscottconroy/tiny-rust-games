@@ -1,0 +1,8 @@
+[gd_scene load_steps=1 format=3]
+
+[node name="InventoryManager" type="Node"]
+max_slots = 10
+
+[node name="Label" type="Label" parent="."]
+position = Vector2(10, 10)
+text = "Inventory empty"

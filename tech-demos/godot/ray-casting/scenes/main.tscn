@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://ray-casting.gdextension" id="1"]
+
+[node name="Main" type="RayCasting"]
+position = Vector2(400, 300)

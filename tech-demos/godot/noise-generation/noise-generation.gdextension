@@ -1,0 +1,6 @@
+[configuration]
+entry_symbol = "gdext_rust_init"
+compatibility_minimum = "4.3"
+[libraries]
+linux.debug.x86_64 = "res://target/debug/libnoise_generation.so"
+linux.release.x86_64 = "res://target/release/libnoise_generation.so"

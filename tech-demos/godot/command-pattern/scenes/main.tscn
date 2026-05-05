@@ -1,0 +1,7 @@
+[gd_scene load_steps=1 format=3]
+
+[node name="CommandManager" type="Node"]
+
+[node name="Label" type="Label" parent="."]
+position = Vector2(10, 10)
+text = "x=0.0  y=0.0  score=0"

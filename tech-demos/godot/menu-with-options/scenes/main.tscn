@@ -1,0 +1,9 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/lib.rs" id="1"]
+
+[node name="Main" type="OptionsMenu"]
+[node name="DifficultyOption" type="OptionButton" parent="."]
+[node name="FullscreenCheck" type="CheckBox" parent="."]
+[node name="VolumeSlider" type="HSlider" parent="."]
+[node name="ApplyButton" type="Button" parent="."]

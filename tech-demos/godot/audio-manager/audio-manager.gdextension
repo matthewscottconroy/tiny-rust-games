@@ -1,0 +1,6 @@
+[configuration]
+entry_symbol = "gdext_rust_init"
+compatibility_minimum = "4.3"
+[libraries]
+linux.debug.x86_64 = "res://target/debug/libaudio_manager.so"
+linux.release.x86_64 = "res://target/release/libaudio_manager.so"

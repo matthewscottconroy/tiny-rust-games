@@ -1,0 +1,6 @@
+[configuration]
+entry_symbol = "gdext_rust_init"
+compatibility_minimum = "4.3"
+[libraries]
+linux.debug.x86_64 = "res://target/debug/libpathfinding_astar.so"
+linux.release.x86_64 = "res://target/release/libpathfinding_astar.so"

@@ -1,0 +1,9 @@
+[gd_scene load_steps=1 format=3]
+
+[node name="Main" type="Node"]
+
+[node name="EventListener" type="Node" parent="."]
+
+[node name="Label" type="Label" parent="."]
+position = Vector2(10, 10)
+text = "Event Bus Demo — check Output for events"
