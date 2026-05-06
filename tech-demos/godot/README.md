@@ -52,6 +52,8 @@ and register all Rust classes so you can use them in scenes.
 | `ray-casting` | `PhysicsDirectSpaceState2D` ray queries; hit point and normal |
 | `collision-layers` | Programmatic collision layer/mask configuration from Rust |
 | `one-shot-collision` | `move_and_collide` + `KinematicCollision2D` response; bounce |
+| `rigid-body-2d` | `RigidBody2D` impulse-based movement; `apply_central_impulse_ex()` builder; velocity clamping |
+| `joints-2d` | `PinJoint2D` + `DampedSpringJoint2D` wired at runtime; bodies connected via `get_path()` |
 
 ### Animation, Visual & UI
 
@@ -65,6 +67,12 @@ and register all Rust classes so you can use them in scenes.
 | `ui-health-bar` | `ProgressBar` + `Label` wired to a Rust health component |
 | `timer-and-countdown` | `Timer` node driven from Rust; HUD countdown display |
 | `tooltip-system` | `PanelContainer` tooltip shown/hidden on hover via Rust signals |
+| `animation-player` | `AnimationPlayer` timeline control: play, seek, speed scale, `animation_finished` signal |
+| `canvas-layer` | `CanvasLayer` pins HUD to screen regardless of camera position |
+| `rich-text-label` | `RichTextLabel` `push_color` / `push_bold` / `append_text` / `pop` from Rust |
+| `particles-2d` | `CpuParticles2D` emission, lifetime, direction, velocity from Rust; burst mode |
+| `lighting-2d` | `PointLight2D` energy and color driven by sine-wave; warm/cool color cycle |
+| `parallax-background` | `ParallaxBackground` + `ParallaxLayer` scroll ratios; camera drives scrolling |
 
 ### Architecture Patterns
 
@@ -75,6 +83,9 @@ and register all Rust classes so you can use them in scenes.
 | `event-bus` | Autoload signal hub; decoupled nodes communicate without direct refs |
 | `command-pattern` | `Box<dyn Command>` undo/redo stack applied to a pure-Rust `GameState` |
 | `scene-manager` | Autoload `change_scene_to_file`; scene history breadcrumb |
+| `callable-deferred` | `call_deferred` for safe scene-tree mutation; `Callable::from_fn` inline callbacks |
+| `node-lifecycle` | `_enter_tree` / `_ready` / `_exit_tree` ordering; `NodeNotification` handling |
+| `object-pool` | Pre-spawned pool; `ProcessMode::DISABLED`/`INHERIT` toggling instead of spawn/free |
 
 ### Data & Persistence
 
@@ -85,6 +96,13 @@ and register all Rust classes so you can use them in scenes.
 | `quest-system` | `QuestStatus` enum; objective progress; auto-complete |
 | `menu-with-options` | `OptionButton` / `CheckBox` / `HSlider` values read into Rust config |
 
+### Interop & GDScript
+
+| Demo | Concept |
+|------|---------|
+| `gdscript-interop` | Bidirectional Rust↔GDScript via `call()` + `#[func]`; `Variant` conversion |
+| `http-request` | `HttpRequest` node; `request_completed` signal; `PackedByteArray` → String parsing |
+
 ### Procedural & AI
 
 | Demo | Concept |
@@ -93,14 +111,23 @@ and register all Rust classes so you can use them in scenes.
 | `navigation` | `NavigationAgent2D` path-follow driven from Rust |
 | `pathfinding-astar` | `AStar2D::new_gd()`; click to set start/goal; path visualised with polyline |
 | `steering-behaviors` | Seek / Flee / Wander pure-Rust vectors applied to `CharacterBody2D` |
-| `ability-cooldowns` | Per-ability cooldown timers; ready/active/cooling states; HUD display |
+| `tilemap-basic` | `TileMap.set_cell_ex()` builder; bordered room generation from Rust |
+| `tilemap-procedural` | Cellular-automata cave generator written cell-by-cell into `TileMap` |
+| `scene-instancing` | `ResourceLoader::load()` → `try_cast::<PackedScene>()` → `instantiate()` |
 
-### Audio
+### Abilities & Audio
 
 | Demo | Concept |
 |------|---------|
+| `ability-cooldowns` | Per-ability cooldown timers; ready/active/cooling states; HUD display |
 | `audio-manager` | Pool of `AudioStreamPlayer` children; polyphonic SFX playback from Rust |
 | `music-with-transitions` | Cross-fade between two `AudioStreamPlayer` nodes via Rust lerp |
+
+### Advanced
+
+| Demo | Concept |
+|------|---------|
+| `editor-plugin` | `EditorPlugin` subclass with dockable panel; button with click counter; extends the Godot editor |
 
 ## Project structure
 
@@ -130,4 +157,4 @@ cd hello-world && cargo test
 
 - Rust stable (`cargo build` works without Godot)
 - Godot 4.3 or later to actually run the demos
-- The `navigation` demo additionally requires the `experimental-godot-api` feature flag (already set in its `Cargo.toml`)
+- The `navigation` and `editor-plugin` demos require the `experimental-godot-api` feature flag (already set in their `Cargo.toml`)

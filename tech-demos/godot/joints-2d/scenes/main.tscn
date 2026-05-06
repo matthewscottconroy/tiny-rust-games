@@ -1,0 +1,7 @@
+[gd_scene format=3]
+
+[node name="Main" type="JointDemo"]
+
+[node name="Label" type="Label" parent="."]
+position = Vector2(10, 10)
+text = "Joints: 0"

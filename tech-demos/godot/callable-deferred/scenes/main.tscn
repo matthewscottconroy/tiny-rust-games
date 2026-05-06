@@ -1,0 +1,7 @@
+[gd_scene format=3]
+
+[node name="Main" type="DeferredDemo"]
+
+[node name="Log" type="Label" parent="."]
+offset_right = 500.0
+offset_bottom = 300.0

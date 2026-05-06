@@ -1,0 +1,9 @@
+[gd_scene format=3]
+
+[node name="Main" type="TilemapDemo"]
+
+[node name="TileMap" type="TileMap" parent="."]
+
+[node name="Label" type="Label" parent="."]
+position = Vector2(10, 10)
+text = "Tiles: 0"

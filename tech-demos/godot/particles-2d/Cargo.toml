@@ -1,0 +1,11 @@
+[package]
+name = "particles-2d"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+name = "particles_2d"
+crate-type = ["cdylib", "lib"]
+
+[dependencies]
+godot = "0.5"

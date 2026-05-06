@@ -1,0 +1,11 @@
+[package]
+name = "object-pool"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+name = "object_pool"
+crate-type = ["cdylib", "lib"]
+
+[dependencies]
+godot = "0.5"

@@ -1,0 +1,11 @@
+[package]
+name = "rigid-body-2d"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+name = "rigid_body_2d"
+crate-type = ["cdylib", "lib"]
+
+[dependencies]
+godot = "0.5"

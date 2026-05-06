@@ -1,0 +1,11 @@
+[package]
+name = "tilemap-basic"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+name = "tilemap_basic"
+crate-type = ["cdylib", "lib"]
+
+[dependencies]
+godot = "0.5"

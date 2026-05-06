@@ -1,0 +1,8 @@
+[gd_resource type="ProjectSettings" format=3]
+
+[application]
+config/name="Editor Plugin Demo"
+config/features=PackedStringArray("4.3")
+
+[editor_plugins]
+enabled=PackedStringArray("res://addons/rust-panel/plugin.cfg")

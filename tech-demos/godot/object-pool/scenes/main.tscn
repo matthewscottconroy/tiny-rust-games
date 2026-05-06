@@ -1,0 +1,7 @@
+[gd_scene format=3]
+
+[node name="Main" type="ObjectPool"]
+
+[node name="StatsLabel" type="Label" parent="."]
+offset_right = 300.0
+offset_bottom = 40.0

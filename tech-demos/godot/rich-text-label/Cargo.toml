@@ -1,0 +1,11 @@
+[package]
+name = "rich-text-label"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+name = "rich_text_label"
+crate-type = ["cdylib", "lib"]
+
+[dependencies]
+godot = "0.5"

@@ -1,0 +1,11 @@
+[package]
+name = "node-lifecycle"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+name = "node_lifecycle"
+crate-type = ["cdylib", "lib"]
+
+[dependencies]
+godot = "0.5"

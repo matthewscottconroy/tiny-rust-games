@@ -1,0 +1,7 @@
+[gd_scene format=3]
+
+[node name="Main" type="SceneInstancer"]
+
+[node name="Label" type="Label" parent="."]
+position = Vector2(10, 10)
+text = "Instances: 0 / 5"

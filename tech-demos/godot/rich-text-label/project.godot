@@ -1,0 +1,7 @@
+; Godot Project, Format=3
+
+[application]
+
+config/name="Rich Text Label"
+run/main_scene="res://scenes/main.tscn"
+config/features=PackedStringArray("4.3")

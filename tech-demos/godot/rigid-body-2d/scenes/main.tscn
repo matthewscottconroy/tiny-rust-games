@@ -1,0 +1,9 @@
+[gd_scene format=3]
+
+[node name="Main" type="PhysicsBody"]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+
+[node name="Label" type="Label" parent="."]
+position = Vector2(-40, -60)
+text = "Speed: 0"

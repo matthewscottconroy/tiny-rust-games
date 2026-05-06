@@ -1,0 +1,7 @@
+[configuration]
+entry_symbol = "gdext_rust_init"
+compatibility_minimum = "4.3"
+
+[libraries]
+linux.debug.x86_64 = "res://target/debug/libcanvas_layer.so"
+linux.release.x86_64 = "res://target/release/libcanvas_layer.so"
