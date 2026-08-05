@@ -1,0 +1,103 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  # The Bevy demos share one Cargo workspace, so Bevy compiles once and every
+  # demo (plus its unit tests) is built and tested in a single invocation.
+  bevy:
+    name: Bevy demos (workspace)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Bevy system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libasound2-dev libudev-dev
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: tech-demos/bevy
+
+      - name: Build all demos
+        run: cargo build --workspace --manifest-path tech-demos/bevy/Cargo.toml
+
+      - name: Test all demos
+        run: cargo test --workspace --manifest-path tech-demos/bevy/Cargo.toml
+
+  # The Godot demos are intentionally standalone crates (each keeps its own
+  # target/ so the .gdextension can resolve res://target/debug/*.so), so they
+  # are built and tested in a loop. gdext bundles the Godot API, so no Godot
+  # install is required to compile or test.
+  godot:
+    name: Godot demos (per-crate)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      - uses: Swatinem/rust-cache@v2
+
+      - name: Build and test every Godot demo
+        run: |
+          set -uo pipefail
+          failed=""
+          for manifest in tech-demos/godot/*/Cargo.toml; do
+            demo=$(basename "$(dirname "$manifest")")
+            echo "::group::$demo"
+            if ! cargo test --manifest-path "$manifest"; then
+              failed="$failed $demo"
+            fi
+            echo "::endgroup::"
+          done
+          if [ -n "$failed" ]; then
+            echo "Failed Godot demos:$failed"
+            exit 1
+          fi
+
+  # The remaining standalone crates: the tic-tac-toe trio and the brackets demo.
+  misc:
+    name: Other crates
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libasound2-dev libudev-dev
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      - uses: Swatinem/rust-cache@v2
+
+      - name: Build and test standalone crates
+        run: |
+          set -uo pipefail
+          failed=""
+          for manifest in \
+            tic-tac-toe/tic-tac-toe-lib/Cargo.toml \
+            tic-tac-toe/tic-tac-toe-cli/Cargo.toml \
+            tic-tac-toe/tic-tac-toe-brackets/Cargo.toml \
+            tech-demos/brackets/mouse-control/Cargo.toml; do
+            echo "::group::$manifest"
+            if ! cargo test --manifest-path "$manifest"; then
+              failed="$failed $manifest"
+            fi
+            echo "::endgroup::"
+          done
+          if [ -n "$failed" ]; then
+            echo "Failed crates:$failed"
+            exit 1
+          fi
