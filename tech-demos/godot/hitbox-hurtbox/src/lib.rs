@@ -71,12 +71,12 @@ impl INode2D for HitboxArena {
         self.base_mut().add_child(&label);
 
         // Spawn player
-        let player = HitboxPlayer::new_alloc();
+        let mut player = HitboxPlayer::new_alloc();
         player.set_position(Vector2::new(150.0, 300.0));
         self.base_mut().add_child(&player);
 
         // Spawn enemy
-        let enemy = HurtboxEnemy::new_alloc();
+        let mut enemy = HurtboxEnemy::new_alloc();
         enemy.set_position(Vector2::new(500.0, 300.0));
         self.base_mut().add_child(&enemy);
     }
@@ -143,8 +143,10 @@ impl INode2D for HitboxPlayer {
         if dir != Vector2::ZERO {
             self.facing = dir.normalized();
         }
+        // Copy the field first — `base_mut()` holds a mutable borrow of self.
+        let speed = self.speed;
         let pos = self.base().get_position();
-        self.base_mut().set_position(pos + dir.normalized() * self.speed * dt);
+        self.base_mut().set_position(pos + dir.normalized() * speed * dt);
 
         // Attack cooldown
         if self.attack_timer > 0.0 {
@@ -182,7 +184,9 @@ use godot::classes::ColorRect;
 
 #[godot_api]
 impl HitboxPlayer {
-    pub fn get_health(&self) -> i32 { self.health }
+    // gdext auto-generates `get_health()` for the `#[export]` field, so this
+    // accessor must use a different name.
+    pub fn current_health(&self) -> i32 { self.health }
     pub fn get_facing(&self) -> Vector2 { self.facing }
 }
 
@@ -225,7 +229,8 @@ impl INode2D for HurtboxEnemy {
         // HP label
         let mut label = Label::new_alloc();
         label.set_name("HpLabel");
-        label.set_text(&GString::from(format!("HP: {}", self.health)));
+        let hp_text = format!("HP: {}", self.health);
+        label.set_text(hp_text.as_str());
         label.set_position(Vector2::new(-20.0, -40.0));
         self.base_mut().add_child(&label);
     }
@@ -233,8 +238,10 @@ impl INode2D for HurtboxEnemy {
     fn process(&mut self, delta: f64) {
         // Drain knockback with friction
         if self.knockback.length() > 1.0 {
+            // Copy the field first — `base_mut()` holds a mutable borrow of self.
+            let knockback = self.knockback;
             let pos = self.base().get_position();
-            self.base_mut().set_position(pos + self.knockback * delta as f32);
+            self.base_mut().set_position(pos + knockback * delta as f32);
             self.knockback *= 0.80;
         }
     }
@@ -251,8 +258,9 @@ impl HurtboxEnemy {
         self.knockback = apply_knockback(Vector2::ZERO, from_direction, 220.0);
 
         // Update HP label
+        let hp_text = format!("HP: {}", self.health);
         if let Some(mut label) = self.base().try_get_node_as::<Label>("HpLabel") {
-            label.set_text(&GString::from(format!("HP: {}", self.health)));
+            label.set_text(hp_text.as_str());
         }
 
         if is_dead(self.health) {
@@ -260,7 +268,9 @@ impl HurtboxEnemy {
         }
     }
 
-    pub fn get_health(&self) -> i32 { self.health }
+    // gdext auto-generates `get_health()` for the `#[export]` field, so this
+    // accessor must use a different name.
+    pub fn current_health(&self) -> i32 { self.health }
 }
 
 // ─── HurtboxArea — the Area2D that detects hitbox entry ───────────────────────
