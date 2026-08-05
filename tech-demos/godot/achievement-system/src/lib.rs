@@ -83,7 +83,7 @@ pub struct AchievementArena {
     base: Base<Node2D>,
 }
 
-fn default_achievements() -> Vec<Achievement> {
+pub fn default_achievements() -> Vec<Achievement> {
     vec![
         Achievement::new("First Blood", 1),
         Achievement::new("Score 50", 50),

@@ -58,7 +58,7 @@ pub fn sky_color(hour: f32) -> Color {
     lerp_color(a, b, t)
 }
 
-fn lerp_color(a: Color, b: Color, t: f32) -> Color {
+pub fn lerp_color(a: Color, b: Color, t: f32) -> Color {
     let t = t.clamp(0.0, 1.0);
     Color::from_rgb(
         a.r + (b.r - a.r) * t,

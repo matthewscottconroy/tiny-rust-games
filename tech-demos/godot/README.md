@@ -54,6 +54,7 @@ and register all Rust classes so you can use them in scenes.
 | `one-shot-collision` | `move_and_collide` + `KinematicCollision2D` response; bounce |
 | `rigid-body-2d` | `RigidBody2D` impulse-based movement; `apply_central_impulse_ex()` builder; velocity clamping |
 | `joints-2d` | `PinJoint2D` + `DampedSpringJoint2D` wired at runtime; bodies connected via `get_path()` |
+| `hitbox-hurtbox` | `Area2D` attack hitbox vs hurtbox; damage, knockback, and death handling |
 
 ### Animation, Visual & UI
 
@@ -73,6 +74,12 @@ and register all Rust classes so you can use them in scenes.
 | `particles-2d` | `CpuParticles2D` emission, lifetime, direction, velocity from Rust; burst mode |
 | `lighting-2d` | `PointLight2D` energy and color driven by sine-wave; warm/cool color cycle |
 | `parallax-background` | `ParallaxBackground` + `ParallaxLayer` scroll ratios; camera drives scrolling |
+| `camera-zoom` | Mouse-wheel `Camera2D` zoom with clamped range and smooth lerp toward target |
+| `game-clock` | In-game day/night clock; sky `ColorRect` colour driven by time of day; adjustable speed |
+| `line-trail` | Motion trail rendered per-segment in `_draw()` with fading alpha |
+| `minimap` | Overhead minimap drawn in `_draw()`; world-to-minimap projection each frame |
+| `screen-effects` | Camera shake (trauma/decay) plus colour-flash overlay fade |
+| `split-screen` | Two `SubViewportContainer` + `SubViewport` pairs with independent per-player cameras |
 
 ### Architecture Patterns
 
@@ -95,6 +102,8 @@ and register all Rust classes so you can use them in scenes.
 | `inventory-system` | `Vec<Item>` with slot capacity; add / remove / query from Rust |
 | `quest-system` | `QuestStatus` enum; objective progress; auto-complete |
 | `menu-with-options` | `OptionButton` / `CheckBox` / `HSlider` values read into Rust config |
+| `dialogue-tree` | Branching dialogue as a flat node `Vec`; keyboard-navigated choices |
+| `achievement-system` | Progress-tracked achievements with unlock banners |
 
 ### Interop & GDScript
 
@@ -114,6 +123,7 @@ and register all Rust classes so you can use them in scenes.
 | `tilemap-basic` | `TileMap.set_cell_ex()` builder; bordered room generation from Rust |
 | `tilemap-procedural` | Cellular-automata cave generator written cell-by-cell into `TileMap` |
 | `scene-instancing` | `ResourceLoader::load()` → `try_cast::<PackedScene>()` → `instantiate()` |
+| `hex-grid` | Flat-top axial hex grid; `axial_to_pixel` / `pixel_to_axial` round-trip; click to select |
 
 ### Abilities & Audio
 

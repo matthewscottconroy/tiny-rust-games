@@ -50,7 +50,7 @@ pub fn deserialize_save(json: &str) -> Option<SaveData> {
 }
 
 /// Extract an integer value for a given JSON key.
-fn extract_i32(json: &str, key: &str) -> Option<i32> {
+pub fn extract_i32(json: &str, key: &str) -> Option<i32> {
     let needle = format!("\"{}\":", key);
     let start = json.find(&needle)? + needle.len();
     let rest = json[start..].trim_start();
@@ -61,7 +61,7 @@ fn extract_i32(json: &str, key: &str) -> Option<i32> {
 }
 
 /// Extract a quoted string value for a given JSON key.
-fn extract_string(json: &str, key: &str) -> Option<String> {
+pub fn extract_string(json: &str, key: &str) -> Option<String> {
     let needle = format!("\"{}\":\"", key);
     let start = json.find(&needle)? + needle.len();
     let rest = &json[start..];

@@ -38,7 +38,7 @@ pub fn pixel_to_axial(p: Vector2, size: f32) -> (i32, i32) {
     cube_round(q, -q - r, r)
 }
 
-fn cube_round(q: f32, s: f32, r: f32) -> (i32, i32) {
+pub fn cube_round(q: f32, s: f32, r: f32) -> (i32, i32) {
     let (rq, rs, rr) = (q.round(), s.round(), r.round());
     let (dq, ds, dr) = ((rq - q).abs(), (rs - s).abs(), (rr - r).abs());
     let rq = if dq > ds && dq > dr { -rs - rr } else { rq };

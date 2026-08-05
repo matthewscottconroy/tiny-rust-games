@@ -71,7 +71,7 @@ pub fn next_node_index(
 
 // ─── Hardcoded sample tree ────────────────────────────────────────────────────
 
-fn build_tree() -> Vec<DialogueNode> {
+pub fn build_tree() -> Vec<DialogueNode> {
     vec![
         // 0 — opening
         DialogueNode::new(
