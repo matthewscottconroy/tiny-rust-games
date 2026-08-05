@@ -346,4 +346,44 @@ mod tests {
         let mut q = app.world_mut().query::<&Ball>();
         assert_eq!(q.iter(app.world()).count(), 3);
     }
+
+    #[test]
+    fn score_default_is_zero() {
+        assert_eq!(Score::default().0, 0);
+    }
+
+    #[test]
+    fn score_increments() {
+        let mut score = Score::default();
+        score.0 += 10;
+        score.0 += 10;
+        assert_eq!(score.0, 20);
+    }
+
+    #[test]
+    fn app_state_default_is_main_menu() {
+        assert_eq!(AppState::default(), AppState::MainMenu);
+    }
+
+    #[test]
+    fn setup_playing_spawns_one_score_text() {
+        let mut app = App::new();
+        app.add_plugins(MinimalPlugins)
+            .add_systems(Startup, setup_playing);
+        app.update();
+
+        let mut q = app.world_mut().query::<&ScoreText>();
+        assert_eq!(q.iter(app.world()).count(), 1);
+    }
+
+    #[test]
+    fn setup_playing_tags_balls_as_playing_entity() {
+        let mut app = App::new();
+        app.add_plugins(MinimalPlugins)
+            .add_systems(Startup, setup_playing);
+        app.update();
+
+        let mut q = app.world_mut().query::<(&Ball, &PlayingEntity)>();
+        assert_eq!(q.iter(app.world()).count(), 3);
+    }
 }

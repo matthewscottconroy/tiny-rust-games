@@ -200,4 +200,39 @@ mod tests {
         let mut q = app.world_mut().query::<&LastActionText>();
         assert_eq!(q.iter(app.world()).count(), 1);
     }
+
+    #[test]
+    fn setup_spawns_one_camera() {
+        let mut app = App::new();
+        app.add_plugins(MinimalPlugins)
+            .add_message::<AddScore>()
+            .add_message::<ResetScore>()
+            .init_resource::<Score>()
+            .add_systems(Startup, setup);
+        app.update();
+
+        let mut q = app.world_mut().query::<&Camera2d>();
+        assert_eq!(q.iter(app.world()).count(), 1);
+    }
+
+    #[test]
+    fn score_accumulates_correctly() {
+        let mut score = Score(0);
+        score.0 += 10;
+        score.0 += 10;
+        assert_eq!(score.0, 20);
+    }
+
+    #[test]
+    fn score_resets_to_zero() {
+        let mut score = Score(50);
+        score.0 = 0;
+        assert_eq!(score.0, 0);
+    }
+
+    #[test]
+    fn add_score_carries_correct_value() {
+        let msg = AddScore(42);
+        assert_eq!(msg.0, 42);
+    }
 }

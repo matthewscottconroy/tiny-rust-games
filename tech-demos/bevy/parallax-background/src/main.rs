@@ -35,6 +35,13 @@ struct ParallaxLayer {
 const PLAYER_SPEED: f32 = 220.0;
 const CAM_LERP: f32 = 8.0;
 
+/// Returns the world X for a parallax layer given the camera's world X.
+///
+/// `scroll_factor = 0` keeps the layer stationary; `1.0` makes it move with the camera.
+pub fn parallax_offset(camera_x: f32, scroll_factor: f32) -> f32 {
+    camera_x * scroll_factor
+}
+
 // --- Setup ---
 
 /// Spawns five parallax background layers (back to front), the player, and a HUD label.
@@ -126,7 +133,7 @@ fn update_parallax(
     let Ok(cam) = cam_query.single() else { return; };
 
     for (mut transform, layer) in &mut layer_query {
-        transform.translation.x = cam.translation.x * layer.scroll_factor;
+        transform.translation.x = parallax_offset(cam.translation.x, layer.scroll_factor);
     }
 }
 
@@ -176,5 +183,20 @@ mod tests {
         for w in factors.windows(2) {
             assert!(w[1] > w[0], "factors should increase back-to-front");
         }
+    }
+
+    #[test]
+    fn parallax_offset_zero_factor_is_stationary() {
+        assert_eq!(parallax_offset(500.0, 0.0), 0.0);
+    }
+
+    #[test]
+    fn parallax_offset_full_factor_matches_camera() {
+        assert!((parallax_offset(300.0, 1.0) - 300.0).abs() < 1e-6);
+    }
+
+    #[test]
+    fn parallax_offset_half_factor() {
+        assert!((parallax_offset(200.0, 0.5) - 100.0).abs() < 1e-6);
     }
 }

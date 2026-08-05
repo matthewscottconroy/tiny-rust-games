@@ -33,6 +33,14 @@ enum GameState {
     Paused,
 }
 
+/// Returns the opposite of the current game state.
+pub fn toggle_state(current: &GameState) -> GameState {
+    match current {
+        GameState::Running => GameState::Paused,
+        GameState::Paused  => GameState::Running,
+    }
+}
+
 // --- Components ---
 
 /// Tags a bouncing ball in the playing scene.
@@ -112,11 +120,7 @@ fn toggle_pause(
     mut next: ResMut<NextState<GameState>>,
 ) {
     if input.just_pressed(KeyCode::KeyP) {
-        let new_state = match state.get() {
-            GameState::Running => GameState::Paused,
-            GameState::Paused  => GameState::Running,
-        };
-        next.set(new_state);
+        next.set(toggle_state(state.get()));
     }
 }
 
@@ -193,5 +197,21 @@ mod tests {
         for (_, vis) in q.iter(app.world()) {
             assert_eq!(*vis, Visibility::Hidden);
         }
+    }
+
+    #[test]
+    fn toggle_state_running_becomes_paused() {
+        assert_eq!(toggle_state(&GameState::Running), GameState::Paused);
+    }
+
+    #[test]
+    fn toggle_state_paused_becomes_running() {
+        assert_eq!(toggle_state(&GameState::Paused), GameState::Running);
+    }
+
+    #[test]
+    fn toggle_state_is_its_own_inverse() {
+        let state = GameState::Running;
+        assert_eq!(toggle_state(&toggle_state(&state)), state);
     }
 }

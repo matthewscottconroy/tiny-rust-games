@@ -9,6 +9,17 @@ use bevy::prelude::*;
 /// Shared movement speed in world units per second.
 const SPEED: f32 = 300.0;
 
+/// Returns a normalized movement direction from four boolean key states.
+pub fn input_dir(up: bool, down: bool, left: bool, right: bool) -> Vec2 {
+    let raw = Vec2::new(right as i8 as f32 - left as i8 as f32, up as i8 as f32 - down as i8 as f32);
+    if raw != Vec2::ZERO { raw.normalize() } else { Vec2::ZERO }
+}
+
+/// Returns the per-frame translation delta given a unit direction, speed, and timestep.
+pub fn frame_delta(dir: Vec2, speed: f32, dt: f32) -> Vec3 {
+    Vec3::new(dir.x * speed * dt, dir.y * speed * dt, 0.0)
+}
+
 fn main() {
     App::new()
         .add_plugins(DefaultPlugins)
@@ -51,15 +62,14 @@ fn player1_movement_system(
     mut player_query: Query<&mut Transform, With<Player1>>,
 ) {
     for mut player_transform in player_query.iter_mut() {
-        let mut direction = Vec3::ZERO;
-
-        if keyboard_input.pressed(KeyCode::KeyW) { direction.y += 1.0; }
-        if keyboard_input.pressed(KeyCode::KeyS) { direction.y -= 1.0; }
-        if keyboard_input.pressed(KeyCode::KeyA) { direction.x -= 1.0; }
-        if keyboard_input.pressed(KeyCode::KeyD) { direction.x += 1.0; }
-
-        if direction != Vec3::ZERO {
-            player_transform.translation += direction.normalize() * SPEED * time.delta_secs();
+        let dir = input_dir(
+            keyboard_input.pressed(KeyCode::KeyW),
+            keyboard_input.pressed(KeyCode::KeyS),
+            keyboard_input.pressed(KeyCode::KeyA),
+            keyboard_input.pressed(KeyCode::KeyD),
+        );
+        if dir != Vec2::ZERO {
+            player_transform.translation += frame_delta(dir, SPEED, time.delta_secs());
         }
     }
 }
@@ -71,15 +81,14 @@ fn player2_movement_system(
     mut player_query: Query<&mut Transform, With<Player2>>,
 ) {
     for mut player_transform in player_query.iter_mut() {
-        let mut direction = Vec3::ZERO;
-
-        if keyboard_input.pressed(KeyCode::KeyI) { direction.y += 1.0; }
-        if keyboard_input.pressed(KeyCode::KeyK) { direction.y -= 1.0; }
-        if keyboard_input.pressed(KeyCode::KeyJ) { direction.x -= 1.0; }
-        if keyboard_input.pressed(KeyCode::KeyL) { direction.x += 1.0; }
-
-        if direction != Vec3::ZERO {
-            player_transform.translation += direction.normalize() * SPEED * time.delta_secs();
+        let dir = input_dir(
+            keyboard_input.pressed(KeyCode::KeyI),
+            keyboard_input.pressed(KeyCode::KeyK),
+            keyboard_input.pressed(KeyCode::KeyJ),
+            keyboard_input.pressed(KeyCode::KeyL),
+        );
+        if dir != Vec2::ZERO {
+            player_transform.translation += frame_delta(dir, SPEED, time.delta_secs());
         }
     }
 }
@@ -91,5 +100,48 @@ mod tests {
     #[test]
     fn speed_is_positive() {
         assert!(SPEED > 0.0);
+    }
+
+    #[test]
+    fn input_dir_no_keys_is_zero() {
+        assert_eq!(input_dir(false, false, false, false), Vec2::ZERO);
+    }
+
+    #[test]
+    fn input_dir_single_direction_is_unit() {
+        let d = input_dir(false, true, false, false); // down
+        assert!((d.y - -1.0).abs() < 1e-5);
+        assert_eq!(d.x, 0.0);
+    }
+
+    #[test]
+    fn input_dir_diagonal_normalized() {
+        let d = input_dir(true, false, true, false); // up + left
+        assert!((d.length() - 1.0).abs() < 1e-5);
+        assert!(d.x < 0.0 && d.y > 0.0);
+    }
+
+    #[test]
+    fn input_dir_opposing_keys_cancel() {
+        assert_eq!(input_dir(false, false, true, true), Vec2::ZERO);
+    }
+
+    #[test]
+    fn frame_delta_scales_correctly() {
+        let delta = frame_delta(Vec2::Y, 300.0, 0.5);
+        assert!((delta.y - 150.0).abs() < 1e-4);
+        assert_eq!(delta.x, 0.0);
+    }
+
+    #[test]
+    fn setup_spawns_two_players_at_offset_positions() {
+        let mut app = App::new();
+        app.add_plugins(MinimalPlugins).add_systems(Startup, setup);
+        app.update();
+
+        let mut q = app.world_mut().query::<&Player1>();
+        assert_eq!(q.iter(app.world()).count(), 1);
+        let mut q2 = app.world_mut().query::<&Player2>();
+        assert_eq!(q2.iter(app.world()).count(), 1);
     }
 }

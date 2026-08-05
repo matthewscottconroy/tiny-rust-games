@@ -40,6 +40,11 @@ const BULLET_SPEED: f32 = 500.0;
 /// Bullets are despawned once their position exceeds this distance from origin.
 const OFFSCREEN_MARGIN: f32 = 600.0;
 
+/// Returns `true` when a 2D position lies outside the square arena defined by `margin`.
+pub fn is_offscreen(pos: Vec2, margin: f32) -> bool {
+    pos.x.abs() > margin || pos.y.abs() > margin
+}
+
 // --- Setup ---
 
 /// Spawns the camera, player sprite, and instruction label.
@@ -133,8 +138,7 @@ fn move_bullets(time: Res<Time>, mut query: Query<(&mut Transform, &Velocity), W
 /// Despawns bullets that have travelled beyond [`OFFSCREEN_MARGIN`].
 fn despawn_offscreen(mut commands: Commands, query: Query<(Entity, &Transform), With<Bullet>>) {
     for (entity, transform) in &query {
-        let p = transform.translation;
-        if p.x.abs() > OFFSCREEN_MARGIN || p.y.abs() > OFFSCREEN_MARGIN {
+        if is_offscreen(transform.translation.truncate(), OFFSCREEN_MARGIN) {
             commands.entity(entity).despawn();
         }
     }
@@ -182,5 +186,37 @@ mod tests {
     #[test]
     fn offscreen_margin_is_positive() {
         assert!(OFFSCREEN_MARGIN > 0.0);
+    }
+
+    #[test]
+    fn is_offscreen_inside_arena_returns_false() {
+        assert!(!is_offscreen(Vec2::new(100.0, -200.0), 600.0));
+    }
+
+    #[test]
+    fn is_offscreen_too_far_right_returns_true() {
+        assert!(is_offscreen(Vec2::new(700.0, 0.0), 600.0));
+    }
+
+    #[test]
+    fn is_offscreen_too_far_up_returns_true() {
+        assert!(is_offscreen(Vec2::new(0.0, 650.0), 600.0));
+    }
+
+    #[test]
+    fn is_offscreen_exactly_at_margin_returns_false() {
+        // boundary is exclusive (> not >=)
+        assert!(!is_offscreen(Vec2::new(600.0, 0.0), 600.0));
+    }
+
+    #[test]
+    fn player_default_facing_is_up() {
+        let p = Player { facing: Vec2::Y };
+        assert_eq!(p.facing, Vec2::Y);
+    }
+
+    #[test]
+    fn bullet_speed_exceeds_player_speed() {
+        assert!(BULLET_SPEED > PLAYER_SPEED);
     }
 }

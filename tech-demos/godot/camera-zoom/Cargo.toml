@@ -1,0 +1,11 @@
+[package]
+name = "camera-zoom"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+name = "camera_zoom"
+crate-type = ["cdylib", "lib"]
+
+[dependencies]
+godot = "0.5"

@@ -6,6 +6,21 @@
 
 use bevy::prelude::*;
 
+/// Applies gravitational acceleration to a vertical velocity for one timestep.
+pub fn apply_gravity(vy: f32, gravity: f32, dt: f32) -> f32 {
+    vy + gravity * dt
+}
+
+/// Reflects vertical velocity off the floor with restitution when below `floor` and moving down.
+pub fn bounce_floor(y: f32, vy: f32, floor: f32, restitution: f32) -> f32 {
+    if y < floor && vy < 0.0 { vy * -restitution } else { vy }
+}
+
+/// Reflects a velocity component when the position exceeds `limit` on either side.
+pub fn reflect_wall(pos: f32, vel: f32, limit: f32) -> f32 {
+    if pos.abs() > limit { -vel } else { vel }
+}
+
 fn main() {
     App::new()
         .add_plugins(DefaultPlugins)
@@ -95,10 +110,11 @@ fn setup(mut commands: Commands) {
 /// Integrates gravity and velocity for all balls.
 fn physics_step(time: Res<Time>, mut query: Query<(&mut Transform, &mut Velocity), With<Ball>>) {
     const GRAVITY: f32 = -400.0;
+    let dt = time.delta_secs();
     for (mut transform, mut velocity) in &mut query {
-        velocity.0.y += GRAVITY * time.delta_secs();
-        transform.translation.x += velocity.0.x * time.delta_secs();
-        transform.translation.y += velocity.0.y * time.delta_secs();
+        velocity.0.y = apply_gravity(velocity.0.y, GRAVITY, dt);
+        transform.translation.x += velocity.0.x * dt;
+        transform.translation.y += velocity.0.y * dt;
     }
 }
 
@@ -106,9 +122,9 @@ fn physics_step(time: Res<Time>, mut query: Query<(&mut Transform, &mut Velocity
 fn bounce_walls(mut query: Query<(&Transform, &mut Velocity), With<Ball>>) {
     for (transform, mut velocity) in &mut query {
         let p = transform.translation;
-        if p.y < -270.0 && velocity.0.y < 0.0 { velocity.0.y *= -0.75; }
-        if p.x.abs() > 420.0               { velocity.0.x *= -1.0; }
-        if p.y > 290.0 && velocity.0.y > 0.0  { velocity.0.y *= -1.0; }
+        velocity.0.y = bounce_floor(p.y, velocity.0.y, -270.0, 0.75);
+        velocity.0.x = reflect_wall(p.x, velocity.0.x, 420.0);
+        if p.y > 290.0 && velocity.0.y > 0.0 { velocity.0.y *= -1.0; }
     }
 }
 
@@ -167,5 +183,44 @@ mod tests {
 
         let mut q = app.world_mut().query::<&HudText>();
         assert_eq!(q.iter(app.world()).count(), 1);
+    }
+
+    #[test]
+    fn apply_gravity_increases_downward_velocity() {
+        let vy = apply_gravity(0.0, -400.0, 0.016);
+        assert!(vy < 0.0, "gravity should pull velocity negative");
+        assert!((vy - (-6.4)).abs() < 1e-3);
+    }
+
+    #[test]
+    fn bounce_floor_reflects_when_below_floor() {
+        let vy = bounce_floor(-280.0, -100.0, -270.0, 0.75);
+        assert!(vy > 0.0, "should reflect upward");
+        assert!((vy - 75.0).abs() < 1e-4);
+    }
+
+    #[test]
+    fn bounce_floor_no_reflect_above_floor() {
+        let vy = bounce_floor(-100.0, -50.0, -270.0, 0.75);
+        assert_eq!(vy, -50.0, "above floor, velocity unchanged");
+    }
+
+    #[test]
+    fn bounce_floor_no_reflect_moving_upward() {
+        // Already moving up through the floor — don't double-reflect
+        let vy = bounce_floor(-280.0, 50.0, -270.0, 0.75);
+        assert_eq!(vy, 50.0);
+    }
+
+    #[test]
+    fn reflect_wall_outside_reverses_velocity() {
+        let vx = reflect_wall(500.0, 80.0, 420.0);
+        assert_eq!(vx, -80.0);
+    }
+
+    #[test]
+    fn reflect_wall_inside_leaves_velocity_unchanged() {
+        let vx = reflect_wall(100.0, 80.0, 420.0);
+        assert_eq!(vx, 80.0);
     }
 }

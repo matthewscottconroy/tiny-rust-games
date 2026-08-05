@@ -1,0 +1,11 @@
+[package]
+name = "minimap"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+name = "minimap"
+crate-type = ["cdylib", "lib"]
+
+[dependencies]
+godot = "0.5"

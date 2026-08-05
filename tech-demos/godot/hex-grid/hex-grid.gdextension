@@ -1,0 +1,11 @@
+[configuration]
+entry_symbol = "gdext_rust_init"
+compatibility_minimum = "4.1"
+
+[libraries]
+linux.debug.x86_64   = "res://target/debug/libhex_grid.so"
+linux.release.x86_64 = "res://target/release/libhex_grid.so"
+windows.debug.x86_64   = "res://target/debug/hex_grid.dll"
+windows.release.x86_64 = "res://target/release/hex_grid.dll"
+macos.debug   = "res://target/debug/libhex_grid.dylib"
+macos.release = "res://target/release/libhex_grid.dylib"

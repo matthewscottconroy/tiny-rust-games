@@ -1,0 +1,7 @@
+; Godot Project, Format=3
+
+[application]
+
+config/name="Screen Effects"
+config/features=PackedStringArray("4.3")
+run/main_scene="res://scenes/main.tscn"

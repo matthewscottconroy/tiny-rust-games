@@ -24,6 +24,13 @@ const SPEED: f32 = 220.0;
 /// Fraction of the gap to close each second (higher = snappier).
 const LERP_SPEED: f32 = 6.0;
 
+/// Returns the `t` parameter for `Vec3::lerp` that closes the camera gap in one frame.
+///
+/// Clamped to `[0, 1]` so large timesteps don't overshoot.
+pub fn lerp_factor(speed: f32, dt: f32) -> f32 {
+    (speed * dt).clamp(0.0, 1.0)
+}
+
 /// Spawns a checkerboard background (makes camera motion visible), the player,
 /// and an instruction label.
 fn setup(mut commands: Commands) {
@@ -101,7 +108,7 @@ fn follow_camera(
     let Ok(mut cam) = cam_query.single_mut() else { return; };
 
     let target = player.translation;
-    cam.translation = cam.translation.lerp(target, LERP_SPEED * time.delta_secs());
+    cam.translation = cam.translation.lerp(target, lerp_factor(LERP_SPEED, time.delta_secs()));
 }
 
 #[cfg(test)]
@@ -141,5 +148,30 @@ mod tests {
         for (_, t) in q.iter(app.world()) {
             assert_eq!(t.translation, Vec3::ZERO);
         }
+    }
+
+    #[test]
+    fn lerp_factor_zero_dt_is_zero() {
+        assert_eq!(lerp_factor(6.0, 0.0), 0.0);
+    }
+
+    #[test]
+    fn lerp_factor_normal_dt_is_proportional() {
+        // At 60 fps (dt ≈ 0.0167) with speed 6: factor ≈ 0.1
+        let f = lerp_factor(6.0, 1.0 / 60.0);
+        assert!((f - 0.1).abs() < 1e-4);
+    }
+
+    #[test]
+    fn lerp_factor_large_dt_clamped_to_one() {
+        // Huge timestep should never overshoot
+        assert_eq!(lerp_factor(6.0, 10.0), 1.0);
+    }
+
+    #[test]
+    fn lerp_factor_scales_with_speed() {
+        let slow = lerp_factor(1.0, 0.1);
+        let fast = lerp_factor(5.0, 0.1);
+        assert!(fast > slow);
     }
 }

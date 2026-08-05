@@ -70,4 +70,40 @@ mod tests {
         let mut q = app.world_mut().query::<(&Person, &Name)>();
         assert_eq!(q.iter(app.world()).count(), 3, "each person should have a Name");
     }
+
+    #[test]
+    fn plugin_names_are_sam_charlie_david() {
+        let mut app = App::new();
+        app.add_plugins((MinimalPlugins, HelloPlugin));
+        app.update();
+
+        let mut q = app.world_mut().query::<(&Person, &Name)>();
+        let names: Vec<String> = q.iter(app.world()).map(|(_, n)| n.0.clone()).collect();
+        assert!(names.contains(&"Sam".to_string()));
+        assert!(names.contains(&"Charlie".to_string()));
+        assert!(names.contains(&"David".to_string()));
+    }
+
+    #[test]
+    fn plugin_no_duplicate_names() {
+        let mut app = App::new();
+        app.add_plugins((MinimalPlugins, HelloPlugin));
+        app.update();
+
+        let mut q = app.world_mut().query::<(&Person, &Name)>();
+        let names: Vec<String> = q.iter(app.world()).map(|(_, n)| n.0.clone()).collect();
+        let unique: std::collections::HashSet<_> = names.iter().collect();
+        assert_eq!(unique.len(), names.len(), "all names should be unique");
+    }
+
+    #[test]
+    fn plugin_spawns_exactly_one_camera() {
+        let mut app = App::new();
+        app.add_plugins((MinimalPlugins, HelloPlugin));
+        app.update();
+
+        // HelloPlugin has no camera — verifies no stray camera is spawned
+        let mut q = app.world_mut().query::<&Camera>();
+        assert_eq!(q.iter(app.world()).count(), 0);
+    }
 }

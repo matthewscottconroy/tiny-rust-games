@@ -1,0 +1,11 @@
+[configuration]
+entry_symbol = "gdext_rust_init"
+compatibility_minimum = "4.1"
+
+[libraries]
+linux.debug.x86_64   = "res://target/debug/libachievement_system.so"
+linux.release.x86_64 = "res://target/release/libachievement_system.so"
+windows.debug.x86_64   = "res://target/debug/achievement_system.dll"
+windows.release.x86_64 = "res://target/release/achievement_system.dll"
+macos.debug   = "res://target/debug/libachievement_system.dylib"
+macos.release = "res://target/release/libachievement_system.dylib"

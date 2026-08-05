@@ -1,0 +1,11 @@
+[configuration]
+entry_symbol = "gdext_rust_init"
+compatibility_minimum = "4.1"
+
+[libraries]
+linux.debug.x86_64   = "res://target/debug/libdialogue_tree.so"
+linux.release.x86_64 = "res://target/release/libdialogue_tree.so"
+windows.debug.x86_64   = "res://target/debug/dialogue_tree.dll"
+windows.release.x86_64 = "res://target/release/dialogue_tree.dll"
+macos.debug   = "res://target/debug/libdialogue_tree.dylib"
+macos.release = "res://target/release/libdialogue_tree.dylib"

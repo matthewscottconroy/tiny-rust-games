@@ -1,0 +1,11 @@
+[configuration]
+entry_symbol = "gdext_rust_init"
+compatibility_minimum = "4.1"
+
+[libraries]
+linux.debug.x86_64   = "res://target/debug/libscreen_effects.so"
+linux.release.x86_64 = "res://target/release/libscreen_effects.so"
+windows.debug.x86_64   = "res://target/debug/screen_effects.dll"
+windows.release.x86_64 = "res://target/release/screen_effects.dll"
+macos.debug   = "res://target/debug/libscreen_effects.dylib"
+macos.release = "res://target/release/libscreen_effects.dylib"

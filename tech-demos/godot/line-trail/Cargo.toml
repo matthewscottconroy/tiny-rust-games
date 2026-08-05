@@ -1,0 +1,11 @@
+[package]
+name = "line-trail"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+godot = "0.5"
+
+[lib]
+name = "line_trail"
+crate-type = ["cdylib", "lib"]

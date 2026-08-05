@@ -14,6 +14,18 @@ use bevy::prelude::*;
 use bevy_egui::{egui, EguiContexts, EguiPlugin};
 use rand::Rng;
 
+// --- Pure helpers ---
+
+/// Returns `true` when two circles (defined by center and radius) overlap.
+pub fn circles_overlap(pos_a: Vec2, r_a: f32, pos_b: Vec2, r_b: f32) -> bool {
+    pos_a.distance(pos_b) < r_a + r_b
+}
+
+/// Clamps a position into the rectangular arena `[-half_w, half_w] × [-half_h, half_h]`.
+pub fn clamp_to_arena(pos: Vec2, half_w: f32, half_h: f32) -> Vec2 {
+    Vec2::new(pos.x.clamp(-half_w, half_w), pos.y.clamp(-half_h, half_h))
+}
+
 // --- Application States ---
 
 /// Top-level state: configure then play.
@@ -207,8 +219,9 @@ fn movement_system(time: Res<Time>, mut query: Query<(&mut Transform, &Velocity)
     for (mut transform, velocity) in query.iter_mut() {
         transform.translation.x += velocity.0.x * time.delta_secs();
         transform.translation.y += velocity.0.y * time.delta_secs();
-        transform.translation.x = transform.translation.x.clamp(-400.0, 400.0);
-        transform.translation.y = transform.translation.y.clamp(-300.0, 300.0);
+        let clamped = clamp_to_arena(transform.translation.truncate(), 400.0, 300.0);
+        transform.translation.x = clamped.x;
+        transform.translation.y = clamped.y;
     }
 }
 
@@ -255,9 +268,8 @@ fn rabbit_eating_system(
     let mut rng = rand::thread_rng();
     for (rabbit_transform, rabbit_radius) in query_rabbit.iter() {
         for (carrot_entity, carrot_transform, sprite) in query_carrot.iter() {
-            let distance = rabbit_transform.translation.distance(carrot_transform.translation);
             let carrot_radius = sprite.custom_size.unwrap_or(Vec2::splat(10.0)).x / 2.0;
-            if distance < rabbit_radius.0 + carrot_radius {
+            if circles_overlap(rabbit_transform.translation.truncate(), rabbit_radius.0, carrot_transform.translation.truncate(), carrot_radius) {
                 commands.entity(carrot_entity).despawn();
                 let pos = rabbit_transform.translation;
                 let angle = rng.gen_range(0.0..std::f32::consts::TAU);
@@ -283,8 +295,7 @@ fn wolf_eating_system(
     let mut rng = rand::thread_rng();
     for (wolf_transform, wolf_radius) in query_wolf.iter() {
         for (rabbit_entity, rabbit_transform, rabbit_radius) in query_rabbit.iter() {
-            let distance = wolf_transform.translation.distance(rabbit_transform.translation);
-            if distance < wolf_radius.0 + rabbit_radius.0 {
+            if circles_overlap(wolf_transform.translation.truncate(), wolf_radius.0, rabbit_transform.translation.truncate(), rabbit_radius.0) {
                 commands.entity(rabbit_entity).despawn();
                 let pos = wolf_transform.translation;
                 let angle = rng.gen_range(0.0..std::f32::consts::TAU);
@@ -360,5 +371,36 @@ mod tests {
     #[test]
     fn game_state_default_is_main_menu() {
         assert_eq!(GameState::default(), GameState::MainMenu);
+    }
+
+    #[test]
+    fn circles_overlap_touching_returns_true() {
+        // Centers 9 units apart, radii 5 + 5 = 10 → overlap
+        assert!(circles_overlap(Vec2::ZERO, 5.0, Vec2::new(9.0, 0.0), 5.0));
+    }
+
+    #[test]
+    fn circles_overlap_far_apart_returns_false() {
+        assert!(!circles_overlap(Vec2::ZERO, 5.0, Vec2::new(20.0, 0.0), 5.0));
+    }
+
+    #[test]
+    fn circles_overlap_exact_boundary_returns_false() {
+        // Distance == sum of radii: not strictly less than, so no overlap
+        assert!(!circles_overlap(Vec2::ZERO, 5.0, Vec2::new(10.0, 0.0), 5.0));
+    }
+
+    #[test]
+    fn clamp_to_arena_inside_is_unchanged() {
+        let pos = Vec2::new(100.0, -50.0);
+        assert_eq!(clamp_to_arena(pos, 400.0, 300.0), pos);
+    }
+
+    #[test]
+    fn clamp_to_arena_outside_is_clamped() {
+        let pos = Vec2::new(600.0, -400.0);
+        let clamped = clamp_to_arena(pos, 400.0, 300.0);
+        assert_eq!(clamped.x, 400.0);
+        assert_eq!(clamped.y, -300.0);
     }
 }

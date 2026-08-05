@@ -180,4 +180,24 @@ mod tests {
         assert!(x.abs() < 1e-4);
         assert!((y - 100.0).abs() < 1e-4);
     }
+
+    #[test]
+    fn setup_spawns_three_orbiters() {
+        let mut app = App::new();
+        app.add_plugins(MinimalPlugins).add_systems(Startup, setup);
+        app.update();
+
+        let mut q = app.world_mut().query::<&Orbiter>();
+        assert_eq!(q.iter(app.world()).count(), 3);
+    }
+
+    #[test]
+    fn setup_spawns_one_speed_label() {
+        let mut app = App::new();
+        app.add_plugins(MinimalPlugins).add_systems(Startup, setup);
+        app.update();
+
+        let mut q = app.world_mut().query::<&SpeedLabel>();
+        assert_eq!(q.iter(app.world()).count(), 1);
+    }
 }

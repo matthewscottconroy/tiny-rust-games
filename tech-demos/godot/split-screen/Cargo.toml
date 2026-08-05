@@ -1,0 +1,11 @@
+[package]
+name = "split-screen"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+name = "split_screen"
+crate-type = ["cdylib", "lib"]
+
+[dependencies]
+godot = "0.5"

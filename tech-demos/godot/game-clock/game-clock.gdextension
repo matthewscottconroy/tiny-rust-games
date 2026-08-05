@@ -1,0 +1,11 @@
+[configuration]
+entry_symbol = "gdext_rust_init"
+compatibility_minimum = "4.1"
+
+[libraries]
+linux.debug.x86_64   = "res://target/debug/libgame_clock.so"
+linux.release.x86_64 = "res://target/release/libgame_clock.so"
+windows.debug.x86_64   = "res://target/debug/game_clock.dll"
+windows.release.x86_64 = "res://target/release/game_clock.dll"
+macos.debug   = "res://target/debug/libgame_clock.dylib"
+macos.release = "res://target/release/libgame_clock.dylib"

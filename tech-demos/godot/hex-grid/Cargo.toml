@@ -1,0 +1,11 @@
+[package]
+name = "hex-grid"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+name = "hex_grid"
+crate-type = ["cdylib", "lib"]
+
+[dependencies]
+godot = "0.5"
