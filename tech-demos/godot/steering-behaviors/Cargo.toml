@@ -2,6 +2,9 @@
 name = "steering-behaviors"
 version = "0.1.0"
 edition = "2024"
+license = "MIT"
+repository = "https://github.com/matthewscottconroy/tiny-rust-games"
+description = "Steering Behaviors GDExtension demo — autonomous movement AI from Rust"
 
 [lib]
 crate-type = ["cdylib", "lib"]

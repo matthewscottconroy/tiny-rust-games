@@ -44,7 +44,9 @@ jobs:
 
   # The Bevy demos share one Cargo workspace, so Bevy compiles once and every
   # demo (plus its unit tests) is built, linted, and tested in a single
-  # invocation.
+  # invocation. tic-tac-toe-bevy lives under tic-tac-toe/ but is a member of
+  # this workspace, so it is covered here rather than in the `misc` job — that
+  # keeps Bevy from being compiled a second time.
   bevy:
     name: Bevy demos (workspace)
     runs-on: ubuntu-latest
@@ -80,7 +82,8 @@ jobs:
   # The Godot demos are intentionally standalone crates (each keeps its own
   # target/ so the .gdextension can resolve res://target/debug/*.so), so they
   # are linted and tested in a loop. gdext bundles the Godot API, so no Godot
-  # install is required to compile or test.
+  # install is required to compile or test. tic-tac-toe-godot rides along here
+  # so it reuses the one gdext build rather than triggering another.
   godot:
     name: Godot demos (per-crate)
     runs-on: ubuntu-latest
@@ -112,7 +115,8 @@ jobs:
         run: |
           set -uo pipefail
           failed=""
-          for manifest in tech-demos/godot/*/Cargo.toml; do
+          for manifest in tech-demos/godot/*/Cargo.toml \
+                          tic-tac-toe/tic-tac-toe-godot/Cargo.toml; do
             demo=$(basename "$(dirname "$manifest")")
             echo "::group::$demo"
             if ! cargo clippy --locked --manifest-path "$manifest" --all-targets -- -D warnings; then
@@ -127,7 +131,9 @@ jobs:
             exit 1
           fi
 
-  # The remaining standalone crates: the tic-tac-toe trio and the brackets demo.
+  # The remaining standalone crates. Deliberately NOT a glob over
+  # tic-tac-toe/*: the Bevy and Godot frontends are covered by the jobs above,
+  # and matching them here would compile Bevy and gdext all over again.
   misc:
     name: Other crates
     runs-on: ubuntu-latest

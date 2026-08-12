@@ -2,6 +2,9 @@
 name = "node-lifecycle"
 version = "0.1.0"
 edition = "2024"
+license = "MIT"
+repository = "https://github.com/matthewscottconroy/tiny-rust-games"
+description = "Node Lifecycle demo — _enter_tree, _ready, _exit_tree ordering and"
 
 [lib]
 name = "node_lifecycle"

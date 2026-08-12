@@ -2,6 +2,9 @@
 name = "tilemap-procedural"
 version = "0.1.0"
 edition = "2024"
+license = "MIT"
+repository = "https://github.com/matthewscottconroy/tiny-rust-games"
+description = "Tilemap Procedural demo — fills a TileMap from Rust using a cellular-automata"
 
 [lib]
 crate-type = ["cdylib", "lib"]

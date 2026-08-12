@@ -2,6 +2,9 @@
 name = "gdscript-interop"
 version = "0.1.0"
 edition = "2024"
+license = "MIT"
+repository = "https://github.com/matthewscottconroy/tiny-rust-games"
+description = "GDScript Interop demo — calling GDScript methods from Rust via call(),"
 
 [lib]
 crate-type = ["cdylib", "lib"]

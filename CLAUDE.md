@@ -23,7 +23,7 @@ place. `tic-tac-toe/` is the reference example of doing it right.
 | `tech-demos/bevy/` | One Cargo **workspace**, 82 demos + `_template`. Bevy compiles once. |
 | `tech-demos/godot/` | 67 **standalone crates** (see below), Rust logic via gdext. |
 | `tech-demos/brackets/` | bracket-lib demos. |
-| `tic-tac-toe/` | Engine-agnostic `-lib` core with `-cli` and `-brackets` frontends. |
+| `tic-tac-toe/` | Engine-agnostic `-lib` core with `-cli`, `-brackets`, `-bevy`, `-godot` frontends. |
 
 Read the conventions doc for the engine you are touching **before** writing a
 demo — they are prescriptive, not advisory:
@@ -32,6 +32,13 @@ demo — they are prescriptive, not advisory:
 - `tech-demos/godot/DEMO_ANATOMY.md`
 
 ## Non-obvious constraints
+
+**`tic-tac-toe-bevy` is a member of the Bevy workspace despite living under
+`tic-tac-toe/`.** Its `Cargo.toml` names the root via `workspace = "../../tech-demos/bevy"`
+because it sits outside that workspace's directory tree. This keeps Bevy from
+being compiled a second time. The consequence for CI and the justfile: the
+`misc` job must **not** glob `tic-tac-toe/*` — it lists crates explicitly, or
+Bevy and gdext get rebuilt from scratch.
 
 **The Godot demos are deliberately not a workspace.** Each `.gdextension` file
 resolves the compiled library through `res://target/debug/lib*.so`, where
@@ -71,6 +78,10 @@ CARGO_TARGET_DIR=/tmp/godot-shared cargo test --manifest-path tech-demos/godot/h
 cargo fmt --manifest-path <manifest> --all
 ```
 
+Prefer the `justfile` when it covers the task: `just ci` runs exactly what CI
+runs, `just fmt` reformats everything, `just sync-godot-locks` re-pins the 67
+Godot lockfiles after a gdext bump.
+
 **Linux build dependencies.** Bevy and bracket-lib need ALSA, udev, wayland, and
 xkbcommon headers. A missing wayland header shows up as a `wayland-sys`
 build-script panic (`Package 'wayland-client' was not found`), which reads like
@@ -91,7 +102,7 @@ CI enforces all of these on every crate, so run them before claiming done:
 
 Every demo needs module-level `//!` rustdoc and a `#[cfg(test)]` module
 exercising its pure functions. The only exemptions are demos that are pure
-engine wiring with no logic (`bevy/draw-window`, `bevy/audio`); if you find
+engine wiring with no logic (`bevy/draw-window`); if you find
 yourself writing a ceremonial test that asserts nothing real, the demo probably
 belongs in that category — say so rather than padding it.
 

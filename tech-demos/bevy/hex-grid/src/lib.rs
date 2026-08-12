@@ -83,18 +83,29 @@ pub fn pixel_to_axial(px: Vec2, size: f32) -> (i32, i32) {
     cube_round(q_frac, -q_frac - r_frac, r_frac)
 }
 
-fn cube_round(q: f32, s: f32, r: f32) -> (i32, i32) {
-    let (mut rq, mut rs, mut rr) = (q.round(), s.round(), r.round());
+/// Rounds fractional cube coordinates to the nearest hex.
+///
+/// Cube coordinates satisfy `q + s + r == 0`, and rounding each axis
+/// independently can break that. The fix is to keep the two axes that rounded
+/// most accurately and re-derive the third from them. Only `(q, r)` is
+/// returned, since `s` is always `-q - r`.
+///
+/// The Godot suite has a byte-identical copy of this function — see the note on
+/// duplication in `DEMO_ANATOMY.md`.
+pub fn cube_round(q: f32, s: f32, r: f32) -> (i32, i32) {
+    let (rq, rs, rr) = (q.round(), s.round(), r.round());
     let (dq, ds, dr) = ((rq - q).abs(), (rs - s).abs(), (rr - r).abs());
+
     if dq > ds && dq > dr {
-        rq = -rs - rr;
+        // `q` drifted most — rebuild it from the other two.
+        ((-rs - rr) as i32, rr as i32)
     } else if ds > dr {
-        rs = -rq - rr;
+        // `s` drifted most, and it is the axis we discard anyway.
+        (rq as i32, rr as i32)
     } else {
-        rr = -rq - rs;
+        // `r` drifted most — rebuild it from the other two.
+        (rq as i32, (-rq - rs) as i32)
     }
-    let _ = rs;
-    (rq as i32, rr as i32)
 }
 
 /// Returns the 6 axial neighbors of `(q, r)`.

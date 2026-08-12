@@ -1,8 +1,11 @@
 [package]
 name = "tic-tac-toe-brackets"
 version = "0.1.0"
-authors = ["Matthew Scott Conroy <matthewscottconroy@gmail.com>"]
 edition = "2024"
+license = "MIT"
+repository = "https://github.com/matthewscottconroy/tiny-rust-games"
+description = "A mouse-driven bracket-lib"
+authors = ["Matthew Scott Conroy <matthewscottconroy@gmail.com>"]
 
 [dependencies]
 bracket-lib = "~0.8.1"

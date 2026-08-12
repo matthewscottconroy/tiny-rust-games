@@ -2,6 +2,9 @@
 name = "line-trail"
 version = "0.1.0"
 edition = "2024"
+license = "MIT"
+repository = "https://github.com/matthewscottconroy/tiny-rust-games"
+description = "Motion-trail demo — Godot 4.3 + gdext 0.5"
 
 [dependencies]
 godot = "0.5"

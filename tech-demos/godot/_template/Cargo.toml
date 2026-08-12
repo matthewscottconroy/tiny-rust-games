@@ -1,0 +1,15 @@
+[package]
+name = "template"
+version = "0.1.0"
+edition = "2024"
+license = "MIT"
+repository = "https://github.com/matthewscottconroy/tiny-rust-games"
+description = "Template demo — the canonical shape every Godot demo in this directory follows"
+
+[lib]
+# snake_case, and must match the library names in template.gdextension.
+name = "template"
+crate-type = ["cdylib", "lib"]
+
+[dependencies]
+godot = "0.5"

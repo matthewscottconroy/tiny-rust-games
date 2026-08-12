@@ -2,6 +2,9 @@
 name = "rich-text-label"
 version = "0.1.0"
 edition = "2024"
+license = "MIT"
+repository = "https://github.com/matthewscottconroy/tiny-rust-games"
+description = "Rich Text Label demo — BBCode-style formatted text driven from Rust using"
 
 [lib]
 name = "rich_text_label"

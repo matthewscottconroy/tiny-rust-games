@@ -2,6 +2,9 @@
 name = "drag-and-drop-ui"
 version = "0.1.0"
 edition = "2024"
+license = "MIT"
+repository = "https://github.com/matthewscottconroy/tiny-rust-games"
+description = "drag-and-drop-ui: Demonstrates GUI input events and custom drawing in Rust"
 
 [lib]
 crate-type = ["cdylib", "lib"]

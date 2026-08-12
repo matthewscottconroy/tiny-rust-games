@@ -1,7 +1,10 @@
 [package]
 name = "behavior-tree"
-version = "0.1.0"
-edition = "2024"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "Behavior Tree — a reusable Bevy plugin for composable AI decisions"
 
 [dependencies]
 bevy.workspace = true

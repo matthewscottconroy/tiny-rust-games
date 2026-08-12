@@ -1,9 +1,11 @@
 [package]
 name = "mouse-control"
 version = "0.1.0"
-authors = ["Matthew Scott Conroy <matthewscottconroy@gmail.com>"]
 edition = "2024"
-
+license = "MIT"
+repository = "https://github.com/matthewscottconroy/tiny-rust-games"
+description = "Mouse control demo — reading mouse position and buttons in bracket-terminal"
+authors = ["Matthew Scott Conroy <matthewscottconroy@gmail.com>"]
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]

@@ -5513,6 +5513,18 @@ dependencies = [
 ]
 
 [[package]]
+name = "tic-tac-toe-bevy"
+version = "0.1.0"
+dependencies = [
+ "bevy",
+ "tic-tac-toe-lib",
+]
+
+[[package]]
+name = "tic-tac-toe-lib"
+version = "0.1.0"
+
+[[package]]
 name = "tiff"
 version = "0.11.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"

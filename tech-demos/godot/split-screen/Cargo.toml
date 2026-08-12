@@ -2,6 +2,9 @@
 name = "split-screen"
 version = "0.1.0"
 edition = "2024"
+license = "MIT"
+repository = "https://github.com/matthewscottconroy/tiny-rust-games"
+description = "Split-screen demo — Godot 4.3 + gdext 0.5"
 
 [lib]
 name = "split_screen"

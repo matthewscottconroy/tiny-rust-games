@@ -1,7 +1,10 @@
 [package]
 name = "object-pooling"
-version = "0.1.0"
-edition = "2024"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "Object pooling — a reusable Bevy plugin that recycles bullet entities"
 
 [dependencies]
 bevy.workspace = true

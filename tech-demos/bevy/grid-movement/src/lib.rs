@@ -9,7 +9,8 @@
 //! - [`GridPos`]`(IVec2)` is the authoritative position in grid space.
 //! - `just_pressed()` fires once per keypress, giving clean one-cell-per-tap movement.
 //! - `Transform` is derived from [`GridPos`] each frame via [`sync_transform`].
-//! - The player is clamped to the visible grid with `IVec2::clamp`.
+//! - Movement rules live in pure functions ([`input_delta`], [`step`],
+//!   [`grid_to_world`]), so they are testable without a World and liftable.
 //!
 //! # Example
 //! ```no_run
@@ -64,6 +65,48 @@ impl Default for GridConfig {
             color_b: Color::srgb(0.20, 0.20, 0.20),
         }
     }
+}
+
+// --- Pure grid math ---
+//
+// The rules of grid movement are kept here as free functions taking plain
+// values, so they can be tested without a World and lifted into another
+// project. The systems below are thin wrappers over them.
+
+/// Converts a grid cell to its world-space centre.
+pub fn grid_to_world(grid: IVec2, cell: f32) -> Vec2 {
+    Vec2::new(grid.x as f32 * cell, grid.y as f32 * cell)
+}
+
+/// Converts a world-space point to the grid cell containing it.
+///
+/// Rounds to the nearest cell, so a point anywhere inside a cell maps to it.
+pub fn world_to_grid(world: Vec2, cell: f32) -> IVec2 {
+    IVec2::new(
+        (world.x / cell).round() as i32,
+        (world.y / cell).round() as i32,
+    )
+}
+
+/// Clamps a cell to the square grid spanning `-half..=half` on both axes.
+pub fn clamp_to_grid(pos: IVec2, half: i32) -> IVec2 {
+    pos.clamp(IVec2::splat(-half), IVec2::splat(half))
+}
+
+/// Turns four directional presses into a one-cell step.
+///
+/// Opposite presses in the same frame cancel out, so a player mashing left and
+/// right does not drift.
+pub fn input_delta(up: bool, down: bool, left: bool, right: bool) -> IVec2 {
+    IVec2::new(
+        i32::from(right) - i32::from(left),
+        i32::from(up) - i32::from(down),
+    )
+}
+
+/// Applies a step to a position and clamps the result to the grid.
+pub fn step(pos: IVec2, delta: IVec2, half: i32) -> IVec2 {
+    clamp_to_grid(pos + delta, half)
 }
 
 // --- Components ---
@@ -140,23 +183,16 @@ fn grid_move(
         return;
     };
 
-    let mut delta = IVec2::ZERO;
-    if input.just_pressed(KeyCode::ArrowUp) || input.just_pressed(KeyCode::KeyW) {
-        delta.y += 1;
-    }
-    if input.just_pressed(KeyCode::ArrowDown) || input.just_pressed(KeyCode::KeyS) {
-        delta.y -= 1;
-    }
-    if input.just_pressed(KeyCode::ArrowLeft) || input.just_pressed(KeyCode::KeyA) {
-        delta.x -= 1;
-    }
-    if input.just_pressed(KeyCode::ArrowRight) || input.just_pressed(KeyCode::KeyD) {
-        delta.x += 1;
-    }
+    // `just_pressed` fires once per keypress, giving one cell per tap.
+    let delta = input_delta(
+        input.just_pressed(KeyCode::ArrowUp) || input.just_pressed(KeyCode::KeyW),
+        input.just_pressed(KeyCode::ArrowDown) || input.just_pressed(KeyCode::KeyS),
+        input.just_pressed(KeyCode::ArrowLeft) || input.just_pressed(KeyCode::KeyA),
+        input.just_pressed(KeyCode::ArrowRight) || input.just_pressed(KeyCode::KeyD),
+    );
 
     if delta != IVec2::ZERO {
-        let new_pos = grid.0 + delta;
-        grid.0 = new_pos.clamp(IVec2::splat(-config.half), IVec2::splat(config.half));
+        grid.0 = step(grid.0, delta, config.half);
     }
 }
 
@@ -166,8 +202,9 @@ fn sync_transform(
     mut query: Query<(&GridPos, &mut Transform), With<Player>>,
 ) {
     for (grid, mut transform) in &mut query {
-        transform.translation.x = grid.0.x as f32 * config.cell;
-        transform.translation.y = grid.0.y as f32 * config.cell;
+        let world = grid_to_world(grid.0, config.cell);
+        transform.translation.x = world.x;
+        transform.translation.y = world.y;
     }
 }
 
@@ -175,40 +212,70 @@ fn sync_transform(
 mod tests {
     use super::*;
 
-    // --- Grid clamping logic ---
+    // --- Pure grid math ---
 
     #[test]
     fn clamp_keeps_in_bounds_position_unchanged() {
-        let half = GridConfig::default().half;
-        let pos = IVec2::new(3, -2);
-        let clamped = pos.clamp(IVec2::splat(-half), IVec2::splat(half));
-        assert_eq!(clamped, pos);
+        assert_eq!(clamp_to_grid(IVec2::new(3, -2), 7), IVec2::new(3, -2));
     }
 
     #[test]
-    fn clamp_past_right_edge_snaps_to_boundary() {
-        let half = GridConfig::default().half;
-        let pos = IVec2::new(half + 5, 0);
-        let clamped = pos.clamp(IVec2::splat(-half), IVec2::splat(half));
-        assert_eq!(clamped.x, half);
+    fn clamp_snaps_every_edge_to_the_boundary() {
+        assert_eq!(clamp_to_grid(IVec2::new(12, 0), 7).x, 7);
+        assert_eq!(clamp_to_grid(IVec2::new(-12, 0), 7).x, -7);
+        assert_eq!(clamp_to_grid(IVec2::new(0, 12), 7).y, 7);
+        assert_eq!(clamp_to_grid(IVec2::new(0, -12), 7).y, -7);
     }
 
     #[test]
-    fn clamp_past_bottom_edge_snaps_to_boundary() {
-        let half = GridConfig::default().half;
-        let pos = IVec2::new(0, -half - 3);
-        let clamped = pos.clamp(IVec2::splat(-half), IVec2::splat(half));
-        assert_eq!(clamped.y, -half);
-    }
-
-    #[test]
-    fn cell_size_converts_grid_to_world() {
+    fn grid_and_world_coordinates_round_trip() {
         let cell = GridConfig::default().cell;
-        let grid = IVec2::new(2, -3);
-        let world_x = grid.x as f32 * cell;
-        let world_y = grid.y as f32 * cell;
-        assert!((world_x - 96.0).abs() < 1e-5);
-        assert!((world_y + 144.0).abs() < 1e-5);
+        for grid in [IVec2::ZERO, IVec2::new(2, -3), IVec2::new(-7, 7)] {
+            assert_eq!(world_to_grid(grid_to_world(grid, cell), cell), grid);
+        }
+    }
+
+    #[test]
+    fn grid_to_world_scales_by_cell_size() {
+        let world = grid_to_world(IVec2::new(2, -3), 48.0);
+        assert!((world.x - 96.0).abs() < 1e-5);
+        assert!((world.y + 144.0).abs() < 1e-5);
+    }
+
+    #[test]
+    fn world_to_grid_rounds_to_the_nearest_cell() {
+        // A point just past a cell centre still belongs to that cell.
+        assert_eq!(world_to_grid(Vec2::new(50.0, -2.0), 48.0), IVec2::new(1, 0));
+        assert_eq!(world_to_grid(Vec2::new(70.0, 0.0), 48.0), IVec2::new(1, 0));
+    }
+
+    #[test]
+    fn input_delta_maps_each_direction() {
+        assert_eq!(input_delta(true, false, false, false), IVec2::new(0, 1));
+        assert_eq!(input_delta(false, true, false, false), IVec2::new(0, -1));
+        assert_eq!(input_delta(false, false, true, false), IVec2::new(-1, 0));
+        assert_eq!(input_delta(false, false, false, true), IVec2::new(1, 0));
+    }
+
+    #[test]
+    fn opposite_presses_cancel_out() {
+        assert_eq!(input_delta(true, true, true, true), IVec2::ZERO);
+        assert_eq!(input_delta(false, false, true, true), IVec2::ZERO);
+    }
+
+    #[test]
+    fn diagonal_presses_combine() {
+        assert_eq!(input_delta(true, false, false, true), IVec2::new(1, 1));
+    }
+
+    #[test]
+    fn step_moves_one_cell_and_respects_the_boundary() {
+        assert_eq!(step(IVec2::ZERO, IVec2::new(1, 0), 7), IVec2::new(1, 0));
+        // Already at the edge: stepping further is a no-op.
+        assert_eq!(
+            step(IVec2::new(7, 0), IVec2::new(1, 0), 7),
+            IVec2::new(7, 0)
+        );
     }
 
     #[test]

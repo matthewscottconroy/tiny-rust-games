@@ -1,7 +1,10 @@
 [package]
 name = "menu-navigation"
-version = "0.1.0"
-edition = "2024"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "Menu-navigation — a reusable Bevy plugin for an arrow-key navigable menu"
 
 [dependencies]
 bevy.workspace = true

@@ -2,6 +2,9 @@
 name = "tilemap-basic"
 version = "0.1.0"
 edition = "2024"
+license = "MIT"
+repository = "https://github.com/matthewscottconroy/tiny-rust-games"
+description = "Tilemap Basic GDExtension demo — reading and writing TileMap cells from Rust"
 
 [lib]
 name = "tilemap_basic"

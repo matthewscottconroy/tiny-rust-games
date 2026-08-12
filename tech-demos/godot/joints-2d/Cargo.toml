@@ -2,6 +2,9 @@
 name = "joints-2d"
 version = "0.1.0"
 edition = "2024"
+license = "MIT"
+repository = "https://github.com/matthewscottconroy/tiny-rust-games"
+description = "Joints 2D GDExtension demo — connect physics bodies with PinJoint2D and"
 
 [lib]
 name = "joints_2d"

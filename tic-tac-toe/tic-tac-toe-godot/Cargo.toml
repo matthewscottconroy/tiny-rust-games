@@ -1,0 +1,15 @@
+[package]
+name = "tic-tac-toe-godot"
+version = "0.1.0"
+edition = "2024"
+license = "MIT"
+repository = "https://github.com/matthewscottconroy/tiny-rust-games"
+description = "Tic-tac-toe rendered with Godot's scene tree, over the shared engine-agnostic rules"
+
+[lib]
+name = "tic_tac_toe_godot"
+crate-type = ["cdylib", "lib"]
+
+[dependencies]
+godot = "0.5"
+tic-tac-toe-lib = { path = "../tic-tac-toe-lib" }

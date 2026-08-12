@@ -2,6 +2,9 @@
 name = "menu-with-options"
 version = "0.1.0"
 edition = "2024"
+license = "MIT"
+repository = "https://github.com/matthewscottconroy/tiny-rust-games"
+description = "Menu With Options GDExtension demo — a settings menu with live config from Rust"
 
 [lib]
 crate-type = ["cdylib", "lib"]

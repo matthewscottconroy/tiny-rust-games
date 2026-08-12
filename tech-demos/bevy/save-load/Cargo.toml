@@ -1,7 +1,10 @@
 [package]
 name = "save-load"
-version = "0.1.0"
-edition = "2024"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "Save / load — a reusable Bevy plugin persisting a resource to disk as JSON"
 
 [dependencies]
 bevy.workspace = true

@@ -2,6 +2,9 @@
 name = "area-detection"
 version = "0.1.0"
 edition = "2024"
+license = "MIT"
+repository = "https://github.com/matthewscottconroy/tiny-rust-games"
+description = "area-detection: Demonstrates connecting Area2D body_entered / body_exited"
 
 [lib]
 crate-type = ["cdylib", "lib"]

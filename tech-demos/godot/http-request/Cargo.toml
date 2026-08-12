@@ -2,6 +2,9 @@
 name = "http-request"
 version = "0.1.0"
 edition = "2024"
+license = "MIT"
+repository = "https://github.com/matthewscottconroy/tiny-rust-games"
+description = "HTTP Request GDExtension demo — drives Godot's built-in HttpRequest node"
 
 [lib]
 crate-type = ["cdylib", "lib"]

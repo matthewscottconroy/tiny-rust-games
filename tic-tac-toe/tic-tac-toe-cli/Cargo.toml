@@ -2,6 +2,9 @@
 name = "tic-tac-toe-cli"
 version = "0.1.0"
 edition = "2024"
+license = "MIT"
+repository = "https://github.com/matthewscottconroy/tiny-rust-games"
+description = "An interactive terminal frontend for tic_tac_toe_lib"
 
 [dependencies]
 tic-tac-toe-lib = { path = "../tic-tac-toe-lib" }

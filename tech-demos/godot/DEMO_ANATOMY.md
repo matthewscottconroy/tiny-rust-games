@@ -132,6 +132,23 @@ mod tests { /* exercises the pure functions */ }
 8. **`clippy` is clean at `-D warnings` and `cargo fmt` is a no-op.** CI enforces
    both.
 
+## Duplication across engines is deliberate
+
+Nine concepts here also exist in `tech-demos/bevy/`, and some of their pure
+functions (`hex_neighbors`, `axial_distance`, `cube_round`) are byte-identical
+between the two suites. This is a deliberate trade, not a missed refactor — the
+full reasoning is in [`../bevy/DEMO_ANATOMY.md`](../bevy/DEMO_ANATOMY.md#duplication-across-engines-is-deliberate).
+
+The short version: goal #4 says extract shared logic, but it yields to goal #1,
+and a self-contained demo teaches better than one that sends you to a shared
+crate. `tic-tac-toe/` is where goal #4 is demonstrated properly.
+
+The obligation that comes with it: **when you fix a shared pure function, fix
+the other engine's copy in the same change**, and keep the cross-links in the
+README index current. Both copies of `cube_round` once carried the same
+dead-assignment bug, which is exactly the failure mode this rule exists to
+prevent.
+
 ## Adding a demo
 
 1. Copy the closest existing demo and rename the crate, the `[lib] name`

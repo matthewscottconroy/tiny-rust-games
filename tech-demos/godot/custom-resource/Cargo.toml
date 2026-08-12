@@ -2,6 +2,9 @@
 name = "custom-resource"
 version = "0.1.0"
 edition = "2024"
+license = "MIT"
+repository = "https://github.com/matthewscottconroy/tiny-rust-games"
+description = "Custom Resource GDExtension demo — Rust structs as first-class Godot Resources"
 
 [lib]
 name = "custom_resource"

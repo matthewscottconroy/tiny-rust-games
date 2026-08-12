@@ -1,7 +1,10 @@
 [package]
 name = "fog-of-war"
-version = "0.1.0"
-edition = "2024"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "Fog-of-war — a reusable Bevy plugin for three-state tile visibility"
 
 [dependencies]
 bevy.workspace = true

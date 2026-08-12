@@ -2,6 +2,9 @@
 name = "collision-layers"
 version = "0.1.0"
 edition = "2024"
+license = "MIT"
+repository = "https://github.com/matthewscottconroy/tiny-rust-games"
+description = "collision-layers: Demonstrates programmatic control of Godot collision layers"
 
 [lib]
 crate-type = ["cdylib", "lib"]

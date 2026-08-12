@@ -2,6 +2,9 @@
 name = "tweening"
 version = "0.1.0"
 edition = "2024"
+license = "MIT"
+repository = "https://github.com/matthewscottconroy/tiny-rust-games"
+description = "Tweening demo — animates a node's position and modulate color using Godot Tweens"
 
 [lib]
 crate-type = ["cdylib", "lib"]

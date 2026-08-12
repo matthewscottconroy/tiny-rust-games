@@ -1,7 +1,10 @@
 [package]
 name = "rubber-band-selection"
-version = "0.1.0"
-edition = "2024"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "Rubber-band (marquee) selection — RTS-style drag-to-select"
 
 [dependencies]
 bevy.workspace = true

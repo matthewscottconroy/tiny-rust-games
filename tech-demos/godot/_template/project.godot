@@ -1,0 +1,6 @@
+; Godot Project, Format=3
+
+[application]
+
+config/name="Template"
+config/features=PackedStringArray("4.3")

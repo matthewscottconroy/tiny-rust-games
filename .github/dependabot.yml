@@ -1,0 +1,49 @@
+version: 2
+
+updates:
+  # The Bevy demos share one workspace and one Cargo.lock, so a single entry
+  # covers all 83 of them.
+  - package-ecosystem: cargo
+    directory: /tech-demos/bevy
+    schedule:
+      interval: monthly
+    groups:
+      bevy:
+        patterns: ["bevy*"]
+    commit-message:
+      prefix: "deps(bevy)"
+
+  # The Godot demos are 67 standalone crates, each with its own Cargo.lock.
+  # Left alone they drift — they were previously spread across gdext 0.5.2,
+  # 0.5.3 and 0.5.4. `directories` globs every crate so one gdext release
+  # produces one grouped PR touching all of them together, which is the only
+  # way they stay on a single version.
+  - package-ecosystem: cargo
+    directories:
+      - /tech-demos/godot/*
+    schedule:
+      interval: monthly
+    groups:
+      godot:
+        patterns: ["godot*"]
+    commit-message:
+      prefix: "deps(godot)"
+    # One PR per crate would be 67 PRs per release; the group above collapses
+    # them, but raise the ceiling so a release is never partially applied.
+    open-pull-requests-limit: 10
+
+  - package-ecosystem: cargo
+    directories:
+      - /tic-tac-toe/*
+      - /tech-demos/brackets/*
+    schedule:
+      interval: monthly
+    commit-message:
+      prefix: "deps"
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly
+    commit-message:
+      prefix: "ci"

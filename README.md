@@ -15,11 +15,16 @@ The purpose of this repository is to hold example implementations of some very s
 | [`tech-demos/bevy/`](tech-demos/bevy/) | 82 [Bevy](https://bevyengine.org/) `0.18` demos, each isolating one engine concept or gameplay system. A single Cargo workspace — see the [Bevy demo index](tech-demos/bevy/README.md). |
 | [`tech-demos/godot/`](tech-demos/godot/) | 67 [Godot](https://godotengine.org/) `4.3` demos with game logic in Rust via [gdext](https://github.com/godot-rust/gdext) `0.5` — see the [Godot demo index](tech-demos/godot/README.md). |
 | [`tech-demos/brackets/`](tech-demos/brackets/) | A [bracket-lib](https://github.com/amethyst/bracket-lib) mouse-control demo. |
-| [`tic-tac-toe/`](tic-tac-toe/) | The reference "well-known game": an engine-agnostic `tic-tac-toe-lib` core with `-cli` and `-brackets` front-ends (goal #4 in practice). |
+| [`tic-tac-toe/`](tic-tac-toe/) | The reference "well-known game": an engine-agnostic `tic-tac-toe-lib` core with **four** front-ends — `-cli`, `-brackets`, `-bevy`, and `-godot` (goals #2 and #4 in practice). |
+
+The same tic-tac-toe rules drive a terminal loop, an ASCII console, Bevy's ECS,
+and Godot's scene tree without any frontend containing a rule of the game — that
+is goal #4 tested against architectures that genuinely differ, rather than
+against two variations on a terminal.
 
 Every demo ships module-level rustdoc, and every demo with logic to exercise
-ships a `#[cfg(test)]` test module — the exceptions are the two pure-wiring Bevy
-demos (`draw-window`, `audio`), which contain nothing but engine setup.
+ships a `#[cfg(test)]` test module — the sole exception is `bevy/draw-window`,
+ten lines that open a window and contain no logic at all.
 
 Each engine directory documents the shape its demos share:
 [Bevy](tech-demos/bevy/DEMO_ANATOMY.md) and
@@ -51,9 +56,15 @@ cd tech-demos/bevy && cargo run -p hello-world
 # Godot demos (standalone crates; Godot 4.3+ needed only to *run* them):
 cd tech-demos/godot/hello-world && cargo build
 
-# Tic-tac-toe in the terminal:
-cd tic-tac-toe/tic-tac-toe-cli && cargo run
+# Tic-tac-toe, four ways:
+cd tic-tac-toe/tic-tac-toe-cli && cargo run                      # terminal
+cargo run --manifest-path tech-demos/bevy/Cargo.toml -p tic-tac-toe-bevy
+cd tic-tac-toe/tic-tac-toe-godot && cargo build                  # then open in Godot
 ```
+
+With [`just`](https://github.com/casey/just) installed, `just` lists every
+task — `just ci` reproduces exactly what CI enforces, and `just play` starts the
+terminal game.
 
 ### Linux prerequisites
 

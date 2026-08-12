@@ -2,6 +2,9 @@
 name = "input-actions"
 version = "0.1.0"
 edition = "2024"
+license = "MIT"
+repository = "https://github.com/matthewscottconroy/tiny-rust-games"
+description = "input-actions: Demonstrates polling Godot's Input singleton for action state"
 
 [lib]
 crate-type = ["cdylib", "lib"]

@@ -4,9 +4,8 @@ A collection of small, self-contained [Bevy](https://bevyengine.org/) `0.18` dem
 each isolating a single engine concept or gameplay system. Every demo has
 module-level rustdoc and `///` item docs, and every demo with logic to exercise
 has a `#[cfg(test)]` test module — most game logic is factored into `pub fn`
-pure functions so it can be unit-tested headlessly without a window. The two
-exceptions are `draw-window` and `audio`, which are pure engine wiring and have
-no logic of their own to test.
+pure functions so it can be unit-tested headlessly without a window. The sole
+exception is `draw-window`, ten lines that open a window and contain no logic.
 
 See [`DEMO_ANATOMY.md`](DEMO_ANATOMY.md) for the shape every demo follows.
 
@@ -14,6 +13,11 @@ See [`DEMO_ANATOMY.md`](DEMO_ANATOMY.md) for the shape every demo follows.
 
 All demos live in a single Cargo workspace, so Bevy is compiled once and shared
 across every demo instead of rebuilt per crate.
+
+[`tic-tac-toe-bevy`](../../tic-tac-toe/tic-tac-toe-bevy/) is also a member of
+this workspace even though it lives under `tic-tac-toe/`, for the same reason —
+it is the Bevy frontend of the shared tic-tac-toe rules, not a tech demo, so it
+is not in the index below. Run it with `cargo run -p tic-tac-toe-bevy`.
 
 ```bash
 # From this directory (tech-demos/bevy):
@@ -62,7 +66,7 @@ in [`DEMO_ANATOMY.md`](DEMO_ANATOMY.md).
 
 | Demo | Concept |
 |------|---------|
-| [`hello-world`](hello-world/) | The minimal Bevy ECS starting point |
+| [`hello-world`](hello-world/) | The minimal Bevy ECS starting point ([also in Godot](../godot/hello-world/)) |
 | [`draw-window`](draw-window/) | The absolute minimum app that opens a window |
 | [`hello-plugin`](hello-plugin/) | Wrapping systems in a reusable `Plugin` |
 | [`sprite-demo`](sprite-demo/) | The simplest way to display an image |
@@ -92,10 +96,10 @@ in [`DEMO_ANATOMY.md`](DEMO_ANATOMY.md).
 | [`gamepad-input`](gamepad-input/) | Analog sticks, buttons, dead-zone, keyboard fallback |
 | [`drag-and-drop`](drag-and-drop/) | Click-drag entities with grid snap on drop |
 | [`rubber-band-selection`](rubber-band-selection/) | RTS marquee box selection |
-| [`camera-follow`](camera-follow/) | Smooth exponential camera lerp toward a target |
-| [`minimap`](minimap/) | Two `Camera2d` instances rendering to viewports |
+| [`camera-follow`](camera-follow/) | Smooth exponential camera lerp toward a target ([also in Godot](../godot/camera-follow/)) |
+| [`minimap`](minimap/) | Two `Camera2d` instances rendering to viewports ([also in Godot](../godot/minimap/)) |
 | [`pixel-perfect-camera`](pixel-perfect-camera/) | Virtual 320×180 canvas at integer scale |
-| [`parallax-background`](parallax-background/) | Layered backgrounds scrolling at different rates |
+| [`parallax-background`](parallax-background/) | Layered backgrounds scrolling at different rates ([also in Godot](../godot/parallax-background/)) |
 | [`screen-wrap`](screen-wrap/) | Wrapping entities around screen edges |
 | [`screen-shake`](screen-shake/) | Trauma/decay camera shake |
 
@@ -109,7 +113,7 @@ in [`DEMO_ANATOMY.md`](DEMO_ANATOMY.md).
 | [`spritesheet-animation`](spritesheet-animation/) | Frame-by-frame texture-atlas animation |
 | [`tween-animation`](tween-animation/) | Easing-based property tweens |
 | [`custom-shader`](custom-shader/) | Custom `Material2d` + WGSL ripple shader |
-| [`lighting-2d`](lighting-2d/) | Distance-based light intensity on a tile grid |
+| [`lighting-2d`](lighting-2d/) | Distance-based light intensity on a tile grid ([also in Godot](../godot/lighting-2d/)) |
 | [`day-night-cycle`](day-night-cycle/) | Ambient colour lerp over a virtual 24-hour clock |
 | [`cutscene-sequencer`](cutscene-sequencer/) | Data-driven cutscene step sequencer |
 | [`circle-buttons`](circle-buttons/) | Coloured circles acting as clickable buttons |
@@ -155,7 +159,7 @@ in [`DEMO_ANATOMY.md`](DEMO_ANATOMY.md).
 | [`health-and-damage`](health-and-damage/) | Health bars, damage, and respawning |
 | [`knockback-hitstop`](knockback-hitstop/) | Knockback and hit-stop game-feel mechanics |
 | [`status-effects`](status-effects/) | Time-decaying debuffs (Poison, Burn, Slow, Stun) |
-| [`ability-cooldowns`](ability-cooldowns/) | Multiple abilities with independent cooldown timers |
+| [`ability-cooldowns`](ability-cooldowns/) | Multiple abilities with independent cooldown timers ([also in Godot](../godot/ability-cooldowns/)) |
 | [`combo-system`](combo-system/) | Input-buffer sequence matching for combos |
 | [`upgrade-tree`](upgrade-tree/) | Branching skill unlocks with prerequisites |
 | [`crafting-system`](crafting-system/) | Inventory collection and recipe matching |
@@ -163,7 +167,7 @@ in [`DEMO_ANATOMY.md`](DEMO_ANATOMY.md).
 | [`loot-table`](loot-table/) | Weighted random drops without the `rand` crate |
 | [`save-load`](save-load/) | Serializing and restoring game state |
 | [`dialog-system`](dialog-system/) | Conversation tree with a typing effect |
-| [`achievement-system`](achievement-system/) | Progress-tracked milestones with unlock toasts |
+| [`achievement-system`](achievement-system/) | Progress-tracked milestones with unlock toasts ([also in Godot](../godot/achievement-system/)) |
 
 ### Procedural & Grid Worlds
 
@@ -172,8 +176,8 @@ in [`DEMO_ANATOMY.md`](DEMO_ANATOMY.md).
 | [`procedural-dungeon`](procedural-dungeon/) | BSP room splitting and corridor carving |
 | [`noise-map`](noise-map/) | Seeded value noise with fractal layering |
 | [`tilemap`](tilemap/) | Rendering a tile grid from map data |
-| [`hex-grid`](hex-grid/) | Flat-top axial hex coordinates and neighbours |
-| [`grid-movement`](grid-movement/) | Tile-by-tile snapped movement |
+| [`hex-grid`](hex-grid/) | Flat-top axial hex coordinates and neighbours ([also in Godot](../godot/hex-grid/)) |
+| [`grid-movement`](grid-movement/) | Tile-by-tile snapped movement ([also in Godot](../godot/grid-movement/)) |
 
 ### Games, Simulations & Audio
 
@@ -201,3 +205,25 @@ Building the Bevy demos on Linux requires the ALSA and udev development headers:
 ```bash
 sudo apt-get install -y libasound2-dev libudev-dev
 ```
+
+## Also implemented in Godot
+
+These nine concepts exist in both engine suites, so you can read the same
+problem solved two ways — Bevy's ECS versus Godot's scene tree. Some of their pure
+helper functions are byte-identical; that duplication is deliberate and is
+explained in [`DEMO_ANATOMY.md`](DEMO_ANATOMY.md).
+
+| Concept | This suite | Godot |
+|---------|-----------|-------|
+| `ability-cooldowns` | [`ability-cooldowns`](ability-cooldowns/) | [`ability-cooldowns`](../godot/ability-cooldowns/) |
+| `achievement-system` | [`achievement-system`](achievement-system/) | [`achievement-system`](../godot/achievement-system/) |
+| `camera-follow` | [`camera-follow`](camera-follow/) | [`camera-follow`](../godot/camera-follow/) |
+| `grid-movement` | [`grid-movement`](grid-movement/) | [`grid-movement`](../godot/grid-movement/) |
+| `hello-world` | [`hello-world`](hello-world/) | [`hello-world`](../godot/hello-world/) |
+| `hex-grid` | [`hex-grid`](hex-grid/) | [`hex-grid`](../godot/hex-grid/) |
+| `lighting-2d` | [`lighting-2d`](lighting-2d/) | [`lighting-2d`](../godot/lighting-2d/) |
+| `minimap` | [`minimap`](minimap/) | [`minimap`](../godot/minimap/) |
+| `parallax-background` | [`parallax-background`](parallax-background/) | [`parallax-background`](../godot/parallax-background/) |
+
+When you change a shared helper in one suite, change the other in the same
+commit — they have silently diverged before.

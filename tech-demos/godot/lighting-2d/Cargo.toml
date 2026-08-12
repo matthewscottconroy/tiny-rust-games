@@ -2,6 +2,9 @@
 name = "lighting-2d"
 version = "0.1.0"
 edition = "2024"
+license = "MIT"
+repository = "https://github.com/matthewscottconroy/tiny-rust-games"
+description = "Lighting 2D GDExtension demo — drives PointLight2D energy, color, and"
 
 [lib]
 crate-type = ["cdylib", "lib"]

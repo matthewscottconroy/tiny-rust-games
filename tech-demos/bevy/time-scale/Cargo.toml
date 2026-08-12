@@ -1,7 +1,10 @@
 [package]
 name = "time-scale"
-version = "0.1.0"
-edition = "2024"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "Time-scale — a reusable Bevy plugin demonstrating the virtual-time API"
 
 [dependencies]
 bevy.workspace = true

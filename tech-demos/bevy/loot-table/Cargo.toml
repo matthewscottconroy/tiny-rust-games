@@ -1,7 +1,10 @@
 [package]
 name = "loot-table"
-version = "0.1.0"
-edition = "2024"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "Loot table — a reusable Bevy plugin for weighted random item drops"
 
 [dependencies]
 bevy.workspace = true

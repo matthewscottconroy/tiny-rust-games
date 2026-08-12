@@ -2,6 +2,9 @@
 name = "editor-plugin"
 version = "0.1.0"
 edition = "2024"
+license = "MIT"
+repository = "https://github.com/matthewscottconroy/tiny-rust-games"
+description = "Editor Plugin GDExtension demo — a dockable editor panel written entirely"
 
 [lib]
 crate-type = ["cdylib", "lib"]

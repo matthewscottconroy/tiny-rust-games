@@ -2,6 +2,9 @@
 name = "one-shot-collision"
 version = "0.1.0"
 edition = "2024"
+license = "MIT"
+repository = "https://github.com/matthewscottconroy/tiny-rust-games"
+description = "one-shot-collision: Demonstrates move_and_collide with KinematicCollision2D"
 
 [lib]
 crate-type = ["cdylib", "lib"]

@@ -1,0 +1,19 @@
+[package]
+name = "tic-tac-toe-bevy"
+# This crate lives under tic-tac-toe/ but is a member of the Bevy demo
+# workspace, so Bevy is compiled once for the whole repository instead of a
+# second time just for this game. Because the crate sits outside that
+# workspace's directory tree, it has to name the root explicitly.
+workspace = "../../tech-demos/bevy"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "Tic-tac-toe rendered with Bevy's ECS, over the shared engine-agnostic rules"
+
+[dependencies]
+bevy.workspace = true
+tic-tac-toe-lib = { path = "../tic-tac-toe-lib" }
+
+[lints]
+workspace = true

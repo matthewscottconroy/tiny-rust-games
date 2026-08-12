@@ -115,9 +115,38 @@ Pure functions are tested directly; ECS wiring is tested headlessly with
 `MinimalPlugins` (and, where the plugin is host-agnostic, by adding the plugin
 itself to a `MinimalPlugins` app).
 
-Two demos have no `#[cfg(test)]` module: `draw-window` and `audio` are pure
-engine wiring with no logic of their own. Do not add a ceremonial test to a demo
-in that category — say it is wiring-only instead.
+One demo has no `#[cfg(test)]` module: `draw-window` is ten lines that open a
+window, with no logic to assert on. Do not add a ceremonial test to a demo in
+that category — say it is wiring-only instead. (`audio` used to be the second
+such demo; it stopped being one when its sound generation moved into a pure
+function, which is usually the better fix.)
+
+## Duplication across engines is deliberate
+
+Nine concepts are implemented in both this suite and `tech-demos/godot/`, and
+some of their pure functions (`hex_neighbors`, `axial_distance`, `cube_round`)
+are byte-identical. That is **not** an oversight waiting to be factored into a
+shared crate.
+
+Repository goal #4 says to extract engine-agnostic logic, but it also says goal
+#1 — transparent, self-contained code — takes precedence when the two conflict.
+Here they conflict. A demo whose whole purpose is "read this one file and learn
+hex grids" is ruined by sending the reader to a shared crate for the half that
+matters. `tic-tac-toe/` is where goal #4 is demonstrated properly: a real game
+whose rules genuinely must not diverge between frontends.
+
+What the duplication *does* buy is the comparison goal #2 asks for — the same
+problem solved in an ECS and in a scene tree, side by side. To make that useful
+rather than accidental:
+
+- **Keep paired demos in sync.** If you fix a bug in a shared pure function,
+  fix it in the other engine's copy in the same change. Both copies of
+  `cube_round` previously carried the same dead-assignment bug.
+- **Cross-link them.** Paired demos name their counterpart in the README index
+  and in their module rustdoc.
+- **Extract only when logic outgrows a demo.** If a helper becomes large enough
+  that a reader would skip it anyway, it has stopped being teaching material
+  and can move to a crate of its own.
 
 ## Lints
 

@@ -1,0 +1,11 @@
+; Godot Project, Format=3
+
+[application]
+
+config/name="Tic-Tac-Toe (Godot)"
+config/features=PackedStringArray("4.3")
+
+[display]
+
+window/size/viewport_width=560
+window/size/viewport_height=680

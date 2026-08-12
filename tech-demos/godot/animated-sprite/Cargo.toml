@@ -2,6 +2,9 @@
 name = "animated-sprite"
 version = "0.1.0"
 edition = "2024"
+license = "MIT"
+repository = "https://github.com/matthewscottconroy/tiny-rust-games"
+description = "Animated Sprite demo — switches between Idle, Walk, and Attack states"
 
 [lib]
 crate-type = ["cdylib", "lib"]
