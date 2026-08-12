@@ -111,6 +111,23 @@ play-godot:
 
 # --- Maintenance ---
 
+# Git ignores .githooks until core.hooksPath points at it, so a fresh clone
+# has no hooks until this runs.
+# Enable the repository's git hooks (see .githooks/). Run once per clone.
+install-hooks:
+    git config core.hooksPath .githooks
+    @chmod +x .githooks/*
+    @echo "hooks enabled: $(git config core.hooksPath)"
+    @echo "pre-commit: formatting + repo invariants (fast)"
+    @echo "pre-push:   clippy + tests for affected crates"
+    @echo "bypass either with --no-verify"
+
+# Turn the hooks back off.
+uninstall-hooks:
+    git config --unset core.hooksPath || true
+    @echo "hooks disabled"
+
+
 # Run this after a gdext bump so the 67 lockfiles cannot drift apart.
 # Re-pin every Godot crate to the same dependency versions.
 sync-godot-locks:

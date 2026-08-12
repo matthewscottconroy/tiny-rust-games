@@ -1,0 +1,153 @@
+#!/usr/bin/env bash
+#
+# Fast checks on what is *staged*, not on the working tree — so a commit is
+# judged by exactly what it would introduce. Target budget: well under a second.
+#
+# Anything that needs a compiler lives in pre-push instead. Compiling this
+# repository takes minutes (Bevy alone is a large build), and a pre-commit hook
+# that slow just teaches people to reach for --no-verify.
+#
+# Bypass with `git commit --no-verify` when you genuinely need to.
+
+set -uo pipefail
+
+fail=0
+note() { printf '  %s\n' "$*"; }
+problem() { printf '\npre-commit: %s\n' "$*"; fail=1; }
+
+repo_root=$(git rev-parse --show-toplevel)
+cd "$repo_root" || exit 1
+
+# Added/copied/modified/renamed staged paths, NUL-safe for odd filenames.
+mapfile -d '' -t staged < <(git diff --cached --name-only --diff-filter=ACMR -z)
+[ ${#staged[@]} -eq 0 ] && exit 0
+
+staged_has() {
+  local pattern=$1 p
+  for p in "${staged[@]}"; do [[ $p == $pattern ]] && return 0; done
+  return 1
+}
+
+# ── 1. Formatting, checked against staged content ────────────────────────────
+#
+# `cargo fmt --check` would read the working tree, which can differ from what is
+# staged, so check the staged blob instead.
+#
+# The blob is written to a temp file rather than piped: `rustfmt --check` on
+# *stdin* prints its diff but still exits 0, so a pipe silently passes
+# everything. Only file input sets a non-zero exit.
+unformatted=()
+tmpdir=$(mktemp -d)
+trap 'rm -rf "$tmpdir"' EXIT
+for path in "${staged[@]}"; do
+  [[ $path == *.rs ]] || continue
+  blob="$tmpdir/staged.rs"
+  git show ":$path" >"$blob" 2>/dev/null || continue
+  if ! rustfmt --edition 2024 --check "$blob" >/dev/null 2>&1; then
+    unformatted+=("$path")
+  fi
+done
+if [ ${#unformatted[@]} -gt 0 ]; then
+  problem "these staged files are not rustfmt-clean:"
+  printf '    %s\n' "${unformatted[@]}"
+  note "fix with: just fmt   (then re-stage)"
+fi
+
+# ── 2. Never commit build output ─────────────────────────────────────────────
+artifacts=()
+for path in "${staged[@]}"; do
+  case $path in
+    */target/*|target/*|*/.shared-target/*|*.rlib|*.rmeta|*.so|*.dll|*.dylib|*.profraw)
+      artifacts+=("$path") ;;
+  esac
+done
+if [ ${#artifacts[@]} -gt 0 ]; then
+  problem "build artifacts are staged:"
+  printf '    %s\n' "${artifacts[@]}"
+  note "unstage with: git restore --staged <path>"
+fi
+
+# Large files, which in this repo are almost always an accident.
+large=()
+for path in "${staged[@]}"; do
+  size=$(git cat-file -s "$(git rev-parse ":$path" 2>/dev/null)" 2>/dev/null) || continue
+  [ "${size:-0}" -gt 1000000 ] && large+=("$path ($((size / 1024)) KiB)")
+done
+if [ ${#large[@]} -gt 0 ]; then
+  problem "staged files over 1 MiB:"
+  printf '    %s\n' "${large[@]}"
+  note "if intentional, re-run with --no-verify"
+fi
+
+# ── 3. Repo invariants that have actually broken here before ─────────────────
+#
+# None of these compile anything; they are greps over staged/committed state.
+
+# 3a. Every Bevy demo directory must be a workspace member, or it silently
+#     stops being built, linted and tested.
+if staged_has 'tech-demos/bevy/*'; then
+  members=$(sed -n '/^\[workspace\]/,/^\[/p' tech-demos/bevy/Cargo.toml)
+  missing=()
+  for dir in tech-demos/bevy/*/; do
+    name=$(basename "$dir")
+    [ "$name" = target ] && continue
+    [ -f "$dir/Cargo.toml" ] || continue
+    grep -q "\"$name\"" <<<"$members" || missing+=("$name")
+  done
+  if [ ${#missing[@]} -gt 0 ]; then
+    problem "Bevy demos missing from [workspace] members:"
+    printf '    %s\n' "${missing[@]}"
+    note "add them to tech-demos/bevy/Cargo.toml"
+  fi
+fi
+
+# 3b. All Godot crates must pin one gdext version. They drifted to three
+#     different ones once; one `cargo update` in a single crate does it.
+if staged_has '*Cargo.lock'; then
+  versions=$(for f in tech-demos/godot/*/Cargo.lock tic-tac-toe/tic-tac-toe-godot/Cargo.lock; do
+               [ -f "$f" ] && awk '/^name = "godot"$/{getline; print $3}' "$f"
+             done | sort -u)
+  if [ "$(wc -l <<<"$versions")" -gt 1 ]; then
+    problem "Godot crates pin more than one gdext version:"
+    printf '    %s\n' $versions
+    note "re-pin them all with: just sync-godot-locks"
+  fi
+fi
+
+# 3c. A Godot crate's [lib] name must match the paths in its .gdextension, or
+#     Godot loads the project and finds no classes.
+checked_ext=""
+for path in "${staged[@]}"; do
+  # Either side of the pair can break the match, so trigger on both.
+  case $path in
+    tech-demos/godot/*/Cargo.toml|tic-tac-toe/tic-tac-toe-godot/Cargo.toml) ;;
+    tech-demos/godot/*.gdextension|tech-demos/godot/*/*.gdextension) ;;
+    tic-tac-toe/tic-tac-toe-godot/*.gdextension) ;;
+    *) continue ;;
+  esac
+  dir=$(dirname "$path")
+  # One report per crate, however many of its files are staged.
+  [[ " $checked_ext " == *" $dir "* ]] && continue
+  checked_ext="$checked_ext $dir"
+  ext=$(ls "$dir"/*.gdextension 2>/dev/null | head -1) || continue
+  [ -n "$ext" ] || continue
+  libname=$(sed -n '/^\[lib\]/,/^\[/p' "$dir/Cargo.toml" | sed -n 's/^name *= *"\(.*\)"/\1/p')
+  [ -n "$libname" ] || continue
+  if ! grep -q "lib${libname}\.so" "$ext"; then
+    problem "$dir: [lib] name \"$libname\" does not match $(basename "$ext")"
+    note "the .gdextension paths must read res://target/debug/lib${libname}.so"
+  fi
+done
+
+# 3d. Godot demos declare what they teach; DEMO_ANATOMY.md requires it.
+for path in "${staged[@]}"; do
+  [[ $path == tech-demos/godot/*/src/lib.rs ]] || continue
+  git show ":$path" | grep -q '^//! Teaches' \
+    || problem "$path has no '//! Teaches:' line (see tech-demos/godot/DEMO_ANATOMY.md)"
+done
+
+if [ "$fail" -ne 0 ]; then
+  printf '\ncommit aborted. Use --no-verify to override.\n\n'
+  exit 1
+fi
+exit 0

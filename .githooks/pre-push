@@ -1,0 +1,140 @@
+#!/usr/bin/env bash
+#
+# Compile-and-test the crates this push actually touches, so CI is not the first
+# place a break shows up.
+#
+# The whole suite takes many minutes (Bevy is a large build, and there are 69
+# Godot crates), so running all of it on every push is not realistic. Instead
+# this scopes to affected crates, and only falls back to everything when a
+# change is shared — the workspace manifest, CI, or the justfile.
+#
+# Bypass with `git push --no-verify`.
+
+set -uo pipefail
+
+repo_root=$(git rev-parse --show-toplevel)
+cd "$repo_root" || exit 1
+
+# bracket-lib's bundled expat-sys fails under CMake >= 4.0 without this.
+export CMAKE_POLICY_VERSION_MINIMUM=3.5
+# gdext compiles once for all Godot crates instead of once each.
+export CARGO_TARGET_DIR_GODOT="$repo_root/tech-demos/godot/.shared-target"
+
+say() { printf '\npre-push: %s\n' "$*"; }
+
+# ── Work out what is being pushed ────────────────────────────────────────────
+ZERO=0000000000000000000000000000000000000000
+range=""
+while read -r _local_ref local_sha _remote_ref remote_sha; do
+  [ "$local_sha" = "$ZERO" ] && continue          # branch deletion
+  if [ "$remote_sha" = "$ZERO" ]; then
+    # New branch: diff against upstream default if we can find one.
+    base=$(git merge-base "$local_sha" origin/HEAD 2>/dev/null) \
+      || base=$(git rev-list --max-parents=0 "$local_sha" | tail -1)
+    range="$base..$local_sha"
+  else
+    range="$remote_sha..$local_sha"
+  fi
+done
+[ -z "$range" ] && exit 0                          # nothing to check
+
+mapfile -t changed < <(git diff --name-only "$range" 2>/dev/null)
+[ ${#changed[@]} -eq 0 ] && exit 0
+
+changed_matches() {
+  local pattern=$1 p
+  for p in "${changed[@]}"; do [[ $p == $pattern ]] && return 0; done
+  return 1
+}
+
+# ── Decide the scope ─────────────────────────────────────────────────────────
+run_all=0
+if changed_matches 'tech-demos/bevy/Cargo.toml' \
+  || changed_matches '.github/workflows/*' \
+  || changed_matches 'justfile' \
+  || changed_matches 'tic-tac-toe/tic-tac-toe-lib/*'; then
+  run_all=1
+fi
+
+fail=""
+run() {  # run <label> <cmd...>
+  local label=$1; shift
+  printf '  %-42s' "$label"
+  if "$@" >/tmp/pre-push-$$.log 2>&1; then
+    printf 'ok\n'
+  else
+    printf 'FAILED\n'
+    fail="$fail $label"
+    tail -25 /tmp/pre-push-$$.log | sed 's/^/      /'
+  fi
+  rm -f /tmp/pre-push-$$.log
+}
+
+if [ "$run_all" -eq 1 ]; then
+  say "shared config changed — checking everything (this takes a while)"
+  run "bevy workspace (clippy)" \
+    cargo clippy --locked --workspace --all-targets \
+      --manifest-path tech-demos/bevy/Cargo.toml -- -D warnings
+  run "bevy workspace (test)" \
+    cargo test --locked --workspace --manifest-path tech-demos/bevy/Cargo.toml
+  godot_manifests=(tech-demos/godot/*/Cargo.toml tic-tac-toe/tic-tac-toe-godot/Cargo.toml)
+  misc_manifests=(tic-tac-toe/tic-tac-toe-lib/Cargo.toml
+                  tic-tac-toe/tic-tac-toe-cli/Cargo.toml
+                  tic-tac-toe/tic-tac-toe-brackets/Cargo.toml
+                  tech-demos/brackets/*/Cargo.toml)
+else
+  say "checking crates touched by $range"
+  # Map each changed path to the crate that owns it.
+  declare -A crates=()
+  for path in "${changed[@]}"; do
+    dir=$(dirname "$path")
+    while [ "$dir" != "." ] && [ "$dir" != "/" ]; do
+      if [ -f "$dir/Cargo.toml" ]; then crates["$dir"]=1; break; fi
+      dir=$(dirname "$dir")
+    done
+  done
+  [ ${#crates[@]} -eq 0 ] && { say "no crates affected"; exit 0; }
+
+  bevy_pkgs=(); godot_manifests=(); misc_manifests=()
+  for dir in "${!crates[@]}"; do
+    case $dir in
+      tech-demos/bevy/*)            bevy_pkgs+=("$(basename "$dir")") ;;
+      tic-tac-toe/tic-tac-toe-bevy) bevy_pkgs+=("tic-tac-toe-bevy") ;;
+      tech-demos/godot/*|tic-tac-toe/tic-tac-toe-godot) godot_manifests+=("$dir/Cargo.toml") ;;
+      *)                            misc_manifests+=("$dir/Cargo.toml") ;;
+    esac
+  done
+
+  if [ ${#bevy_pkgs[@]} -gt 0 ]; then
+    args=(); for p in "${bevy_pkgs[@]}"; do args+=(-p "$p"); done
+    run "bevy: ${bevy_pkgs[*]} (clippy)" \
+      cargo clippy --locked --all-targets \
+        --manifest-path tech-demos/bevy/Cargo.toml "${args[@]}" -- -D warnings
+    run "bevy: ${bevy_pkgs[*]} (test)" \
+      cargo test --locked --manifest-path tech-demos/bevy/Cargo.toml "${args[@]}"
+  fi
+fi
+
+for m in "${godot_manifests[@]:-}"; do
+  [ -f "$m" ] || continue
+  name=$(basename "$(dirname "$m")")
+  run "godot: $name" env CARGO_TARGET_DIR="$CARGO_TARGET_DIR_GODOT" \
+    bash -c "cargo clippy --locked --manifest-path '$m' --all-targets -- -D warnings \
+             && cargo test --locked --manifest-path '$m'"
+done
+
+for m in "${misc_manifests[@]:-}"; do
+  [ -f "$m" ] || continue
+  name=$(basename "$(dirname "$m")")
+  run "crate: $name" bash -c \
+    "cargo clippy --locked --manifest-path '$m' --all-targets -- -D warnings \
+     && cargo test --locked --manifest-path '$m'"
+done
+
+if [ -n "$fail" ]; then
+  printf '\npush aborted. Failed:%s\n' "$fail"
+  printf 'Use --no-verify to override.\n\n'
+  exit 1
+fi
+printf '\npre-push: all checks passed\n\n'
+exit 0

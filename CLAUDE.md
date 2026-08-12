@@ -91,6 +91,15 @@ a Rust error but is not. Install commands for Debian and Fedora are in
 bracket-lib's transitive `expat-sys` fails under CMake ≥ 4.0 unless
 `CMAKE_POLICY_VERSION_MINIMUM=3.5` is set.
 
+## Git hooks
+
+`.githooks/` is only active once `core.hooksPath` points at it — `just
+install-hooks`. pre-commit does fast staged-content checks (formatting, build
+artifacts, and the repo invariants that have broken before: workspace
+membership, gdext version drift, `.gdextension` name match, `Teaches:` lines).
+pre-push compiles and tests the affected crates. Keep pre-commit
+compile-free — the build is minutes long, and a slow hook just gets bypassed.
+
 ## Bar for a change
 
 CI enforces all of these on every crate, so run them before claiming done:

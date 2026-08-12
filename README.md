@@ -49,6 +49,37 @@ pull request. It enforces, across every crate:
 - `--locked`, so the committed `Cargo.lock` files are verified rather than
   silently updated.
 
+## Git hooks
+
+`.githooks/` holds a pre-commit and a pre-push hook. Git does not use them until
+you point it at the directory, which a fresh clone has to do once:
+
+```bash
+just install-hooks     # or: git config core.hooksPath .githooks
+```
+
+**pre-commit** is deliberately fast (well under a second) and checks *staged*
+content rather than the working tree, so a commit is judged by exactly what it
+would introduce:
+
+- staged `.rs` files are rustfmt-clean;
+- no build artifacts or files over 1 MiB are staged;
+- every Bevy demo directory appears in `[workspace] members`;
+- all Godot crates pin one gdext version (they drifted to three once);
+- a Godot crate's `[lib] name` matches the paths in its `.gdextension`;
+- a Godot demo's module doc opens with `Teaches:`.
+
+Nothing there compiles anything. Compiling this repository takes minutes, and a
+pre-commit hook that slow only teaches people to reach for `--no-verify`.
+
+**pre-push** runs `clippy -D warnings` and the tests, scoped to the crates the
+push actually touches. It falls back to the whole suite when a shared file
+changes (`tech-demos/bevy/Cargo.toml`, the workflow, the justfile, or
+`tic-tac-toe-lib`), since those affect everything.
+
+Both are bypassable with `--no-verify`, and neither replaces CI — they just
+stop the cheap mistakes from getting that far.
+
 ## Building
 
 ```bash
