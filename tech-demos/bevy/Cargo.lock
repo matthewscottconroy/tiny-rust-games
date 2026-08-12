@@ -5269,6 +5269,18 @@ dependencies = [
 ]
 
 [[package]]
+name = "snake-bevy"
+version = "0.1.0"
+dependencies = [
+ "bevy",
+ "snake-lib",
+]
+
+[[package]]
+name = "snake-lib"
+version = "0.1.0"
+
+[[package]]
 name = "soft-body"
 version = "0.1.0"
 dependencies = [

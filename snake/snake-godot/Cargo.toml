@@ -1,0 +1,15 @@
+[package]
+name = "snake-godot"
+version = "0.1.0"
+edition = "2024"
+license = "MIT"
+repository = "https://github.com/matthewscottconroy/tiny-rust-games"
+description = "Snake rendered with Godot's scene tree, over the shared engine-agnostic rules"
+
+[lib]
+name = "snake_godot"
+crate-type = ["cdylib", "lib"]
+
+[dependencies]
+godot = "0.5"
+snake-lib = { path = "../snake-lib" }

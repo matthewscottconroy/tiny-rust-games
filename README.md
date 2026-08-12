@@ -15,12 +15,20 @@ The purpose of this repository is to hold example implementations of some very s
 | [`tech-demos/bevy/`](tech-demos/bevy/) | 82 [Bevy](https://bevyengine.org/) `0.18` demos, each isolating one engine concept or gameplay system. A single Cargo workspace — see the [Bevy demo index](tech-demos/bevy/README.md). |
 | [`tech-demos/godot/`](tech-demos/godot/) | 67 [Godot](https://godotengine.org/) `4.3` demos with game logic in Rust via [gdext](https://github.com/godot-rust/gdext) `0.5` — see the [Godot demo index](tech-demos/godot/README.md). |
 | [`tech-demos/brackets/`](tech-demos/brackets/) | A [bracket-lib](https://github.com/amethyst/bracket-lib) mouse-control demo. |
+| [`snake/`](snake/) | The second game: an engine-agnostic `snake-lib` with `-bevy` and `-godot` front-ends. Where tic-tac-toe proves the boundary for turn-based play, this proves it for **real-time** — the library owns the rules, never the clock. |
 | [`tic-tac-toe/`](tic-tac-toe/) | The reference "well-known game": an engine-agnostic `tic-tac-toe-lib` core with **four** front-ends — `-cli`, `-brackets`, `-bevy`, and `-godot` (goals #2 and #4 in practice). |
 
 The same tic-tac-toe rules drive a terminal loop, an ASCII console, Bevy's ECS,
 and Godot's scene tree without any frontend containing a rule of the game — that
 is goal #4 tested against architectures that genuinely differ, rather than
 against two variations on a terminal.
+
+Snake takes it further. A turn-based game only ever needs the library when the
+player acts; a real-time one moves on its own, so *something* must own the
+clock. `snake-lib` deliberately does not: it exposes `step()`, and ships a
+`Ticker` that converts frame time into whole steps. Bevy feeds it `Time::delta`,
+Godot feeds it `process(delta)`, and neither can disagree about how fast the
+snake moves because neither one decides.
 
 Every demo ships module-level rustdoc, and every demo with logic to exercise
 ships a `#[cfg(test)]` test module — the sole exception is `bevy/draw-window`,
@@ -88,6 +96,9 @@ cd tech-demos/bevy && cargo run -p hello-world
 
 # Godot demos (standalone crates; Godot 4.3+ needed only to *run* them):
 cd tech-demos/godot/hello-world && cargo build
+
+# Snake (Bevy window):
+just snake
 
 # Tic-tac-toe, four ways:
 cd tic-tac-toe/tic-tac-toe-cli && cargo run                      # terminal

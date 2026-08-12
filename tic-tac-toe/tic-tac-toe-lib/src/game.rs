@@ -163,20 +163,17 @@ impl TicTacToeGame {
         if symbol == EMPTY_SYMBOL {
             return false;
         }
-        let height = self.board.height() as isize;
-        let width = self.board.width() as isize;
-
         for (dr, dc) in [(0isize, 1isize), (1, 0), (1, 1), (1, -1)] {
             let mut count = 1;
             for sign in [-1isize, 1] {
                 let mut r = row as isize + sign * dr;
                 let mut c = column as isize + sign * dc;
-                while r >= 0
-                    && r < height
-                    && c >= 0
-                    && c < width
-                    && self.get(r as usize, c as usize) == Some(symbol)
-                {
+                // `symbol_at` handles the board edges, so this loop does not
+                // compare against width/height itself. It used to, and mutation
+                // testing showed those comparisons could be broken without any
+                // test noticing — because running off the edge already yields
+                // `None`, which ends the walk regardless.
+                while self.symbol_at(r, c) == Some(symbol) {
                     count += 1;
                     r += sign * dr;
                     c += sign * dc;
@@ -187,6 +184,17 @@ impl TicTacToeGame {
             }
         }
         false
+    }
+
+    /// The symbol at a possibly-off-board coordinate.
+    ///
+    /// Takes signed coordinates so a walk outward from a cell can step past the
+    /// edge without the caller bounds-checking first; anything outside the
+    /// board is `None`.
+    fn symbol_at(&self, row: isize, column: isize) -> Option<char> {
+        let row = usize::try_from(row).ok()?;
+        let column = usize::try_from(column).ok()?;
+        self.get(row, column)
     }
 
     /// The player who has won, or `None` if nobody has.

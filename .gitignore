@@ -56,3 +56,11 @@ desktop.ini
 
 # CI shared Cargo target dir for the Godot demos (see .github/workflows/ci.yml)
 .shared-target/
+
+# cargo-mutants output
+mutants.out/
+mutants.out.old/
+
+# Godot editor cache (generated on first open; not source)
+.godot/
+*.uid

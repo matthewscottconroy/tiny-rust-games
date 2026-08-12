@@ -1,0 +1,11 @@
+; Godot Project, Format=3
+
+[application]
+
+config/name="Snake (Godot)"
+config/features=PackedStringArray("4.3")
+
+[display]
+
+window/size/viewport_width=720
+window/size/viewport_height=620

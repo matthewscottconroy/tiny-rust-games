@@ -31,7 +31,9 @@ jobs:
             tech-demos/bevy/Cargo.toml \
             tech-demos/godot/*/Cargo.toml \
             tech-demos/brackets/*/Cargo.toml \
-            tic-tac-toe/*/Cargo.toml; do
+            tic-tac-toe/*/Cargo.toml \
+            snake/snake-lib/Cargo.toml \
+            snake/snake-godot/Cargo.toml; do
             if ! cargo fmt --manifest-path "$manifest" --all --check; then
               failed="$failed $manifest"
             fi
@@ -116,7 +118,8 @@ jobs:
           set -uo pipefail
           failed=""
           for manifest in tech-demos/godot/*/Cargo.toml \
-                          tic-tac-toe/tic-tac-toe-godot/Cargo.toml; do
+                          tic-tac-toe/tic-tac-toe-godot/Cargo.toml \
+                          snake/snake-godot/Cargo.toml; do
             demo=$(basename "$(dirname "$manifest")")
             echo "::group::$demo"
             if ! cargo clippy --locked --manifest-path "$manifest" --all-targets -- -D warnings; then
@@ -164,6 +167,7 @@ jobs:
             tic-tac-toe/tic-tac-toe-lib/Cargo.toml \
             tic-tac-toe/tic-tac-toe-cli/Cargo.toml \
             tic-tac-toe/tic-tac-toe-brackets/Cargo.toml \
+            snake/snake-lib/Cargo.toml \
             tech-demos/brackets/*/Cargo.toml; do
             echo "::group::$manifest"
             if ! cargo clippy --locked --manifest-path "$manifest" --all-targets -- -D warnings; then

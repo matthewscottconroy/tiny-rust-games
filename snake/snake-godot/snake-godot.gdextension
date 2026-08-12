@@ -1,0 +1,11 @@
+[configuration]
+entry_symbol = "gdext_rust_init"
+compatibility_minimum = "4.1"
+
+[libraries]
+linux.debug.x86_64 = "res://target/debug/libsnake_godot.so"
+linux.release.x86_64 = "res://target/release/libsnake_godot.so"
+windows.debug.x86_64 = "res://target/debug/snake_godot.dll"
+windows.release.x86_64 = "res://target/release/snake_godot.dll"
+macos.debug = "res://target/debug/libsnake_godot.dylib"
+macos.release = "res://target/release/libsnake_godot.dylib"

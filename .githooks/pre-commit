@@ -33,9 +33,14 @@ staged_has() {
 # `cargo fmt --check` would read the working tree, which can differ from what is
 # staged, so check the staged blob instead.
 #
-# The blob is written to a temp file rather than piped: `rustfmt --check` on
-# *stdin* prints its diff but still exits 0, so a pipe silently passes
-# everything. Only file input sets a non-zero exit.
+# Two traps here, both of which this hook fell into first time round:
+#
+#   * `rustfmt --check` on *stdin* prints its diff but still exits 0, so piping
+#     the blob in silently passes everything. It has to be a file.
+#   * a file declaring a submodule (`mod tests;`) fails to resolve it from the
+#     temp directory and rustfmt exits non-zero for that reason alone, marking
+#     a perfectly formatted file as bad. `skip_children` stops it following
+#     module declarations; each file is checked on its own anyway.
 unformatted=()
 tmpdir=$(mktemp -d)
 trap 'rm -rf "$tmpdir"' EXIT
@@ -43,7 +48,7 @@ for path in "${staged[@]}"; do
   [[ $path == *.rs ]] || continue
   blob="$tmpdir/staged.rs"
   git show ":$path" >"$blob" 2>/dev/null || continue
-  if ! rustfmt --edition 2024 --check "$blob" >/dev/null 2>&1; then
+  if ! rustfmt --edition 2024 --check --config skip_children=true "$blob" >/dev/null 2>&1; then
     unformatted+=("$path")
   fi
 done

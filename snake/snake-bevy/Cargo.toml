@@ -1,0 +1,18 @@
+[package]
+name = "snake-bevy"
+# Member of the Bevy demo workspace (like tic-tac-toe-bevy) so Bevy compiles
+# once for the whole repository. Named explicitly because this crate sits
+# outside that workspace's directory tree.
+workspace = "../../tech-demos/bevy"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "Snake rendered with Bevy's ECS, over the shared engine-agnostic rules"
+
+[dependencies]
+bevy.workspace = true
+snake-lib = { path = "../snake-lib" }
+
+[lints]
+workspace = true

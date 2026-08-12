@@ -23,14 +23,16 @@ ci: fmt-check clippy test
 # Reformat every crate.
 fmt:
     cargo fmt --manifest-path {{bevy_manifest}} --all
-    @for m in tech-demos/godot/*/Cargo.toml tech-demos/brackets/*/Cargo.toml tic-tac-toe/*/Cargo.toml; do \
+    @for m in tech-demos/godot/*/Cargo.toml tech-demos/brackets/*/Cargo.toml tic-tac-toe/*/Cargo.toml \
+             snake/snake-lib/Cargo.toml snake/snake-godot/Cargo.toml; do \
         cargo fmt --manifest-path "$m" --all; \
     done
 
 # Fail if any crate is unformatted.
 fmt-check:
     @failed=""; \
-    for m in {{bevy_manifest}} tech-demos/godot/*/Cargo.toml tech-demos/brackets/*/Cargo.toml tic-tac-toe/*/Cargo.toml; do \
+    for m in {{bevy_manifest}} tech-demos/godot/*/Cargo.toml tech-demos/brackets/*/Cargo.toml \
+             tic-tac-toe/*/Cargo.toml snake/snake-lib/Cargo.toml snake/snake-godot/Cargo.toml; do \
         cargo fmt --manifest-path "$m" --all --check >/dev/null 2>&1 || failed="$failed $m"; \
     done; \
     if [ -n "$failed" ]; then echo "Unformatted:$failed"; echo "Run 'just fmt'."; exit 1; fi; \
@@ -46,7 +48,7 @@ clippy-bevy:
 
 clippy-godot:
     @failed=""; \
-    for m in tech-demos/godot/*/Cargo.toml tic-tac-toe/tic-tac-toe-godot/Cargo.toml; do \
+    for m in tech-demos/godot/*/Cargo.toml tic-tac-toe/tic-tac-toe-godot/Cargo.toml snake/snake-godot/Cargo.toml; do \
         CARGO_TARGET_DIR={{godot_target}} cargo clippy --locked --manifest-path "$m" --all-targets -- -D warnings \
             || failed="$failed $(basename $(dirname $m))"; \
     done; \
@@ -55,7 +57,8 @@ clippy-godot:
 clippy-misc:
     @failed=""; \
     for m in tic-tac-toe/tic-tac-toe-lib/Cargo.toml tic-tac-toe/tic-tac-toe-cli/Cargo.toml \
-             tic-tac-toe/tic-tac-toe-brackets/Cargo.toml tech-demos/brackets/*/Cargo.toml; do \
+             tic-tac-toe/tic-tac-toe-brackets/Cargo.toml snake/snake-lib/Cargo.toml \
+             tech-demos/brackets/*/Cargo.toml; do \
         CMAKE_POLICY_VERSION_MINIMUM=3.5 cargo clippy --locked --manifest-path "$m" --all-targets -- -D warnings \
             || failed="$failed $m"; \
     done; \
@@ -71,7 +74,7 @@ test-bevy:
 
 test-godot:
     @failed=""; \
-    for m in tech-demos/godot/*/Cargo.toml tic-tac-toe/tic-tac-toe-godot/Cargo.toml; do \
+    for m in tech-demos/godot/*/Cargo.toml tic-tac-toe/tic-tac-toe-godot/Cargo.toml snake/snake-godot/Cargo.toml; do \
         CARGO_TARGET_DIR={{godot_target}} cargo test --locked --manifest-path "$m" \
             || failed="$failed $(basename $(dirname $m))"; \
     done; \
@@ -80,7 +83,8 @@ test-godot:
 test-misc:
     @failed=""; \
     for m in tic-tac-toe/tic-tac-toe-lib/Cargo.toml tic-tac-toe/tic-tac-toe-cli/Cargo.toml \
-             tic-tac-toe/tic-tac-toe-brackets/Cargo.toml tech-demos/brackets/*/Cargo.toml; do \
+             tic-tac-toe/tic-tac-toe-brackets/Cargo.toml snake/snake-lib/Cargo.toml \
+             tech-demos/brackets/*/Cargo.toml; do \
         CMAKE_POLICY_VERSION_MINIMUM=3.5 cargo test --locked --manifest-path "$m" \
             || failed="$failed $m"; \
     done; \
@@ -96,6 +100,10 @@ bevy demo:
 # Build a Godot demo's extension: `just godot hex-grid`
 godot demo:
     cargo build --manifest-path tech-demos/godot/{{demo}}/Cargo.toml
+
+# Play Snake in a Bevy window.
+snake:
+    cargo run --manifest-path {{bevy_manifest}} -p snake-bevy
 
 # Play tic-tac-toe in the terminal.
 play:

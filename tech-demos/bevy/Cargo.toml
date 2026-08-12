@@ -94,6 +94,7 @@ members = [
     # Lives under tic-tac-toe/ but joins this workspace so Bevy compiles once
     # for the whole repository rather than a second time for the game.
     "../../tic-tac-toe/tic-tac-toe-bevy",
+    "../../snake/snake-bevy",
 ]
 
 # Fields every demo inherits with `<field>.workspace = true`, so licensing and

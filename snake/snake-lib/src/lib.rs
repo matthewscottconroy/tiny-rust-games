@@ -1,0 +1,480 @@
+//! Engine-agnostic Snake rules.
+//!
+//! This is the repository's second demonstration of goal #4, and it exists to
+//! answer a question `tic-tac-toe-lib` could not. Tic-tac-toe is turn-based: a
+//! frontend calls into the library when the *player* acts. Snake is real-time —
+//! the world moves whether or not anyone touches the keyboard — so something
+//! has to own the clock.
+//!
+//! # The rule: the library never owns time
+//!
+//! [`SnakeGame`] exposes [`step`](SnakeGame::step), which advances the world by
+//! exactly one tick. It never sleeps, never reads a clock, and never asks how
+//! long a frame took. That is what keeps it engine-agnostic *and* what makes it
+//! deterministic: the same seed and the same sequence of steps always produce
+//! the same game, in a test or in a window.
+//!
+//! Turning real elapsed time into a whole number of steps is the frontend's
+//! job — but it is the same job in every frontend, so [`Ticker`] does it here.
+//! Give it a delta in seconds and it tells you how many steps to run:
+//!
+//! ```
+//! use snake_lib::{SnakeGame, Ticker};
+//!
+//! let mut game = SnakeGame::new(20, 15, 42);
+//! let mut ticker = Ticker::new(8.0); // eight steps per second
+//!
+//! // A frame that took 250 ms is worth two steps at 8 Hz.
+//! for _ in 0..ticker.accumulate(0.25) {
+//!     game.step();
+//! }
+//! assert_eq!(game.ticks(), 2);
+//! ```
+//!
+//! This split is the whole lesson. A terminal frontend blocks on input and
+//! calls `step` on a timer; Bevy calls it from a system with `Time::delta`;
+//! Godot calls it from `process(delta)`. None of them contains a rule, and none
+//! of them can disagree about how fast the snake moves.
+//!
+//! # Input arrives faster than ticks
+//!
+//! At 8 steps per second a player can easily press two keys inside one tick.
+//! Applying each immediately would let *up* then *left* — both individually
+//! legal — turn the snake back into its own neck. So
+//! [`queue_turn`](SnakeGame::queue_turn) records the intended direction and
+//! [`step`](SnakeGame::step) commits it, validating against the direction
+//! actually travelled rather than the last one requested.
+
+use std::collections::VecDeque;
+
+/// A cell on the board, `(0, 0)` at the top-left.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub struct Coord {
+    /// Column, increasing rightwards.
+    pub x: i32,
+    /// Row, increasing downwards.
+    pub y: i32,
+}
+
+impl Coord {
+    /// Creates a coordinate.
+    pub fn new(x: i32, y: i32) -> Self {
+        Self { x, y }
+    }
+}
+
+/// One of the four directions the snake can travel.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum Direction {
+    /// Decreasing `y`.
+    Up,
+    /// Increasing `y`.
+    Down,
+    /// Decreasing `x`.
+    Left,
+    /// Increasing `x`.
+    Right,
+}
+
+impl Direction {
+    /// The unit step this direction moves the head by.
+    pub fn delta(self) -> Coord {
+        match self {
+            Direction::Up => Coord::new(0, -1),
+            Direction::Down => Coord::new(0, 1),
+            Direction::Left => Coord::new(-1, 0),
+            Direction::Right => Coord::new(1, 0),
+        }
+    }
+
+    /// The direction facing the other way.
+    pub fn opposite(self) -> Self {
+        match self {
+            Direction::Up => Direction::Down,
+            Direction::Down => Direction::Up,
+            Direction::Left => Direction::Right,
+            Direction::Right => Direction::Left,
+        }
+    }
+}
+
+/// Why a game ended.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum DeathCause {
+    /// The head left the board.
+    HitWall,
+    /// The head entered a cell the body occupies.
+    HitSelf,
+}
+
+/// Where a game stands.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum GameStatus {
+    /// The snake is still moving.
+    Running,
+    /// The snake died.
+    Dead(DeathCause),
+    /// The snake fills the board; there is nowhere left to grow.
+    Won,
+}
+
+/// What a single [`step`](SnakeGame::step) did.
+///
+/// Returned so a frontend can react — play a sound, flash the screen — without
+/// diffing the game state itself to work out what changed.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum StepOutcome {
+    /// The snake advanced one cell.
+    Moved,
+    /// The snake ate, grew, and new food was placed.
+    Ate {
+        /// Where the eaten food had been.
+        at: Coord,
+        /// Score after eating.
+        score: u32,
+    },
+    /// The snake died this step.
+    Died(DeathCause),
+    /// The board is full; the game is won.
+    Won,
+    /// The game had already ended, so nothing happened.
+    Ended,
+}
+
+/// Converts elapsed real time into whole simulation steps.
+///
+/// Every frontend needs this and none of them should write it twice. Carrying
+/// the remainder forward rather than discarding it each frame is what keeps the
+/// snake's speed independent of frame rate: sixty short frames and six long
+/// ones covering the same second yield the same number of steps.
+///
+/// "The same" to within one step, not bit-for-bit. Frame deltas are `f32` and
+/// most of them are not exactly representable — a hundred frames of `0.01`
+/// sum to `0.99999998`, not `1.0` — so a long run of small deltas can land one
+/// step behind a short run of large ones. One step at nine steps per second is
+/// about a hundred milliseconds and nobody can see it; do not build a lockstep
+/// network protocol on this.
+#[derive(Debug, Clone)]
+pub struct Ticker {
+    seconds_per_step: f32,
+    accumulated: f32,
+}
+
+impl Ticker {
+    /// Creates a ticker running at `steps_per_second`.
+    ///
+    /// # Panics
+    /// Panics if `steps_per_second` is not positive.
+    pub fn new(steps_per_second: f32) -> Self {
+        assert!(
+            steps_per_second > 0.0,
+            "steps_per_second must be positive, got {steps_per_second}"
+        );
+        Self {
+            seconds_per_step: 1.0 / steps_per_second,
+            accumulated: 0.0,
+        }
+    }
+
+    /// Adds `delta` seconds and returns how many steps are now due.
+    ///
+    /// A long stall (a breakpoint, a dragged window) would otherwise bank
+    /// hundreds of steps and teleport the snake, so the return value is capped
+    /// at [`Ticker::MAX_STEPS_PER_CALL`] and the surplus is discarded.
+    pub fn accumulate(&mut self, delta: f32) -> u32 {
+        // Clamped rather than branched: a negative delta (a clock adjustment)
+        // must not rewind the accumulator, and `max` says so without a branch
+        // whose two arms behave identically.
+        self.accumulated += delta.max(0.0);
+        let mut steps = 0;
+        while self.accumulated >= self.seconds_per_step && steps < Self::MAX_STEPS_PER_CALL {
+            self.accumulated -= self.seconds_per_step;
+            steps += 1;
+        }
+        if steps == Self::MAX_STEPS_PER_CALL {
+            self.accumulated = 0.0;
+        }
+        steps
+    }
+
+    /// Upper bound on steps returned from one [`accumulate`](Ticker::accumulate).
+    pub const MAX_STEPS_PER_CALL: u32 = 8;
+
+    /// Steps per second this ticker runs at.
+    pub fn steps_per_second(&self) -> f32 {
+        1.0 / self.seconds_per_step
+    }
+
+    /// Fraction of the way to the next step, in `0.0..1.0`.
+    ///
+    /// Frontends use this to interpolate the snake between cells so movement
+    /// looks smooth at 60 fps while the simulation runs at 8 Hz.
+    pub fn alpha(&self) -> f32 {
+        (self.accumulated / self.seconds_per_step).clamp(0.0, 1.0)
+    }
+}
+
+/// A deterministic pseudo-random source.
+///
+/// Hand-rolled so the crate has no dependencies at all — the point of this
+/// library is that it drops into any engine.
+#[derive(Debug, Clone)]
+struct Rng(u64);
+
+impl Rng {
+    fn new(seed: u64) -> Self {
+        // Any odd constant works; this one is the usual LCG multiplier pair.
+        Self(seed.wrapping_mul(6364136223846793005).wrapping_add(1))
+    }
+
+    fn next_u32(&mut self) -> u32 {
+        self.0 = self
+            .0
+            .wrapping_mul(6364136223846793005)
+            .wrapping_add(1442695040888963407);
+        (self.0 >> 33) as u32
+    }
+
+    /// Uniform in `0..bound`.
+    fn below(&mut self, bound: usize) -> usize {
+        (self.next_u32() as usize) % bound.max(1)
+    }
+}
+
+/// A game of Snake: the board, the snake, the food, and the rules.
+#[derive(Debug, Clone)]
+pub struct SnakeGame {
+    width: i32,
+    height: i32,
+    /// Head first, tail last.
+    body: VecDeque<Coord>,
+    direction: Direction,
+    queued: Option<Direction>,
+    food: Option<Coord>,
+    status: GameStatus,
+    score: u32,
+    ticks: u64,
+    rng: Rng,
+}
+
+impl SnakeGame {
+    /// Starts a game on a `width`x`height` board.
+    ///
+    /// The snake begins length 1 at the centre travelling right, and `seed`
+    /// fixes every food placement, so two games with the same seed and the same
+    /// inputs are identical.
+    ///
+    /// # Panics
+    /// Panics if either dimension is less than 2.
+    pub fn new(width: i32, height: i32, seed: u64) -> Self {
+        assert!(
+            width >= 2 && height >= 2,
+            "board must be at least 2x2, got {width}x{height}"
+        );
+        let mut body = VecDeque::new();
+        body.push_back(Coord::new(width / 2, height / 2));
+
+        let mut game = Self {
+            width,
+            height,
+            body,
+            direction: Direction::Right,
+            queued: None,
+            food: None,
+            status: GameStatus::Running,
+            score: 0,
+            ticks: 0,
+            rng: Rng::new(seed),
+        };
+        game.place_food();
+        game
+    }
+
+    /// Requests a direction change, applied by the next
+    /// [`step`](SnakeGame::step).
+    ///
+    /// Reversing straight into the snake's own neck is rejected, and so is a
+    /// change once the game has ended. Queuing is what makes this safe when
+    /// several keys are pressed within one tick — see the module docs.
+    ///
+    /// Returns whether the request was accepted.
+    pub fn queue_turn(&mut self, direction: Direction) -> bool {
+        if self.status != GameStatus::Running {
+            return false;
+        }
+        // A length-1 snake has no neck, so any direction is legal.
+        if self.body.len() > 1 && direction == self.direction.opposite() {
+            return false;
+        }
+        self.queued = Some(direction);
+        true
+    }
+
+    /// Advances the world by exactly one tick.
+    ///
+    /// This is the only thing that mutates the game. It does not know how much
+    /// real time has passed and does not care — see [`Ticker`].
+    pub fn step(&mut self) -> StepOutcome {
+        if self.status != GameStatus::Running {
+            return StepOutcome::Ended;
+        }
+        self.ticks += 1;
+
+        // Commit the queued turn against the direction actually travelled.
+        if let Some(next) = self.queued.take()
+            && (self.body.len() == 1 || next != self.direction.opposite())
+        {
+            self.direction = next;
+        }
+
+        let head = *self.body.front().expect("snake is never empty");
+        let delta = self.direction.delta();
+        let next_head = Coord::new(head.x + delta.x, head.y + delta.y);
+
+        if !self.contains(next_head) {
+            self.status = GameStatus::Dead(DeathCause::HitWall);
+            return StepOutcome::Died(DeathCause::HitWall);
+        }
+
+        let eating = self.food == Some(next_head);
+
+        // The tail vacates as the head arrives, so the cell it leaves is free
+        // this tick — unless the snake is growing, in which case it stays put.
+        if !eating {
+            self.body.pop_back();
+        }
+        if self.body.contains(&next_head) {
+            // Put the tail back so the death state shows the real snake.
+            if !eating {
+                self.body.push_back(self.last_tail());
+            }
+            self.status = GameStatus::Dead(DeathCause::HitSelf);
+            return StepOutcome::Died(DeathCause::HitSelf);
+        }
+
+        self.body.push_front(next_head);
+
+        if eating {
+            self.score += 1;
+            self.food = None;
+            if self.body.len() as i32 == self.width * self.height {
+                self.status = GameStatus::Won;
+                return StepOutcome::Won;
+            }
+            self.place_food();
+            return StepOutcome::Ate {
+                at: next_head,
+                score: self.score,
+            };
+        }
+        StepOutcome::Moved
+    }
+
+    /// Restarts with a fresh board, keeping the dimensions and reseeding.
+    pub fn reset(&mut self, seed: u64) {
+        *self = Self::new(self.width, self.height, seed);
+    }
+
+    /// Board width in cells.
+    pub fn width(&self) -> i32 {
+        self.width
+    }
+
+    /// Board height in cells.
+    pub fn height(&self) -> i32 {
+        self.height
+    }
+
+    /// Whether a coordinate lies on the board.
+    pub fn contains(&self, c: Coord) -> bool {
+        c.x >= 0 && c.y >= 0 && c.x < self.width && c.y < self.height
+    }
+
+    /// The snake, head first.
+    pub fn body(&self) -> impl Iterator<Item = Coord> + '_ {
+        self.body.iter().copied()
+    }
+
+    /// The snake's head.
+    pub fn head(&self) -> Coord {
+        *self.body.front().expect("snake is never empty")
+    }
+
+    /// How many cells the snake occupies.
+    pub fn len(&self) -> usize {
+        self.body.len()
+    }
+
+    /// Always `false` — the snake always occupies at least one cell.
+    ///
+    /// Present because clippy expects it beside [`len`](SnakeGame::len), and it
+    /// documents the invariant.
+    pub fn is_empty(&self) -> bool {
+        false
+    }
+
+    /// The current food, or `None` on a full board.
+    pub fn food(&self) -> Option<Coord> {
+        self.food
+    }
+
+    /// The direction the snake is travelling.
+    pub fn direction(&self) -> Direction {
+        self.direction
+    }
+
+    /// Food eaten so far.
+    pub fn score(&self) -> u32 {
+        self.score
+    }
+
+    /// How many steps have been taken.
+    pub fn ticks(&self) -> u64 {
+        self.ticks
+    }
+
+    /// Where the game stands.
+    pub fn status(&self) -> GameStatus {
+        self.status
+    }
+
+    /// Whether the game has ended, by death or by filling the board.
+    pub fn is_over(&self) -> bool {
+        self.status != GameStatus::Running
+    }
+
+    /// The tail cell, used to undo a speculative `pop_back`.
+    fn last_tail(&self) -> Coord {
+        *self.body.back().expect("snake is never empty")
+    }
+
+    /// Places food on a random free cell, or clears it if the board is full.
+    ///
+    /// Picks the nth *free* cell rather than retrying random cells, so it stays
+    /// O(board) even when the snake covers almost everything.
+    fn place_food(&mut self) {
+        let free = (self.width * self.height) as usize - self.body.len();
+        if free == 0 {
+            self.food = None;
+            return;
+        }
+        let mut nth = self.rng.below(free);
+        for y in 0..self.height {
+            for x in 0..self.width {
+                let c = Coord::new(x, y);
+                if self.body.contains(&c) {
+                    continue;
+                }
+                if nth == 0 {
+                    self.food = Some(c);
+                    return;
+                }
+                nth -= 1;
+            }
+        }
+        unreachable!("free cell count and scan must agree");
+    }
+}
+
+#[cfg(test)]
+mod tests;

@@ -14,7 +14,14 @@ cleverness everywhere**.
 
 Goal 4 is the one most easily violated by accident: if a frontend has to
 re-derive a rule the core library should have told it, the rule is in the wrong
-place. `tic-tac-toe/` is the reference example of doing it right.
+place. `tic-tac-toe/` is the reference example for turn-based games.
+
+`snake/` is the reference for real-time ones, and the rule there is sharper:
+**the library owns the rules, never the clock.** `SnakeGame::step()` advances
+exactly one tick and never reads a clock, which is what makes it both
+engine-agnostic and deterministic enough to property-test. `Ticker` converts
+frame time into whole steps so no frontend hand-rolls an accumulator. If you add
+a real-time game, copy that split.
 
 ## Layout
 
@@ -24,6 +31,7 @@ place. `tic-tac-toe/` is the reference example of doing it right.
 | `tech-demos/godot/` | 67 **standalone crates** (see below), Rust logic via gdext. |
 | `tech-demos/brackets/` | bracket-lib demos. |
 | `tic-tac-toe/` | Engine-agnostic `-lib` core with `-cli`, `-brackets`, `-bevy`, `-godot` frontends. |
+| `snake/` | The real-time counterpart: `snake-lib` + `-bevy` + `-godot`. |
 
 Read the conventions doc for the engine you are touching **before** writing a
 demo — they are prescriptive, not advisory:
