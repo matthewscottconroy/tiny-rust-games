@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>tiny-rust-games</title>
+<style>
+  :root {
+    --bg: #14161a; --panel: #1c1f25; --text: #e8eaed; --dim: #9aa0a6;
+    --line: #2c3038; --accent: #a3be8c;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text);
+         font: 16px/1.6 ui-sans-serif, system-ui, -apple-system, sans-serif; }
+  .wrap { max-width: 860px; margin: 0 auto; padding: 3rem 1.5rem 5rem; }
+  h1 { font-size: 2rem; margin: 0 0 .4rem; }
+  .lede { color: var(--dim); margin: 0 0 2.5rem; }
+  h2 { font-size: 1.1rem; margin: 2.5rem 0 .8rem; }
+  .cards { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); }
+  a.card { display: block; background: var(--panel); border: 1px solid var(--line);
+           border-radius: 10px; padding: 1.1rem 1.2rem; text-decoration: none; color: inherit; }
+  a.card:hover { border-color: var(--accent); }
+  a.card h3 { margin: 0 0 .3rem; font-size: 1.05rem; }
+  a.card p { margin: 0; color: var(--dim); font-size: .9rem; }
+  code { font-family: ui-monospace, monospace; background: #0f1114;
+         padding: .12em .4em; border-radius: 4px; font-size: .88em; }
+  footer { margin-top: 3rem; color: var(--dim); font-size: .88rem;
+           border-top: 1px solid var(--line); padding-top: 1.2rem; }
+  a { color: var(--accent); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>tiny-rust-games</h1>
+  <p class="lede">Small, well-known games and engine tech demos written in Rust —
+  built to be read, not just run.</p>
+
+  <h2>Play in the browser</h2>
+  <div class="cards">
+    <a class="card" href="snake/">
+      <h3>Snake</h3>
+      <p>Arrows or WASD to steer, R to restart. Bevy, compiled to WebAssembly.</p>
+    </a>
+    <a class="card" href="tic-tac-toe/">
+      <h3>Tic-Tac-Toe</h3>
+      <p>Click a cell to play, R to restart. Bevy, compiled to WebAssembly.</p>
+    </a>
+  </div>
+
+  <h2>Browse the demos</h2>
+  <div class="cards">
+    <a class="card" href="catalogue.html">
+      <h3>Demo catalogue</h3>
+      <p>151 demos across Bevy, Godot and bracket-lib, searchable by concept.
+      Generated from each demo's own documentation.</p>
+    </a>
+    <a class="card" href="https://github.com/matthewscottconroy/tiny-rust-games">
+      <h3>Source</h3>
+      <p>Every demo is a self-contained crate with module docs and tests.</p>
+    </a>
+  </div>
+
+  <h2>Why both games are playable here</h2>
+  <p>Each game's rules live in a small library with no engine dependency —
+  <code>snake-lib</code> and <code>tic-tac-toe-lib</code> — and each engine gets
+  a thin frontend over it. Tic-tac-toe runs on four of them (a terminal, an
+  ASCII console, Bevy and Godot); Snake runs on two. None of the frontends
+  contains a rule of the game, which is what makes compiling one of them to
+  WebAssembly a build-target change rather than a rewrite.</p>
+
+  <footer>
+    Built from <a href="https://github.com/matthewscottconroy/tiny-rust-games">the repository</a>.
+    MIT licensed.
+  </footer>
+</div>
+</body>
+</html>

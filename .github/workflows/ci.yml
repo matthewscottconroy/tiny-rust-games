@@ -50,16 +50,23 @@ jobs:
   # this workspace, so it is covered here rather than in the `misc` job — that
   # keeps Bevy from being compiled a second time.
   bevy:
-    name: Bevy demos (workspace)
-    runs-on: ubuntu-latest
+    name: Bevy demos (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      # One platform failing should not hide the state of the others.
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
     steps:
       - uses: actions/checkout@v4
 
       # ALSA and udev back bevy_audio and gamepad input; wayland and xkbcommon
       # are pulled in unconditionally by winit. GitHub's runner image happens to
       # ship the latter two, but naming them keeps this job reproducible on any
-      # runner and documents the real dependency set.
+      # runner and documents the real dependency set. macOS and Windows need
+      # none of this — the frameworks ship with the OS.
       - name: Install Bevy system dependencies
+        if: runner.os == 'Linux'
         run: |
           sudo apt-get update
           sudo apt-get install -y \
@@ -72,6 +79,7 @@ jobs:
       - uses: Swatinem/rust-cache@v2
         with:
           workspaces: tech-demos/bevy
+          key: ${{ matrix.os }}
 
       - name: Clippy all demos
         run: >
@@ -181,3 +189,43 @@ jobs:
             echo "Failed crates:$failed"
             exit 1
           fi
+
+  # The games are playable in a browser, which only works because their rules
+  # crates have no engine dependency. This job keeps that true: a change that
+  # quietly makes a game unbuildable for wasm fails here rather than at deploy.
+  wasm:
+    name: Games build for the web
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Bevy system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            libasound2-dev libudev-dev libwayland-dev libxkbcommon-dev
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: wasm32-unknown-unknown
+
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: tech-demos/bevy
+          key: wasm
+
+      - name: Build the games for wasm32
+        run: >
+          cargo build --locked --target wasm32-unknown-unknown
+          --manifest-path tech-demos/bevy/Cargo.toml
+          -p snake-bevy -p tic-tac-toe-bevy
+
+  # The catalogue is generated from each demo's own module docs. Regenerating
+  # and diffing catches a demo added without refreshing it, which is the only
+  # way the page can go stale.
+  catalogue:
+    name: Demo catalogue is current
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: python3 tools/catalogue.py --check

@@ -64,3 +64,6 @@ mutants.out.old/
 # Godot editor cache (generated on first open; not source)
 .godot/
 *.uid
+
+# Generated web build output (web/index.html and the template are source)
+web/dist/

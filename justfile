@@ -117,6 +117,27 @@ play-bevy:
 play-godot:
     cargo build --manifest-path tic-tac-toe/tic-tac-toe-godot/Cargo.toml
 
+# --- Web ---
+
+# Build the browser-playable games and the catalogue into web/dist.
+web:
+    python3 tools/catalogue.py
+    tools/build-web.sh
+
+# Then open http://localhost:8080.
+# Build the web bundle and serve it locally.
+web-serve:
+    python3 tools/catalogue.py
+    tools/build-web.sh --serve
+
+# Regenerate web/catalogue.html from the demos' own module docs.
+catalogue:
+    python3 tools/catalogue.py
+
+# Refresh docs/images/*.png from the web build (needs Chrome).
+screenshots: web
+    tools/screenshot.sh
+
 # --- Maintenance ---
 
 # Git ignores .githooks until core.hooksPath points at it, so a fresh clone

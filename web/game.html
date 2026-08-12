@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>__TITLE__ — tiny-rust-games</title>
+<style>
+  :root { --bg: #14161a; --text: #e8eaed; --dim: #9aa0a6; --accent: #a3be8c; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text); min-height: 100vh;
+         display: flex; flex-direction: column; align-items: center;
+         font: 15px/1.5 ui-sans-serif, system-ui, -apple-system, sans-serif; }
+  header { width: 100%; max-width: 900px; padding: .9rem 1.5rem .4rem;
+           display: flex; align-items: baseline; gap: 1rem; flex-wrap: wrap; }
+  h1 { font-size: 1.2rem; margin: 0; }
+  a { color: var(--accent); }
+  .hint { color: var(--dim); font-size: .9rem; }
+  #status { padding: 3rem 1.5rem; color: var(--dim); text-align: center; }
+  /* Bevy appends its canvas straight to <body> at the resolution the game asks
+     for, which is usually taller than the viewport once the header and footer
+     are accounted for. Constraining both axes letterboxes it to fit instead of
+     forcing the page to scroll. */
+  body > canvas {
+    display: block;
+    margin: .25rem auto 1rem;
+    max-width: min(100%, 900px);
+    max-height: calc(100vh - 150px);
+    height: auto;
+    width: auto;
+    object-fit: contain;
+    border-radius: 8px;
+    outline: none;
+  }
+  footer { color: var(--dim); font-size: .85rem; padding: 0 1.5rem 1.5rem; }
+</style>
+</head>
+<body>
+<header>
+  <h1>__TITLE__</h1>
+  <span class="hint">__CONTROLS__</span>
+  <span style="flex:1"></span>
+  <a href="../">← all games</a>
+</header>
+
+<div id="status">Loading __TITLE__ — the first load fetches a few megabytes of WebAssembly.</div>
+
+<footer>
+  Rules live in <code>__LIB__</code>, which has no engine dependency; this page is
+  the Bevy frontend compiled to WebAssembly.
+</footer>
+
+<script type="module">
+  import init from "./__MODULE__.js";
+
+  const status = document.getElementById("status");
+  try {
+    await init();
+    // Bevy has taken over and appended its canvas; the placeholder can go.
+    status.remove();
+    // Keyboard input needs focus, and Bevy's canvas does not take it by default.
+    const canvas = document.querySelector("canvas");
+    if (canvas) {
+      canvas.setAttribute("tabindex", "0");
+      canvas.focus();
+      // Arrow keys and space would otherwise scroll the page under the game.
+      window.addEventListener("keydown", (e) => {
+        if (["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight", " "].includes(e.key)) {
+          e.preventDefault();
+        }
+      }, { passive: false });
+    }
+  } catch (err) {
+    // A rejected promise here is almost always a missing WebGPU/WebGL2 context.
+    status.innerHTML =
+      "<strong>This game could not start.</strong><br>" +
+      "It needs a browser with WebGL2 or WebGPU enabled.<br>" +
+      "<small>" + String(err) + "</small>";
+  }
+</script>
+</body>
+</html>

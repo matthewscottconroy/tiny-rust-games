@@ -127,6 +127,18 @@ debug = "line-tables-only"
 [profile.dev.package."*"]
 opt-level = 3
 
+# Web builds are downloaded before they run, so size matters more than the last
+# few percent of speed. `opt-level = "s"` plus LTO and a single codegen unit
+# takes the Snake build from roughly 85 MB (dev) to something a browser will
+# fetch without complaint. Used by `just web`.
+[profile.wasm-release]
+inherits = "release"
+opt-level = "s"
+lto = "fat"
+codegen-units = 1
+panic = "abort"
+strip = "debuginfo"
+
 # Lints shared by every demo (each member opts in with `[lints] workspace = true`).
 # CI runs `cargo clippy --all-targets -- -D warnings`, so anything not allowed
 # here is a hard failure.

@@ -8,6 +8,18 @@ The purpose of this repository is to hold example implementations of some very s
 3. The code should be extensible so that others can use it as a starter template for a more complicated game of their own.
 4. The core game logic should be factored into its own library and game engine agnostic wherever this heuristic can be sensibly applied so that the same code can be used across multiple engines. Wherever this goal detracts from goal number one, goal number one should take precedence.
 
+Both games are playable in a browser — the Bevy frontends compile to
+WebAssembly, which is a build-target change rather than a rewrite precisely
+because their rules crates never depended on an engine.
+
+| | |
+|---|---|
+| ![Snake](docs/images/snake.png) | ![Tic-Tac-Toe](docs/images/tic-tac-toe.png) |
+
+Build the site with `just web`, preview it with `just web-serve`, and browse all
+151 demos in the [generated catalogue](web/catalogue.html) — searchable by
+concept, and produced from each demo's own module docs so it cannot drift.
+
 ## Repository layout
 
 | Path | Contents |
@@ -43,6 +55,28 @@ Per-demo `README.md` files are reserved for demos whose architecture is not
 obvious from the source; everything else is covered by the engine's demo index
 plus the module rustdoc.
 
+## The web build
+
+```bash
+just web           # build web/dist (games + catalogue)
+just web-serve     # ...and serve it on localhost:8080
+just catalogue     # regenerate the catalogue only
+just screenshots   # refresh docs/images from the web build
+```
+
+`tools/build-web.sh` needs the `wasm32-unknown-unknown` target and a
+`wasm-bindgen-cli` whose version matches the `wasm-bindgen` crate in
+`tech-demos/bevy/Cargo.lock` — it prints the exact `cargo install` line if the
+two disagree. `wasm-opt` is used when present and skipped when not.
+
+Each game is roughly 25 MB of WebAssembly after optimisation, which is ordinary
+for Bevy; the `wasm-release` profile in the workspace manifest is what gets it
+there from 85 MB.
+
+[`.github/workflows/pages.yml`](.github/workflows/pages.yml) publishes this to
+GitHub Pages on every push to `main`. It needs Pages enabled for the repository
+with **GitHub Actions** as the source.
+
 ## Continuous integration
 
 [`.github/workflows/ci.yml`](.github/workflows/ci.yml) runs on every push and
@@ -55,7 +89,13 @@ pull request. It enforces, across every crate:
   that cannot carry docs);
 - `cargo test`;
 - `--locked`, so the committed `Cargo.lock` files are verified rather than
-  silently updated.
+  silently updated;
+- that both games still build for `wasm32-unknown-unknown`;
+- that the generated catalogue is not stale.
+
+The Bevy workspace is checked on Linux, macOS and Windows. The Godot suite is
+Linux-only on purpose: it is 69 crates, and gdext's behaviour does not vary by
+host in a way that would justify tripling that.
 
 ## Git hooks
 

@@ -1,0 +1,83 @@
+name: Deploy web build
+
+# Publishes the browser-playable games and the demo catalogue to GitHub Pages.
+#
+# This needs Pages enabled for the repository with "GitHub Actions" as the
+# source (Settings → Pages → Build and deployment → Source). Until that is set,
+# the deploy step fails with a 404 — the build steps still run and are still
+# worth reading.
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+# Allow one deploy at a time, and let a newer push supersede a queued one —
+# but never cancel a deploy that is already writing.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Bevy system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            libasound2-dev libudev-dev libwayland-dev libxkbcommon-dev
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: wasm32-unknown-unknown
+
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: tech-demos/bevy
+          key: pages
+
+      # The CLI must match the wasm-bindgen crate version in the lockfile
+      # exactly, or the generated glue and the module disagree at runtime.
+      # Reading it from the lockfile means a dependency bump cannot silently
+      # desynchronise them.
+      - name: Install wasm-bindgen-cli matching the lockfile
+        run: |
+          version=$(awk '/^name = "wasm-bindgen"$/{getline; gsub(/"/, "", $3); print $3}' \
+            tech-demos/bevy/Cargo.lock)
+          echo "wasm-bindgen crate version: $version"
+          cargo install wasm-bindgen-cli --version "$version" --locked
+
+      - name: Install wasm-opt
+        run: |
+          sudo apt-get install -y binaryen
+
+      - name: Build the site
+        run: tools/build-web.sh
+
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: web/dist
+
+  deploy:
+    name: Deploy
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
