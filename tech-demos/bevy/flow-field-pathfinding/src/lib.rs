@@ -226,7 +226,12 @@ impl Default for GridState {
         let walls = vec![false; total];
         let goal = (COLS / 2, ROWS / 2);
         let field = compute_flow_field(&walls, COLS, ROWS, goal);
-        Self { walls, goal, field, dirty: false }
+        Self {
+            walls,
+            goal,
+            field,
+            dirty: false,
+        }
     }
 }
 
@@ -273,7 +278,10 @@ fn setup_grid(mut commands: Commands, state: Res<GridState>) {
     // HUD text
     commands.spawn((
         Text::new("Left-click: move goal  |  Right-click: toggle wall"),
-        TextFont { font_size: 14.0, ..default() },
+        TextFont {
+            font_size: 14.0,
+            ..default()
+        },
         TextColor(Color::WHITE),
         Node {
             position_type: PositionType::Absolute,
@@ -293,9 +301,13 @@ fn setup_agents(mut commands: Commands, state: Res<GridState>) {
     let mut spawned = 0;
     while spawned < AGENT_COUNT {
         // Simple LCG random
-        rng_seed = rng_seed.wrapping_mul(6364136223846793005).wrapping_add(1442695040888963407);
+        rng_seed = rng_seed
+            .wrapping_mul(6364136223846793005)
+            .wrapping_add(1442695040888963407);
         let col = (rng_seed >> 33) as usize % COLS;
-        rng_seed = rng_seed.wrapping_mul(6364136223846793005).wrapping_add(1442695040888963407);
+        rng_seed = rng_seed
+            .wrapping_mul(6364136223846793005)
+            .wrapping_add(1442695040888963407);
         let row = (rng_seed >> 33) as usize % ROWS;
 
         if state.walls[row * COLS + col] || occupied.contains(&(col, row)) {
@@ -330,12 +342,20 @@ fn handle_mouse_input(
     mut goal_marker: Query<&mut Transform, With<GoalMarker>>,
 ) {
     let Ok(window) = windows.single() else { return };
-    let Ok((camera, cam_transform)) = camera_q.single() else { return };
+    let Ok((camera, cam_transform)) = camera_q.single() else {
+        return;
+    };
 
-    let Some(cursor_pos) = window.cursor_position() else { return };
-    let Ok(world_pos) = camera.viewport_to_world_2d(cam_transform, cursor_pos) else { return };
+    let Some(cursor_pos) = window.cursor_position() else {
+        return;
+    };
+    let Ok(world_pos) = camera.viewport_to_world_2d(cam_transform, cursor_pos) else {
+        return;
+    };
 
-    let Some((col, row)) = world_to_cell(world_pos, CELL_PX, GRID_ORIGIN) else { return };
+    let Some((col, row)) = world_to_cell(world_pos, CELL_PX, GRID_ORIGIN) else {
+        return;
+    };
     if col >= COLS || row >= ROWS {
         return;
     }
@@ -369,10 +389,7 @@ fn recompute_field_if_dirty(mut state: ResMut<GridState>) {
     }
 }
 
-fn update_tile_colors(
-    state: Res<GridState>,
-    mut tiles: Query<(&Tile, &mut Sprite)>,
-) {
+fn update_tile_colors(state: Res<GridState>, mut tiles: Query<(&Tile, &mut Sprite)>) {
     for (tile, mut sprite) in &mut tiles {
         let idx = tile.row * COLS + tile.col;
         if state.walls[idx] {
@@ -400,15 +417,17 @@ fn move_agents(
             // Snap to cell center and pick next cell from field
             transform.translation = target.0.extend(1.0);
             let cell = world_to_cell(target.0, CELL_PX, GRID_ORIGIN);
-            if let Some((col, row)) = cell {
-                if col < COLS && row < ROWS {
-                    let idx = row * COLS + col;
-                    if let Some((dx, dy)) = state.field[idx] {
-                        let ncol = col as i32 + dx;
-                        let nrow = row as i32 + dy;
-                        if ncol >= 0 && nrow >= 0 && ncol < COLS as i32 && nrow < ROWS as i32 {
-                            target.0 = cell_to_world(ncol as usize, nrow as usize, CELL_PX, GRID_ORIGIN);
-                        }
+            if let Some((col, row)) = cell
+                && col < COLS
+                && row < ROWS
+            {
+                let idx = row * COLS + col;
+                if let Some((dx, dy)) = state.field[idx] {
+                    let ncol = col as i32 + dx;
+                    let nrow = row as i32 + dy;
+                    if ncol >= 0 && nrow >= 0 && ncol < COLS as i32 && nrow < ROWS as i32 {
+                        target.0 =
+                            cell_to_world(ncol as usize, nrow as usize, CELL_PX, GRID_ORIGIN);
                     }
                 }
             }
@@ -457,7 +476,10 @@ mod tests {
         let goal = (3, 7);
         let field = compute_flow_field(&walls, COLS, ROWS, goal);
         let idx = 7 * COLS + 3;
-        assert_eq!(field[idx], None, "goal cell should have no outgoing direction");
+        assert_eq!(
+            field[idx], None,
+            "goal cell should have no outgoing direction"
+        );
     }
 
     #[test]
@@ -480,7 +502,7 @@ mod tests {
         let height = 5;
         let mut walls = vec![false; width * height];
         // Enclose cell (2,2)
-        walls[1 * width + 2] = true; // above
+        walls[width + 2] = true; // above
         walls[3 * width + 2] = true; // below
         walls[2 * width + 1] = true; // left
         walls[2 * width + 3] = true; // right
@@ -529,7 +551,7 @@ mod tests {
     #[test]
     fn flow_field_goal_on_wall_returns_all_none() {
         let mut walls = vec![false; 4 * 4];
-        walls[1 * 4 + 1] = true; // wall the goal
+        walls[4 + 1] = true; // wall the goal
         let field = compute_flow_field(&walls, 4, 4, (1, 1));
         assert!(field.iter().all(|f| f.is_none()));
     }

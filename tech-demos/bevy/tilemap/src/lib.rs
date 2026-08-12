@@ -91,7 +91,7 @@ fn setup(mut commands: Commands, config: Res<TilemapConfig>) {
     let cols = MAP.iter().map(|r| r.len()).max().unwrap_or(0) as f32;
 
     let offset_x = -(cols * tile_size) / 2.0 + tile_size / 2.0;
-    let offset_y =  (rows * tile_size) / 2.0 - tile_size / 2.0;
+    let offset_y = (rows * tile_size) / 2.0 - tile_size / 2.0;
 
     commands
         .spawn(Transform::default())
@@ -101,7 +101,7 @@ fn setup(mut commands: Commands, config: Res<TilemapConfig>) {
                     let color = match ch {
                         '#' => config.wall_color,
                         '.' => config.floor_color,
-                        _   => continue,
+                        _ => continue,
                     };
 
                     let x = offset_x + col_idx as f32 * tile_size;
@@ -121,7 +121,10 @@ fn setup(mut commands: Commands, config: Res<TilemapConfig>) {
 
     commands.spawn((
         Text::new("Tilemap: walls (purple) and floor (dark) decoded from a const string slice"),
-        TextFont { font_size: 13.0, ..default() },
+        TextFont {
+            font_size: 13.0,
+            ..default()
+        },
         TextColor(Color::srgb(0.65, 0.65, 0.65)),
         Node {
             position_type: PositionType::Absolute,
@@ -145,26 +148,38 @@ mod tests {
 
     #[test]
     fn map_contains_wall_tiles() {
-        let walls = MAP.iter().flat_map(|r| r.chars()).filter(|&c| c == '#').count();
+        let walls = MAP
+            .iter()
+            .flat_map(|r| r.chars())
+            .filter(|&c| c == '#')
+            .count();
         assert!(walls > 0, "map should contain wall tiles");
     }
 
     #[test]
     fn map_contains_floor_tiles() {
-        let floors = MAP.iter().flat_map(|r| r.chars()).filter(|&c| c == '.').count();
+        let floors = MAP
+            .iter()
+            .flat_map(|r| r.chars())
+            .filter(|&c| c == '.')
+            .count();
         assert!(floors > 0, "map should contain floor tiles");
     }
 
     #[test]
     fn first_row_is_all_walls() {
-        assert!(MAP[0].chars().all(|c| c == '#'),
-            "border row should be all walls");
+        assert!(
+            MAP[0].chars().all(|c| c == '#'),
+            "border row should be all walls"
+        );
     }
 
     #[test]
     fn last_row_is_all_walls() {
-        assert!(MAP[MAP.len() - 1].chars().all(|c| c == '#'),
-            "border row should be all walls");
+        assert!(
+            MAP[MAP.len() - 1].chars().all(|c| c == '#'),
+            "border row should be all walls"
+        );
     }
 
     #[test]

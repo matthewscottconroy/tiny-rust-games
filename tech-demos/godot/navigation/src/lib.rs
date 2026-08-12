@@ -121,8 +121,7 @@ impl ICharacterBody2D for NavAgent {
             let speed = self.move_speed;
             let vx = (dx / len) * speed;
             let vy = (dy / len) * speed;
-            self.base_mut()
-                .set_velocity(Vector2::new(vx, vy));
+            self.base_mut().set_velocity(Vector2::new(vx, vy));
             // move_and_slide uses the velocity set above.
             let _ = delta; // delta not needed; move_and_slide uses physics delta internally
             self.base_mut().move_and_slide();

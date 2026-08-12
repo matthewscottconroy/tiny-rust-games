@@ -25,8 +25,8 @@
 //!     .run();
 //! ```
 
-use bevy::prelude::*;
 use bevy::asset::RenderAssetUsages;
+use bevy::prelude::*;
 use bevy::render::render_resource::{Extent3d, TextureDimension, TextureFormat};
 
 /// Bundles every system and resource for the spritesheet-animation feature.
@@ -62,7 +62,12 @@ pub struct SpritesheetAnimationConfig {
 
 impl Default for SpritesheetAnimationConfig {
     fn default() -> Self {
-        Self { frame_px: 32, frames: 4, frame_seconds: 0.2, sprite_px: 128.0 }
+        Self {
+            frame_px: 32,
+            frames: 4,
+            frame_seconds: 0.2,
+            sprite_px: 128.0,
+        }
     }
 }
 
@@ -92,10 +97,10 @@ fn setup(
     let frame_px = config.frame_px;
     let frames = config.frames;
     let colors: [[u8; 4]; 4] = [
-        [220,  80,  80, 255], // red
-        [ 80, 200,  80, 255], // green
-        [ 80, 120, 220, 255], // blue
-        [220, 200,  60, 255], // yellow
+        [220, 80, 80, 255],  // red
+        [80, 200, 80, 255],  // green
+        [80, 120, 220, 255], // blue
+        [220, 200, 60, 255], // yellow
     ];
 
     let mut data = vec![0u8; (frame_px * frames * frame_px * 4) as usize];
@@ -110,7 +115,11 @@ fn setup(
     }
 
     let atlas_image = Image::new(
-        Extent3d { width: frame_px * frames, height: frame_px, depth_or_array_layers: 1 },
+        Extent3d {
+            width: frame_px * frames,
+            height: frame_px,
+            depth_or_array_layers: 1,
+        },
         TextureDimension::D2,
         data,
         TextureFormat::Rgba8UnormSrgb,
@@ -124,12 +133,21 @@ fn setup(
     commands.spawn((
         Sprite {
             image: image_handle,
-            texture_atlas: Some(TextureAtlas { layout: layout_handle, index: 0 }),
+            texture_atlas: Some(TextureAtlas {
+                layout: layout_handle,
+                index: 0,
+            }),
             custom_size: Some(Vec2::splat(config.sprite_px)),
             ..default()
         },
-        AnimationIndices { first: 0, last: (frames - 1) as usize },
-        AnimationTimer(Timer::from_seconds(config.frame_seconds, TimerMode::Repeating)),
+        AnimationIndices {
+            first: 0,
+            last: (frames - 1) as usize,
+        },
+        AnimationTimer(Timer::from_seconds(
+            config.frame_seconds,
+            TimerMode::Repeating,
+        )),
     ));
 }
 
@@ -141,10 +159,10 @@ fn animate_sprite(
 ) {
     for (indices, mut timer, mut sprite) in &mut query {
         timer.tick(time.delta());
-        if timer.just_finished() {
-            if let Some(atlas) = &mut sprite.texture_atlas {
-                atlas.index = next_frame(atlas.index, indices.first, indices.last);
-            }
+        if timer.just_finished()
+            && let Some(atlas) = &mut sprite.texture_atlas
+        {
+            atlas.index = next_frame(atlas.index, indices.first, indices.last);
         }
     }
 }

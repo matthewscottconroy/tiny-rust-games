@@ -60,7 +60,10 @@ pub struct ScenePauseConfig {
 
 impl Default for ScenePauseConfig {
     fn default() -> Self {
-        Self { half_width: 430.0, half_height: 280.0 }
+        Self {
+            half_width: 430.0,
+            half_height: 280.0,
+        }
     }
 }
 
@@ -105,14 +108,30 @@ fn setup(mut commands: Commands) {
     commands.spawn(Camera2d);
 
     let balls = [
-        (Vec3::new(-120.0,  80.0, 0.0), Vec2::new( 180.0,  130.0), Color::srgb(0.9, 0.4, 0.2)),
-        (Vec3::new( 100.0, -60.0, 0.0), Vec2::new(-220.0,  100.0), Color::srgb(0.2, 0.6, 0.9)),
-        (Vec3::new(   0.0, 140.0, 0.0), Vec2::new( 140.0, -190.0), Color::srgb(0.7, 0.9, 0.2)),
+        (
+            Vec3::new(-120.0, 80.0, 0.0),
+            Vec2::new(180.0, 130.0),
+            Color::srgb(0.9, 0.4, 0.2),
+        ),
+        (
+            Vec3::new(100.0, -60.0, 0.0),
+            Vec2::new(-220.0, 100.0),
+            Color::srgb(0.2, 0.6, 0.9),
+        ),
+        (
+            Vec3::new(0.0, 140.0, 0.0),
+            Vec2::new(140.0, -190.0),
+            Color::srgb(0.7, 0.9, 0.2),
+        ),
     ];
 
     for (pos, vel, color) in balls {
         commands.spawn((
-            Sprite { color, custom_size: Some(Vec2::splat(28.0)), ..default() },
+            Sprite {
+                color,
+                custom_size: Some(Vec2::splat(28.0)),
+                ..default()
+            },
             Transform::from_translation(pos),
             Ball,
             Velocity(vel),
@@ -136,14 +155,20 @@ fn setup(mut commands: Commands) {
         .with_children(|parent| {
             parent.spawn((
                 Text::new("PAUSED"),
-                TextFont { font_size: 64.0, ..default() },
+                TextFont {
+                    font_size: 64.0,
+                    ..default()
+                },
                 TextColor(Color::WHITE),
             ));
         });
 
     commands.spawn((
         Text::new("P — toggle pause"),
-        TextFont { font_size: 16.0, ..default() },
+        TextFont {
+            font_size: 16.0,
+            ..default()
+        },
         TextColor(Color::srgb(0.75, 0.75, 0.75)),
         Node {
             position_type: PositionType::Absolute,
@@ -182,8 +207,12 @@ fn bounce_walls(
 ) {
     for (transform, mut vel) in &mut query {
         let p = transform.translation;
-        if p.x.abs() > config.half_width { vel.0.x *= -1.0; }
-        if p.y.abs() > config.half_height { vel.0.y *= -1.0; }
+        if p.x.abs() > config.half_width {
+            vel.0.x *= -1.0;
+        }
+        if p.y.abs() > config.half_height {
+            vel.0.y *= -1.0;
+        }
     }
 }
 
@@ -220,8 +249,7 @@ mod tests {
     #[test]
     fn setup_spawns_three_balls() {
         let mut app = App::new();
-        app.add_plugins(MinimalPlugins)
-            .add_systems(Startup, setup);
+        app.add_plugins(MinimalPlugins).add_systems(Startup, setup);
         app.update();
 
         let mut q = app.world_mut().query::<&Ball>();
@@ -231,8 +259,7 @@ mod tests {
     #[test]
     fn setup_spawns_one_pause_overlay() {
         let mut app = App::new();
-        app.add_plugins(MinimalPlugins)
-            .add_systems(Startup, setup);
+        app.add_plugins(MinimalPlugins).add_systems(Startup, setup);
         app.update();
 
         let mut q = app.world_mut().query::<&PauseOverlay>();
@@ -242,8 +269,7 @@ mod tests {
     #[test]
     fn pause_overlay_starts_hidden() {
         let mut app = App::new();
-        app.add_plugins(MinimalPlugins)
-            .add_systems(Startup, setup);
+        app.add_plugins(MinimalPlugins).add_systems(Startup, setup);
         app.update();
 
         let mut q = app.world_mut().query::<(&PauseOverlay, &Visibility)>();

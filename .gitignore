@@ -53,3 +53,6 @@ desktop.ini
 # Environment / secrets
 .env
 .env.local
+
+# CI shared Cargo target dir for the Godot demos (see .github/workflows/ci.yml)
+.shared-target/

@@ -42,15 +42,19 @@ impl Plugin for KnockbackHitstopPlugin {
         app.init_resource::<KnockbackHitstopConfig>()
             .init_resource::<HitStop>()
             .add_systems(Startup, setup)
-            .add_systems(Update, (
-                move_player,
-                wander_enemies,
-                handle_attack,
-                apply_knockback,
-                tick_hitstop,
-                shake_camera,
-                update_hud,
-            ).chain());
+            .add_systems(
+                Update,
+                (
+                    move_player,
+                    wander_enemies,
+                    handle_attack,
+                    apply_knockback,
+                    tick_hitstop,
+                    shake_camera,
+                    update_hud,
+                )
+                    .chain(),
+            );
     }
 }
 
@@ -112,37 +116,56 @@ pub fn decay_vel(vel: Vec2, decay: f32, dt: f32) -> Vec2 {
 // ── ECS ───────────────────────────────────────────────────────────────────────
 
 #[derive(Component)]
-pub struct Player { pub attack_cd: f32 }
+pub struct Player {
+    pub attack_cd: f32,
+}
 
 #[derive(Component)]
-pub struct Enemy { pub vel: Vec2, pub wander_timer: f32, pub hp: i32 }
+pub struct Enemy {
+    pub vel: Vec2,
+    pub wander_timer: f32,
+    pub hp: i32,
+}
 
 #[derive(Component)]
-pub struct ShakeCamera { pub trauma: f32 }
+pub struct ShakeCamera {
+    pub trauma: f32,
+}
 
 #[derive(Resource, Default)]
-pub struct HitStop { pub remaining: f32 }
+pub struct HitStop {
+    pub remaining: f32,
+}
 
 #[derive(Component)]
 struct HudText;
 
 fn setup(mut commands: Commands) {
-    commands.spawn((
-        ShakeCamera { trauma: 0.0 },
-        Camera2d,
-    ));
+    commands.spawn((ShakeCamera { trauma: 0.0 }, Camera2d));
 
     commands.spawn((
         Player { attack_cd: 0.0 },
-        Sprite { color: Color::srgb(0.3, 0.6, 1.0), custom_size: Some(Vec2::splat(22.0)), ..default() },
+        Sprite {
+            color: Color::srgb(0.3, 0.6, 1.0),
+            custom_size: Some(Vec2::splat(22.0)),
+            ..default()
+        },
         Transform::from_translation(Vec3::new(0.0, 0.0, 1.0)),
     ));
 
     let positions = [(-200.0f32, 80.0), (180.0, -60.0), (50.0, 160.0)];
     for (x, y) in positions {
         commands.spawn((
-            Enemy { vel: Vec2::ZERO, wander_timer: 0.0, hp: 5 },
-            Sprite { color: Color::srgb(0.85, 0.25, 0.25), custom_size: Some(Vec2::splat(26.0)), ..default() },
+            Enemy {
+                vel: Vec2::ZERO,
+                wander_timer: 0.0,
+                hp: 5,
+            },
+            Sprite {
+                color: Color::srgb(0.85, 0.25, 0.25),
+                custom_size: Some(Vec2::splat(26.0)),
+                ..default()
+            },
             Transform::from_translation(Vec3::new(x, y, 1.0)),
         ));
     }
@@ -150,16 +173,32 @@ fn setup(mut commands: Commands) {
     commands.spawn((
         HudText,
         Text::new(""),
-        TextFont { font_size: 16.0, ..default() },
+        TextFont {
+            font_size: 16.0,
+            ..default()
+        },
         TextColor(Color::WHITE),
-        Node { position_type: PositionType::Absolute, top: Val::Px(10.0), left: Val::Px(10.0), ..default() },
+        Node {
+            position_type: PositionType::Absolute,
+            top: Val::Px(10.0),
+            left: Val::Px(10.0),
+            ..default()
+        },
     ));
 
     commands.spawn((
         Text::new("WASD / Arrows — move   SPACE — attack"),
-        TextFont { font_size: 13.0, ..default() },
+        TextFont {
+            font_size: 13.0,
+            ..default()
+        },
         TextColor(Color::srgba(1.0, 1.0, 1.0, 0.5)),
-        Node { position_type: PositionType::Absolute, bottom: Val::Px(10.0), left: Val::Px(10.0), ..default() },
+        Node {
+            position_type: PositionType::Absolute,
+            bottom: Val::Px(10.0),
+            left: Val::Px(10.0),
+            ..default()
+        },
     ));
 }
 
@@ -169,17 +208,35 @@ fn move_player(
     config: Res<KnockbackHitstopConfig>,
     mut q: Query<(&mut Player, &mut Transform)>,
 ) {
-    let Ok((mut player, mut tf)) = q.single_mut() else { return };
+    let Ok((mut player, mut tf)) = q.single_mut() else {
+        return;
+    };
     player.attack_cd = (player.attack_cd - time.delta_secs()).max(0.0);
     let mut dir = Vec2::ZERO;
-    if keys.pressed(KeyCode::KeyW) || keys.pressed(KeyCode::ArrowUp)    { dir.y += 1.0; }
-    if keys.pressed(KeyCode::KeyS) || keys.pressed(KeyCode::ArrowDown)  { dir.y -= 1.0; }
-    if keys.pressed(KeyCode::KeyA) || keys.pressed(KeyCode::ArrowLeft)  { dir.x -= 1.0; }
-    if keys.pressed(KeyCode::KeyD) || keys.pressed(KeyCode::ArrowRight) { dir.x += 1.0; }
-    if dir == Vec2::ZERO { return; }
+    if keys.pressed(KeyCode::KeyW) || keys.pressed(KeyCode::ArrowUp) {
+        dir.y += 1.0;
+    }
+    if keys.pressed(KeyCode::KeyS) || keys.pressed(KeyCode::ArrowDown) {
+        dir.y -= 1.0;
+    }
+    if keys.pressed(KeyCode::KeyA) || keys.pressed(KeyCode::ArrowLeft) {
+        dir.x -= 1.0;
+    }
+    if keys.pressed(KeyCode::KeyD) || keys.pressed(KeyCode::ArrowRight) {
+        dir.x += 1.0;
+    }
+    if dir == Vec2::ZERO {
+        return;
+    }
     tf.translation += (dir.normalize() * config.player_speed * time.delta_secs()).extend(0.0);
-    tf.translation.x = tf.translation.x.clamp(-config.window_w / 2.0 + 14.0, config.window_w / 2.0 - 14.0);
-    tf.translation.y = tf.translation.y.clamp(-config.window_h / 2.0 + 14.0, config.window_h / 2.0 - 14.0);
+    tf.translation.x = tf
+        .translation
+        .x
+        .clamp(-config.window_w / 2.0 + 14.0, config.window_w / 2.0 - 14.0);
+    tf.translation.y = tf
+        .translation
+        .y
+        .clamp(-config.window_h / 2.0 + 14.0, config.window_h / 2.0 - 14.0);
 }
 
 fn wander_enemies(
@@ -188,12 +245,18 @@ fn wander_enemies(
     config: Res<KnockbackHitstopConfig>,
     mut q: Query<(&mut Enemy, &mut Transform)>,
 ) {
-    let scale = if hitstop.remaining > 0.0 { config.hitstop_scale } else { 1.0 };
+    let scale = if hitstop.remaining > 0.0 {
+        config.hitstop_scale
+    } else {
+        1.0
+    };
     let dt = time.delta_secs() * scale;
     let hw = config.window_w / 2.0 - 16.0;
     let hh = config.window_h / 2.0 - 16.0;
     for (mut enemy, mut tf) in &mut q {
-        if enemy.hp <= 0 { continue; }
+        if enemy.hp <= 0 {
+            continue;
+        }
         enemy.wander_timer -= dt;
         if enemy.wander_timer <= 0.0 {
             let angle = tf.translation.x.sin() * 12.34 + tf.translation.y.cos() * 7.89;
@@ -202,8 +265,14 @@ fn wander_enemies(
         }
         enemy.vel = decay_vel(enemy.vel, config.vel_decay, dt);
         tf.translation += (enemy.vel * dt).extend(0.0);
-        if tf.translation.x.abs() > hw { enemy.vel.x *= -1.0; tf.translation.x = tf.translation.x.clamp(-hw, hw); }
-        if tf.translation.y.abs() > hh { enemy.vel.y *= -1.0; tf.translation.y = tf.translation.y.clamp(-hh, hh); }
+        if tf.translation.x.abs() > hw {
+            enemy.vel.x *= -1.0;
+            tf.translation.x = tf.translation.x.clamp(-hw, hw);
+        }
+        if tf.translation.y.abs() > hh {
+            enemy.vel.y *= -1.0;
+            tf.translation.y = tf.translation.y.clamp(-hh, hh);
+        }
     }
 }
 
@@ -216,22 +285,30 @@ fn handle_attack(
     mut commands: Commands,
     mut shake_q: Query<&mut ShakeCamera>,
 ) {
-    let Ok((mut player, ptf)) = player_q.single_mut() else { return };
-    if !keys.just_pressed(KeyCode::Space) || player.attack_cd > 0.0 { return; }
+    let Ok((mut player, ptf)) = player_q.single_mut() else {
+        return;
+    };
+    if !keys.just_pressed(KeyCode::Space) || player.attack_cd > 0.0 {
+        return;
+    }
 
     let player_pos = ptf.translation.truncate();
     let mut hit = false;
     for (entity, etf) in &enemy_q {
         if ptf.translation.distance(etf.translation) <= config.attack_range {
             let dir = knockback_dir(player_pos, etf.translation.truncate());
-            commands.entity(entity).insert(KnockbackImpulse(dir * config.knockback_force));
+            commands
+                .entity(entity)
+                .insert(KnockbackImpulse(dir * config.knockback_force));
             hit = true;
         }
     }
     if hit {
         player.attack_cd = config.attack_cd;
         hitstop.remaining = config.hitstop_dur;
-        if let Ok(mut cam) = shake_q.single_mut() { cam.trauma = 1.0; }
+        if let Ok(mut cam) = shake_q.single_mut() {
+            cam.trauma = 1.0;
+        }
     }
 }
 
@@ -267,11 +344,10 @@ fn tick_hitstop(time: Res<Time>, mut hitstop: ResMut<HitStop>) {
     hitstop.remaining = (hitstop.remaining - time.delta_secs()).max(0.0);
 }
 
-fn shake_camera(
-    time: Res<Time>,
-    mut q: Query<(&mut ShakeCamera, &mut Transform), With<Camera2d>>,
-) {
-    let Ok((mut cam, mut tf)) = q.single_mut() else { return };
+fn shake_camera(time: Res<Time>, mut q: Query<(&mut ShakeCamera, &mut Transform), With<Camera2d>>) {
+    let Ok((mut cam, mut tf)) = q.single_mut() else {
+        return;
+    };
     cam.trauma = (cam.trauma - time.delta_secs() * 2.0).max(0.0);
     let shake = cam.trauma * cam.trauma;
     let t = time.elapsed_secs();
@@ -285,9 +361,15 @@ fn update_hud(
     enemy_q: Query<&Enemy>,
     mut text_q: Query<&mut Text, With<HudText>>,
 ) {
-    let Ok(mut text) = text_q.single_mut() else { return };
+    let Ok(mut text) = text_q.single_mut() else {
+        return;
+    };
     let alive = enemy_q.iter().filter(|e| e.hp > 0).count();
-    let ts = if hitstop.remaining > 0.0 { format!("{:.0}%", config.hitstop_scale * 100.0) } else { "100%".to_string() };
+    let ts = if hitstop.remaining > 0.0 {
+        format!("{:.0}%", config.hitstop_scale * 100.0)
+    } else {
+        "100%".to_string()
+    };
     text.0 = format!("Time scale: {ts}  |  Enemies alive: {alive}/3  |  SPACE to attack");
 }
 

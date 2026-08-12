@@ -56,12 +56,19 @@ pub struct Achievement {
 
 impl Achievement {
     pub fn new(name: &'static str, goal: i32) -> Self {
-        Self { name, goal, progress: 0, unlocked: false }
+        Self {
+            name,
+            goal,
+            progress: 0,
+            unlocked: false,
+        }
     }
 
     /// Returns `true` the first time the achievement tips into unlocked.
     pub fn add_progress(&mut self, amount: i32) -> bool {
-        if self.unlocked { return false; }
+        if self.unlocked {
+            return false;
+        }
         self.progress = (self.progress + amount).min(self.goal);
         if is_unlocked(self.progress, self.goal) {
             self.unlocked = true;
@@ -157,7 +164,9 @@ impl INode2D for AchievementArena {
             // "First Blood" also unlocks on first kill
             let fb = self.achievements[0].add_progress(1);
             let mut all = newly;
-            if fb { all.push("First Blood"); }
+            if fb {
+                all.push("First Blood");
+            }
             self.show_banner_if(all);
         }
 
@@ -184,10 +193,8 @@ impl AchievementArena {
     fn add_progress_by_category(&mut self, keyword: &str, amount: i32) -> Vec<&'static str> {
         let mut newly_unlocked = Vec::new();
         for ach in &mut self.achievements {
-            if ach.name.contains(keyword) {
-                if ach.add_progress(amount) {
-                    newly_unlocked.push(ach.name);
-                }
+            if ach.name.contains(keyword) && ach.add_progress(amount) {
+                newly_unlocked.push(ach.name);
             }
         }
         self.dirty = true;
@@ -195,7 +202,9 @@ impl AchievementArena {
     }
 
     fn show_banner_if(&mut self, names: Vec<&'static str>) {
-        if names.is_empty() { return; }
+        if names.is_empty() {
+            return;
+        }
         self.banner_text = format!("Unlocked: {}", names.join(", "));
         self.banner_timer = 2.5;
         let text = self.banner_text.clone();
@@ -208,9 +217,7 @@ impl AchievementArena {
         for (i, ach) in self.achievements.iter().enumerate() {
             let text = progress_text(ach.name, ach.progress, ach.goal);
             let node_name = format!("Ach{}", i);
-            if let Some(mut lbl) =
-                self.base().try_get_node_as::<Label>(node_name.as_str())
-            {
+            if let Some(mut lbl) = self.base().try_get_node_as::<Label>(node_name.as_str()) {
                 lbl.set_text(&GString::from(text.as_str()));
             }
         }

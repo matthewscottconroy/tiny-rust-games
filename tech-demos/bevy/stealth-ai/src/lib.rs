@@ -12,11 +12,11 @@
 //!   inside a directional cone defined by an origin, a normalised forward
 //!   vector, a half-angle, and a maximum range.
 //! - The guard cycles through three states:
-//!     - **Patrol** — walks between two waypoints.
-//!     - **Alert**  — stops and looks toward where the player was spotted;
-//!                    transitions to Chase if the player stays in view, or
-//!                    back to Patrol after a timeout.
-//!     - **Chase**  — runs directly toward the last known player position.
+//!   - **Patrol** — walks between two waypoints.
+//!   - **Alert**  — stops and looks toward where the player was spotted;
+//!     transitions to Chase if the player stays in view, or
+//!     back to Patrol after a timeout.
+//!   - **Chase**  — runs directly toward the last known player position.
 //! - A coloured rectangle behind the guard visualises the detection state.
 //! - The player moves freely; the guard's FOV cone is drawn as a fan of thin
 //!   sprites approximating an arc.
@@ -159,21 +159,36 @@ fn setup(mut commands: Commands, config: Res<StealthAiConfig>) {
 
     // Player
     commands.spawn((
-        Sprite { color: Color::srgb(0.3, 0.85, 1.0), custom_size: Some(Vec2::splat(20.0)), ..default() },
+        Sprite {
+            color: Color::srgb(0.3, 0.85, 1.0),
+            custom_size: Some(Vec2::splat(20.0)),
+            ..default()
+        },
         Transform::from_translation(Vec3::new(-200.0, -200.0, 1.0)),
         PlayerMarker,
     ));
 
     // Guard
     commands.spawn((
-        Sprite { color: Color::srgb(0.85, 0.55, 0.1), custom_size: Some(Vec2::splat(22.0)), ..default() },
+        Sprite {
+            color: Color::srgb(0.85, 0.55, 0.1),
+            custom_size: Some(Vec2::splat(22.0)),
+            ..default()
+        },
         Transform::from_translation(WAYPOINTS[0].extend(1.0)),
-        Guard { state: GuardState::Patrol { waypoint_idx: 0 }, facing: Vec2::X },
+        Guard {
+            state: GuardState::Patrol { waypoint_idx: 0 },
+            facing: Vec2::X,
+        },
     ));
 
     // Status tile behind guard (z = 0.5)
     commands.spawn((
-        Sprite { color: Color::srgb(0.1, 0.8, 0.1), custom_size: Some(Vec2::splat(36.0)), ..default() },
+        Sprite {
+            color: Color::srgb(0.1, 0.8, 0.1),
+            custom_size: Some(Vec2::splat(36.0)),
+            ..default()
+        },
         Transform::from_translation(WAYPOINTS[0].extend(0.5)),
         StatusTile,
     ));
@@ -181,7 +196,11 @@ fn setup(mut commands: Commands, config: Res<StealthAiConfig>) {
     // FOV fan segments (very thin lines)
     for i in 0..config.fov_rays {
         commands.spawn((
-            Sprite { color: Color::srgba(1.0, 1.0, 0.0, 0.18), custom_size: Some(Vec2::new(config.fov_range, 2.0)), ..default() },
+            Sprite {
+                color: Color::srgba(1.0, 1.0, 0.0, 0.18),
+                custom_size: Some(Vec2::new(config.fov_range, 2.0)),
+                ..default()
+            },
             Transform::default(),
             FovSegment(i),
         ));
@@ -190,7 +209,10 @@ fn setup(mut commands: Commands, config: Res<StealthAiConfig>) {
     // Legend
     commands.spawn((
         Text::new("WASD / Arrow keys — move\nGreen = Patrol   Orange = Alert   Red = Chase"),
-        TextFont { font_size: 16.0, ..default() },
+        TextFont {
+            font_size: 16.0,
+            ..default()
+        },
         TextColor(Color::WHITE),
         Node {
             position_type: PositionType::Absolute,
@@ -211,10 +233,18 @@ fn move_player(
 ) {
     let Ok(mut t) = q.single_mut() else { return };
     let mut dir = Vec2::ZERO;
-    if input.pressed(KeyCode::KeyW) || input.pressed(KeyCode::ArrowUp)    { dir.y += 1.0; }
-    if input.pressed(KeyCode::KeyS) || input.pressed(KeyCode::ArrowDown)   { dir.y -= 1.0; }
-    if input.pressed(KeyCode::KeyA) || input.pressed(KeyCode::ArrowLeft)   { dir.x -= 1.0; }
-    if input.pressed(KeyCode::KeyD) || input.pressed(KeyCode::ArrowRight)  { dir.x += 1.0; }
+    if input.pressed(KeyCode::KeyW) || input.pressed(KeyCode::ArrowUp) {
+        dir.y += 1.0;
+    }
+    if input.pressed(KeyCode::KeyS) || input.pressed(KeyCode::ArrowDown) {
+        dir.y -= 1.0;
+    }
+    if input.pressed(KeyCode::KeyA) || input.pressed(KeyCode::ArrowLeft) {
+        dir.x -= 1.0;
+    }
+    if input.pressed(KeyCode::KeyD) || input.pressed(KeyCode::ArrowRight) {
+        dir.x += 1.0;
+    }
     if dir != Vec2::ZERO {
         t.translation += (dir.normalize() * config.player_speed * time.delta_secs()).extend(0.0);
     }
@@ -227,18 +257,30 @@ fn update_guard(
     mut guard_q: Query<(&mut Guard, &mut Transform), Without<PlayerMarker>>,
     mut status_q: Query<&mut Transform, (With<StatusTile>, Without<Guard>, Without<PlayerMarker>)>,
 ) {
-    let Ok(player_t) = player_q.single() else { return };
-    let Ok((mut guard, mut guard_t)) = guard_q.single_mut() else { return };
+    let Ok(player_t) = player_q.single() else {
+        return;
+    };
+    let Ok((mut guard, mut guard_t)) = guard_q.single_mut() else {
+        return;
+    };
     let dt = time.delta_secs();
     let player_pos = player_t.translation.truncate();
     let guard_pos = guard_t.translation.truncate();
 
-    let sees_player = in_fov_cone(player_pos, guard_pos, guard.facing, config.fov_half_angle, config.fov_range);
+    let sees_player = in_fov_cone(
+        player_pos,
+        guard_pos,
+        guard.facing,
+        config.fov_half_angle,
+        config.fov_range,
+    );
 
     let new_state = match guard.state.clone() {
         GuardState::Patrol { waypoint_idx } => {
             if sees_player {
-                GuardState::Alert { timer: config.alert_timeout }
+                GuardState::Alert {
+                    timer: config.alert_timeout,
+                }
             } else {
                 let target = WAYPOINTS[waypoint_idx];
                 let to = target - guard_pos;
@@ -256,7 +298,9 @@ fn update_guard(
         GuardState::Alert { timer } => {
             if sees_player {
                 guard.facing = (player_pos - guard_pos).normalize_or_zero();
-                GuardState::Chase { last_known: player_pos }
+                GuardState::Chase {
+                    last_known: player_pos,
+                }
             } else {
                 let t = timer - dt;
                 if t <= 0.0 {
@@ -270,7 +314,9 @@ fn update_guard(
             let target = if sees_player { player_pos } else { last_known };
             let to = target - guard_pos;
             if to.length() < 6.0 {
-                GuardState::Alert { timer: config.alert_timeout }
+                GuardState::Alert {
+                    timer: config.alert_timeout,
+                }
             } else {
                 let dir = to.normalize();
                 guard.facing = dir;
@@ -293,7 +339,9 @@ fn draw_fov(
     guard_q: Query<(&Guard, &Transform)>,
     mut segments: Query<(&FovSegment, &mut Transform), Without<Guard>>,
 ) {
-    let Ok((guard, gt)) = guard_q.single() else { return };
+    let Ok((guard, gt)) = guard_q.single() else {
+        return;
+    };
     let origin = gt.translation.truncate();
     let base_angle = guard.facing.y.atan2(guard.facing.x);
     let step = (config.fov_half_angle * 2.0) / config.fov_rays as f32;
@@ -307,16 +355,15 @@ fn draw_fov(
     }
 }
 
-fn update_status(
-    guard_q: Query<&Guard>,
-    mut status_q: Query<&mut Sprite, With<StatusTile>>,
-) {
+fn update_status(guard_q: Query<&Guard>, mut status_q: Query<&mut Sprite, With<StatusTile>>) {
     let Ok(guard) = guard_q.single() else { return };
-    let Ok(mut sprite) = status_q.single_mut() else { return };
+    let Ok(mut sprite) = status_q.single_mut() else {
+        return;
+    };
     sprite.color = match guard.state {
         GuardState::Patrol { .. } => Color::srgb(0.1, 0.8, 0.1),
-        GuardState::Alert { .. }  => Color::srgb(0.9, 0.6, 0.0),
-        GuardState::Chase { .. }  => Color::srgb(0.9, 0.1, 0.1),
+        GuardState::Alert { .. } => Color::srgb(0.9, 0.6, 0.0),
+        GuardState::Chase { .. } => Color::srgb(0.9, 0.1, 0.1),
     };
 }
 
@@ -336,7 +383,13 @@ mod tests {
         let origin = Vec2::ZERO;
         let forward = Vec2::X;
         let target = Vec2::new(100.0, 0.0);
-        assert!(in_fov_cone(target, origin, forward, c.fov_half_angle, c.fov_range));
+        assert!(in_fov_cone(
+            target,
+            origin,
+            forward,
+            c.fov_half_angle,
+            c.fov_range
+        ));
     }
 
     #[test]
@@ -345,7 +398,13 @@ mod tests {
         let origin = Vec2::ZERO;
         let forward = Vec2::X;
         let target = Vec2::new(-100.0, 0.0);
-        assert!(!in_fov_cone(target, origin, forward, c.fov_half_angle, c.fov_range));
+        assert!(!in_fov_cone(
+            target,
+            origin,
+            forward,
+            c.fov_half_angle,
+            c.fov_range
+        ));
     }
 
     #[test]
@@ -354,7 +413,13 @@ mod tests {
         let origin = Vec2::ZERO;
         let forward = Vec2::X;
         let target = Vec2::new(c.fov_range + 1.0, 0.0);
-        assert!(!in_fov_cone(target, origin, forward, c.fov_half_angle, c.fov_range));
+        assert!(!in_fov_cone(
+            target,
+            origin,
+            forward,
+            c.fov_half_angle,
+            c.fov_range
+        ));
     }
 
     #[test]
@@ -365,7 +430,13 @@ mod tests {
         // Slightly inside half-angle boundary.
         let angle = c.fov_half_angle - 0.01;
         let target = Vec2::new(angle.cos() * 50.0, angle.sin() * 50.0);
-        assert!(in_fov_cone(target, origin, forward, c.fov_half_angle, c.fov_range));
+        assert!(in_fov_cone(
+            target,
+            origin,
+            forward,
+            c.fov_half_angle,
+            c.fov_range
+        ));
     }
 
     #[test]
@@ -375,7 +446,13 @@ mod tests {
         let forward = Vec2::X;
         let angle = c.fov_half_angle + 0.1;
         let target = Vec2::new(angle.cos() * 50.0, angle.sin() * 50.0);
-        assert!(!in_fov_cone(target, origin, forward, c.fov_half_angle, c.fov_range));
+        assert!(!in_fov_cone(
+            target,
+            origin,
+            forward,
+            c.fov_half_angle,
+            c.fov_range
+        ));
     }
 
     #[test]

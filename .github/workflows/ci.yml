@@ -10,60 +10,115 @@ env:
   CARGO_TERM_COLOR: always
 
 jobs:
+  # Formatting is a pure syntax check, so it needs neither system libraries nor
+  # a compiled dependency tree — it runs in seconds and fails fast for everyone.
+  # Deliberately hand-aligned data tables opt out with `#[rustfmt::skip]`.
+  fmt:
+    name: rustfmt
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt
+
+      - name: Check formatting of every crate
+        run: |
+          set -uo pipefail
+          failed=""
+          for manifest in \
+            tech-demos/bevy/Cargo.toml \
+            tech-demos/godot/*/Cargo.toml \
+            tech-demos/brackets/mouse-control/Cargo.toml \
+            tic-tac-toe/*/Cargo.toml; do
+            if ! cargo fmt --manifest-path "$manifest" --all --check; then
+              failed="$failed $manifest"
+            fi
+          done
+          if [ -n "$failed" ]; then
+            echo "Unformatted crates:$failed"
+            echo "Run 'cargo fmt --manifest-path <manifest> --all' to fix."
+            exit 1
+          fi
+
   # The Bevy demos share one Cargo workspace, so Bevy compiles once and every
-  # demo (plus its unit tests) is built and tested in a single invocation.
+  # demo (plus its unit tests) is built, linted, and tested in a single
+  # invocation.
   bevy:
     name: Bevy demos (workspace)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
 
+      # ALSA and udev back bevy_audio and gamepad input; wayland and xkbcommon
+      # are pulled in unconditionally by winit. GitHub's runner image happens to
+      # ship the latter two, but naming them keeps this job reproducible on any
+      # runner and documents the real dependency set.
       - name: Install Bevy system dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y libasound2-dev libudev-dev
+          sudo apt-get install -y \
+            libasound2-dev libudev-dev libwayland-dev libxkbcommon-dev
 
       - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy
 
       - uses: Swatinem/rust-cache@v2
         with:
           workspaces: tech-demos/bevy
 
-      - name: Build all demos
-        run: cargo build --workspace --manifest-path tech-demos/bevy/Cargo.toml
+      - name: Clippy all demos
+        run: >
+          cargo clippy --locked --workspace --all-targets
+          --manifest-path tech-demos/bevy/Cargo.toml -- -D warnings
 
       - name: Test all demos
-        run: cargo test --workspace --manifest-path tech-demos/bevy/Cargo.toml
+        run: cargo test --locked --workspace --manifest-path tech-demos/bevy/Cargo.toml
 
   # The Godot demos are intentionally standalone crates (each keeps its own
   # target/ so the .gdextension can resolve res://target/debug/*.so), so they
-  # are built and tested in a loop. gdext bundles the Godot API, so no Godot
+  # are linted and tested in a loop. gdext bundles the Godot API, so no Godot
   # install is required to compile or test.
   godot:
     name: Godot demos (per-crate)
     runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: dtolnay/rust-toolchain@stable
-
-      - uses: Swatinem/rust-cache@v2
-
+    env:
       # Share one target dir across all crates so gdext compiles once per
       # pinned version instead of 67 times. This only affects CI compilation;
       # the per-crate target/ layout that .gdextension files rely on matters
       # only when running the demos inside Godot itself.
-      - name: Build and test every Godot demo
-        env:
-          CARGO_TARGET_DIR: /tmp/godot-shared-target
+      #
+      # Kept inside tech-demos/godot because rust-cache resolves a workspace's
+      # target directory relative to the workspace root — an absolute path here
+      # would not match what it caches.
+      CARGO_TARGET_DIR: ${{ github.workspace }}/tech-demos/godot/.shared-target
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy
+
+      # rust-cache caches a workspace's target directory, so it has to be told
+      # about the shared one above — otherwise it caches an empty ./target and
+      # every run recompiles gdext from scratch.
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: tech-demos/godot -> .shared-target
+
+      - name: Lint and test every Godot demo
         run: |
           set -uo pipefail
           failed=""
           for manifest in tech-demos/godot/*/Cargo.toml; do
             demo=$(basename "$(dirname "$manifest")")
             echo "::group::$demo"
-            if ! cargo test --manifest-path "$manifest"; then
-              failed="$failed $demo"
+            if ! cargo clippy --locked --manifest-path "$manifest" --all-targets -- -D warnings; then
+              failed="$failed $demo(clippy)"
+            elif ! cargo test --locked --manifest-path "$manifest"; then
+              failed="$failed $demo(test)"
             fi
             echo "::endgroup::"
           done
@@ -82,13 +137,20 @@ jobs:
       - name: Install system dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y libasound2-dev libudev-dev
+          sudo apt-get install -y \
+            libasound2-dev libudev-dev libwayland-dev libxkbcommon-dev
 
       - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy
 
       - uses: Swatinem/rust-cache@v2
 
-      - name: Build and test standalone crates
+      - name: Lint and test standalone crates
+        env:
+          # bracket-lib pulls in expat-sys, whose bundled CMake project declares
+          # a minimum below what CMake >= 4.0 accepts.
+          CMAKE_POLICY_VERSION_MINIMUM: "3.5"
         run: |
           set -uo pipefail
           failed=""
@@ -98,8 +160,10 @@ jobs:
             tic-tac-toe/tic-tac-toe-brackets/Cargo.toml \
             tech-demos/brackets/mouse-control/Cargo.toml; do
             echo "::group::$manifest"
-            if ! cargo test --manifest-path "$manifest"; then
-              failed="$failed $manifest"
+            if ! cargo clippy --locked --manifest-path "$manifest" --all-targets -- -D warnings; then
+              failed="$failed $manifest(clippy)"
+            elif ! cargo test --locked --manifest-path "$manifest"; then
+              failed="$failed $manifest(test)"
             fi
             echo "::endgroup::"
           done

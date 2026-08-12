@@ -59,7 +59,10 @@ pub struct HexConfig {
 
 impl Default for HexConfig {
     fn default() -> Self {
-        Self { size: 30.0, radius: 5 }
+        Self {
+            size: 30.0,
+            radius: 5,
+        }
     }
 }
 
@@ -99,10 +102,10 @@ pub fn hex_neighbors(q: i32, r: i32) -> [(i32, i32); 6] {
     [
         (q + 1, r),
         (q + 1, r - 1),
-        (q,     r - 1),
+        (q, r - 1),
         (q - 1, r),
         (q - 1, r + 1),
-        (q,     r + 1),
+        (q, r + 1),
     ]
 }
 
@@ -129,7 +132,10 @@ fn setup(mut commands: Commands, config: Res<HexConfig>) {
 
     commands.spawn((
         Text::new("left-click: select   R: reset"),
-        TextFont { font_size: 15.0, ..default() },
+        TextFont {
+            font_size: 15.0,
+            ..default()
+        },
         TextColor(Color::srgb(0.6, 0.6, 0.6)),
         Node {
             position_type: PositionType::Absolute,
@@ -142,7 +148,9 @@ fn setup(mut commands: Commands, config: Res<HexConfig>) {
     for q in -config.radius..=config.radius {
         for r in -config.radius..=config.radius {
             // Keep a rough hexagonal boundary
-            if axial_distance(q, r, 0, 0) > config.radius { continue; }
+            if axial_distance(q, r, 0, 0) > config.radius {
+                continue;
+            }
             let pos = axial_to_pixel(q, r, config.size);
             commands.spawn((
                 Sprite {
@@ -170,12 +178,20 @@ fn handle_click(
         selected.0 = None;
         return;
     }
-    if !buttons.just_pressed(MouseButton::Left) { return; }
+    if !buttons.just_pressed(MouseButton::Left) {
+        return;
+    }
 
-    let Ok((camera, cam_tf)) = camera_q.single() else { return };
+    let Ok((camera, cam_tf)) = camera_q.single() else {
+        return;
+    };
     let Ok(window) = windows.single() else { return };
-    let Some(cursor) = window.cursor_position() else { return };
-    let Ok(world) = camera.viewport_to_world_2d(cam_tf, cursor) else { return };
+    let Some(cursor) = window.cursor_position() else {
+        return;
+    };
+    let Ok(world) = camera.viewport_to_world_2d(cam_tf, cursor) else {
+        return;
+    };
 
     // Find the closest hex within one hex-size radius
     let mut best: Option<(i32, i32)> = None;
@@ -190,22 +206,20 @@ fn handle_click(
     selected.0 = best;
 }
 
-fn update_colors(
-    selected: Res<Selected>,
-    mut hexes: Query<(&HexCoord, &mut Sprite)>,
-) {
-    let neighbors: std::collections::HashSet<(i32, i32)> = selected.0
+fn update_colors(selected: Res<Selected>, mut hexes: Query<(&HexCoord, &mut Sprite)>) {
+    let neighbors: std::collections::HashSet<(i32, i32)> = selected
+        .0
         .map(|(q, r)| hex_neighbors(q, r).into_iter().collect())
         .unwrap_or_default();
 
     for (coord, mut sprite) in &mut hexes {
         let cell = (coord.0, coord.1);
         sprite.color = if selected.0 == Some(cell) {
-            Color::srgb(1.0, 0.75, 0.15)      // selected: gold
+            Color::srgb(1.0, 0.75, 0.15) // selected: gold
         } else if neighbors.contains(&cell) {
-            Color::srgb(0.35, 0.55, 0.85)      // neighbor: blue
+            Color::srgb(0.35, 0.55, 0.85) // neighbor: blue
         } else {
-            Color::srgb(0.22, 0.22, 0.28)      // default: dark
+            Color::srgb(0.22, 0.22, 0.28) // default: dark
         };
     }
 }
@@ -233,7 +247,11 @@ mod tests {
     fn pixel_to_axial_several_cells() {
         for (q, r) in [(0, 0), (3, -2), (-2, 1), (0, 4)] {
             let p = axial_to_pixel(q, r, 30.0);
-            assert_eq!(pixel_to_axial(p, 30.0), (q, r), "round-trip failed for ({q},{r})");
+            assert_eq!(
+                pixel_to_axial(p, 30.0),
+                (q, r),
+                "round-trip failed for ({q},{r})"
+            );
         }
     }
 

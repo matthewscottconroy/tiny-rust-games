@@ -71,9 +71,7 @@ impl SceneManager {
         if !current.is_empty() {
             self.scene_history.push(current);
         }
-        self.base_mut()
-            .get_tree()
-            .change_scene_to_file(&path);
+        self.base_mut().get_tree().change_scene_to_file(&path);
     }
 
     /// Reload the current scene without modifying history.
@@ -87,9 +85,7 @@ impl SceneManager {
     pub fn go_back(&mut self) {
         if let Some(prev) = self.scene_history.pop() {
             let gpath = GString::from(prev.as_str());
-            self.base_mut()
-                .get_tree()
-                .change_scene_to_file(&gpath);
+            self.base_mut().get_tree().change_scene_to_file(&gpath);
         } else {
             godot_print!("SceneManager: history is empty, cannot go back");
         }
@@ -138,10 +134,7 @@ mod tests {
 
     #[test]
     fn history_depth_multiple() {
-        let h = vec![
-            "res://a.tscn".to_string(),
-            "res://b.tscn".to_string(),
-        ];
+        let h = vec!["res://a.tscn".to_string(), "res://b.tscn".to_string()];
         assert_eq!(history_depth(&h), 2);
     }
 

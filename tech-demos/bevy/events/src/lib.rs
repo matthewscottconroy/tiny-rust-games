@@ -42,13 +42,7 @@ impl Plugin for EventsPlugin {
             .add_systems(Startup, setup)
             .add_systems(
                 Update,
-                (
-                    handle_input,
-                    apply_add_score,
-                    apply_reset_score,
-                    update_hud,
-                )
-                    .chain(),
+                (handle_input, apply_add_score, apply_reset_score, update_hud).chain(),
             );
     }
 }
@@ -65,7 +59,9 @@ pub struct EventsConfig {
 
 impl Default for EventsConfig {
     fn default() -> Self {
-        Self { points_per_press: 10 }
+        Self {
+            points_per_press: 10,
+        }
     }
 }
 
@@ -112,7 +108,10 @@ fn setup(mut commands: Commands) {
 
     commands.spawn((
         Text::new("Score: 0"),
-        TextFont { font_size: 32.0, ..default() },
+        TextFont {
+            font_size: 32.0,
+            ..default()
+        },
         TextColor(Color::WHITE),
         Node {
             position_type: PositionType::Absolute,
@@ -125,7 +124,10 @@ fn setup(mut commands: Commands) {
 
     commands.spawn((
         Text::new("(no action yet)"),
-        TextFont { font_size: 16.0, ..default() },
+        TextFont {
+            font_size: 16.0,
+            ..default()
+        },
         TextColor(Color::srgb(0.6, 0.85, 0.6)),
         Node {
             position_type: PositionType::Absolute,
@@ -138,7 +140,10 @@ fn setup(mut commands: Commands) {
 
     commands.spawn((
         Text::new("SPACE = +10 score   R = reset score"),
-        TextFont { font_size: 14.0, ..default() },
+        TextFont {
+            font_size: 14.0,
+            ..default()
+        },
         TextColor(Color::srgb(0.6, 0.6, 0.6)),
         Node {
             position_type: PositionType::Absolute,

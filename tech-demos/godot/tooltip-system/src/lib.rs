@@ -28,9 +28,7 @@ impl IControl for TooltipSystem {
 
     fn ready(&mut self) {
         // Hide the panel by default
-        let mut panel = self
-            .base()
-            .get_node_as::<PanelContainer>("PanelContainer");
+        let mut panel = self.base().get_node_as::<PanelContainer>("PanelContainer");
         panel.hide();
 
         // Connect mouse signals
@@ -47,9 +45,7 @@ impl TooltipSystem {
     pub fn on_mouse_entered(&mut self) {
         let text = self.tooltip_text.clone();
         if should_show(text.to_string().as_str()) {
-            let mut panel = self
-                .base()
-                .get_node_as::<PanelContainer>("PanelContainer");
+            let mut panel = self.base().get_node_as::<PanelContainer>("PanelContainer");
             panel.show();
 
             let mut label = panel.get_node_as::<Label>("Label");
@@ -59,9 +55,7 @@ impl TooltipSystem {
 
     #[func]
     pub fn on_mouse_exited(&mut self) {
-        let mut panel = self
-            .base()
-            .get_node_as::<PanelContainer>("PanelContainer");
+        let mut panel = self.base().get_node_as::<PanelContainer>("PanelContainer");
         panel.hide();
     }
 

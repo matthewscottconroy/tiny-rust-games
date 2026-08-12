@@ -70,7 +70,12 @@ pub struct WaterRippleConfig {
 
 impl Default for WaterRippleConfig {
     fn default() -> Self {
-        Self { cols: COLS, rows: ROWS, damping: 0.985, disturb_strength: 2.0 }
+        Self {
+            cols: COLS,
+            rows: ROWS,
+            damping: 0.985,
+            disturb_strength: 2.0,
+        }
     }
 }
 
@@ -112,7 +117,12 @@ pub struct WaterGrid {
 impl WaterGrid {
     pub fn new(cols: usize, rows: usize) -> Self {
         let n = cols * rows;
-        Self { cols, rows, curr: vec![0.0; n], prev: vec![0.0; n] }
+        Self {
+            cols,
+            rows,
+            curr: vec![0.0; n],
+            prev: vec![0.0; n],
+        }
     }
 
     pub fn idx(&self, col: usize, row: usize) -> usize {
@@ -129,7 +139,10 @@ impl WaterGrid {
 
 impl FromWorld for WaterGrid {
     fn from_world(world: &mut World) -> Self {
-        let config = world.get_resource::<WaterRippleConfig>().copied().unwrap_or_default();
+        let config = world
+            .get_resource::<WaterRippleConfig>()
+            .copied()
+            .unwrap_or_default();
         WaterGrid::new(config.cols, config.rows)
     }
 }
@@ -144,7 +157,10 @@ fn setup(mut commands: Commands, grid: Res<WaterGrid>) {
 
     commands.spawn((
         Text::new("left-click — add ripple"),
-        TextFont { font_size: 15.0, ..default() },
+        TextFont {
+            font_size: 15.0,
+            ..default()
+        },
         TextColor(Color::srgb(0.7, 0.7, 0.7)),
         Node {
             position_type: PositionType::Absolute,
@@ -205,11 +221,19 @@ fn handle_click(
     config: Res<WaterRippleConfig>,
     mut grid: ResMut<WaterGrid>,
 ) {
-    if !buttons.just_pressed(MouseButton::Left) { return; }
-    let Ok((camera, cam_tf)) = camera_q.single() else { return };
+    if !buttons.just_pressed(MouseButton::Left) {
+        return;
+    }
+    let Ok((camera, cam_tf)) = camera_q.single() else {
+        return;
+    };
     let Ok(window) = windows.single() else { return };
-    let Some(cursor) = window.cursor_position() else { return };
-    let Ok(world) = camera.viewport_to_world_2d(cam_tf, cursor) else { return };
+    let Some(cursor) = window.cursor_position() else {
+        return;
+    };
+    let Ok(world) = camera.viewport_to_world_2d(cam_tf, cursor) else {
+        return;
+    };
 
     let cell_w = 800.0 / grid.cols as f32;
     let cell_h = 600.0 / grid.rows as f32;
@@ -218,11 +242,10 @@ fn handle_click(
     grid.disturb(col, row, config.disturb_strength);
 }
 
-fn sync_colors(
-    grid: Res<WaterGrid>,
-    mut cells: Query<(&Cell, &mut Sprite)>,
-) {
-    if !grid.is_changed() { return; }
+fn sync_colors(grid: Res<WaterGrid>, mut cells: Query<(&Cell, &mut Sprite)>) {
+    if !grid.is_changed() {
+        return;
+    }
     for (cell, mut sprite) in &mut cells {
         let h = grid.curr[grid.idx(cell.0, cell.1)];
         sprite.color = height_to_color(h);
@@ -252,7 +275,7 @@ mod tests {
     #[test]
     fn ripple_step_damping_reduces_amplitude() {
         let undamped = ripple_step(1.0, 0.0, 0.5, 0.5, 0.5, 0.5, 1.0);
-        let damped   = ripple_step(1.0, 0.0, 0.5, 0.5, 0.5, 0.5, 0.9);
+        let damped = ripple_step(1.0, 0.0, 0.5, 0.5, 0.5, 0.5, 0.9);
         assert!(damped.abs() < undamped.abs());
     }
 
@@ -312,8 +335,12 @@ mod tests {
     #[test]
     fn water_grid_from_world_uses_config_dimensions() {
         let mut app = App::new();
-        app.insert_resource(WaterRippleConfig { cols: 12, rows: 7, ..default() })
-            .init_resource::<WaterGrid>();
+        app.insert_resource(WaterRippleConfig {
+            cols: 12,
+            rows: 7,
+            ..default()
+        })
+        .init_resource::<WaterGrid>();
         let grid = app.world().resource::<WaterGrid>();
         assert_eq!(grid.cols, 12);
         assert_eq!(grid.rows, 7);

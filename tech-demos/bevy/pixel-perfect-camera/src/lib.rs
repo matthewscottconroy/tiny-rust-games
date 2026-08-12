@@ -50,7 +50,10 @@ impl Plugin for PixelPerfectCameraPlugin {
     fn build(&self, app: &mut App) {
         app.init_resource::<PixelPerfectConfig>()
             .add_systems(Startup, setup)
-            .add_systems(Update, (move_player, sync_player_transform, update_hud).chain());
+            .add_systems(
+                Update,
+                (move_player, sync_player_transform, update_hud).chain(),
+            );
     }
 }
 
@@ -70,7 +73,11 @@ pub struct PixelPerfectConfig {
 
 impl Default for PixelPerfectConfig {
     fn default() -> Self {
-        Self { virtual_width: 320, virtual_height: 180, grid: 8.0 }
+        Self {
+            virtual_width: 320,
+            virtual_height: 180,
+            grid: 8.0,
+        }
     }
 }
 
@@ -146,12 +153,12 @@ fn setup(mut commands: Commands, config: Res<PixelPerfectConfig>) {
 
     // --- Block obstacles ---
     let obstacles: &[(i32, i32, Color)] = &[
-        ( 5,  3, Color::srgb(0.7, 0.2, 0.2)),
-        (-6,  2, Color::srgb(0.2, 0.6, 0.3)),
-        ( 3, -4, Color::srgb(0.2, 0.3, 0.8)),
+        (5, 3, Color::srgb(0.7, 0.2, 0.2)),
+        (-6, 2, Color::srgb(0.2, 0.6, 0.3)),
+        (3, -4, Color::srgb(0.2, 0.3, 0.8)),
         (-4, -3, Color::srgb(0.7, 0.6, 0.1)),
-        ( 8,  0, Color::srgb(0.6, 0.2, 0.7)),
-        (-9,  1, Color::srgb(0.1, 0.6, 0.7)),
+        (8, 0, Color::srgb(0.6, 0.2, 0.7)),
+        (-9, 1, Color::srgb(0.1, 0.6, 0.7)),
     ];
 
     for &(col, row, color) in obstacles {
@@ -183,7 +190,10 @@ fn setup(mut commands: Commands, config: Res<PixelPerfectConfig>) {
     // --- HUD label ---
     commands.spawn((
         Text::new("grid (0, 0)"),
-        TextFont { font_size: 8.0, ..default() },
+        TextFont {
+            font_size: 8.0,
+            ..default()
+        },
         TextColor(Color::WHITE),
         Node {
             position_type: PositionType::Absolute,
@@ -203,7 +213,9 @@ fn move_player(
     config: Res<PixelPerfectConfig>,
     mut query: Query<&mut GridPos, With<Player>>,
 ) {
-    let Ok(mut gp) = query.single_mut() else { return; };
+    let Ok(mut gp) = query.single_mut() else {
+        return;
+    };
 
     let half_cols = config.cols() / 2 - 1;
     let half_rows = config.rows() / 2 - 1;
@@ -227,7 +239,9 @@ fn sync_player_transform(
     config: Res<PixelPerfectConfig>,
     mut query: Query<(&GridPos, &mut Transform), With<Player>>,
 ) {
-    let Ok((gp, mut transform)) = query.single_mut() else { return; };
+    let Ok((gp, mut transform)) = query.single_mut() else {
+        return;
+    };
     let world = grid_to_world(gp.0, config.grid);
     let snapped = snap_to_grid(world, config.grid);
     transform.translation.x = snapped.x;
@@ -239,8 +253,12 @@ fn update_hud(
     player_q: Query<&GridPos, With<Player>>,
     mut label_q: Query<&mut Text, With<PosLabel>>,
 ) {
-    let Ok(gp) = player_q.single() else { return; };
-    let Ok(mut text) = label_q.single_mut() else { return; };
+    let Ok(gp) = player_q.single() else {
+        return;
+    };
+    let Ok(mut text) = label_q.single_mut() else {
+        return;
+    };
     **text = format!("grid ({}, {})", gp.0.x, gp.0.y);
 }
 
@@ -259,10 +277,7 @@ pub fn grid_to_world(cell: IVec2, grid: f32) -> Vec2 {
 /// Guarantees that sprite positions always land on integer pixel boundaries
 /// when the virtual pixel size equals `grid` world units.
 pub fn snap_to_grid(pos: Vec2, grid: f32) -> Vec2 {
-    Vec2::new(
-        (pos.x / grid).round() * grid,
-        (pos.y / grid).round() * grid,
-    )
+    Vec2::new((pos.x / grid).round() * grid, (pos.y / grid).round() * grid)
 }
 
 /// Returns the largest integer scale factor that fits `virtual_size` into `window_size`.
@@ -279,7 +294,12 @@ pub fn integer_scale(virtual_size: UVec2, window_size: UVec2) -> u32 {
 ///
 /// The virtual canvas is centred in the window. The returned `Vec2` gives the
 /// top-left corner of the scaled virtual pixel in window-pixel space.
-pub fn virtual_to_window(virtual_pos: IVec2, scale: u32, window_size: UVec2, virtual_size: UVec2) -> Vec2 {
+pub fn virtual_to_window(
+    virtual_pos: IVec2,
+    scale: u32,
+    window_size: UVec2,
+    virtual_size: UVec2,
+) -> Vec2 {
     let canvas_w = virtual_size.x * scale;
     let canvas_h = virtual_size.y * scale;
     let offset_x = (window_size.x.saturating_sub(canvas_w)) / 2;

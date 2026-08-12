@@ -43,14 +43,27 @@ impl Plugin for Lighting2dPlugin {
     fn build(&self, app: &mut App) {
         app.init_resource::<Lighting2dConfig>()
             .insert_resource(Ambient(0.04))
-            .insert_resource(OrbitLights(vec![
-                OrbitLight { angle: 0.0,    orbit_radius: 180.0, speed: 0.7, color: (1.0, 0.4, 0.2), reach: 120.0 },
-                OrbitLight { angle: 2.094,  orbit_radius: 220.0, speed: -0.5, color: (0.2, 0.5, 1.0), reach: 100.0 },
-                OrbitLight { angle: 4.189,  orbit_radius: 150.0, speed: 1.1, color: (0.3, 1.0, 0.4), reach: 90.0  },
-            ]))
+            .insert_resource(OrbitLights(default_orbit_lights()))
             .add_systems(Startup, setup)
-            .add_systems(Update, (move_player, advance_orbits, apply_lighting, update_hud));
+            .add_systems(
+                Update,
+                (move_player, advance_orbits, apply_lighting, update_hud),
+            );
     }
+}
+
+/// The three coloured lights the demo starts with: one warm, one cool, one green,
+/// each on its own orbit.
+///
+/// Hand-aligned into columns so the lights read as a table; `rustfmt` is told to
+/// leave it alone.
+#[rustfmt::skip]
+pub fn default_orbit_lights() -> Vec<OrbitLight> {
+    vec![
+        OrbitLight { angle: 0.0,    orbit_radius: 180.0, speed:  0.7, color: (1.0, 0.4, 0.2), reach: 120.0 },
+        OrbitLight { angle: 2.094,  orbit_radius: 220.0, speed: -0.5, color: (0.2, 0.5, 1.0), reach: 100.0 },
+        OrbitLight { angle: 4.189,  orbit_radius: 150.0, speed:  1.1, color: (0.3, 1.0, 0.4), reach:  90.0 },
+    ]
 }
 
 // ─── Configuration ────────────────────────────────────────────────────────────
@@ -71,7 +84,12 @@ pub struct Lighting2dConfig {
 
 impl Default for Lighting2dConfig {
     fn default() -> Self {
-        Self { cols: COLS, rows: ROWS, tile_px: TILE_PX, player_speed: PLAYER_SPEED }
+        Self {
+            cols: COLS,
+            rows: ROWS,
+            tile_px: TILE_PX,
+            player_speed: PLAYER_SPEED,
+        }
     }
 }
 
@@ -191,16 +209,27 @@ fn setup(mut commands: Commands) {
                 (0.3, 0.3, 0.38)
             };
             commands.spawn((
-                Sprite { color: Color::BLACK, custom_size: Some(Vec2::splat(TILE_PX - 1.0)), ..default() },
+                Sprite {
+                    color: Color::BLACK,
+                    custom_size: Some(Vec2::splat(TILE_PX - 1.0)),
+                    ..default()
+                },
                 Transform::from_translation(world_pos.extend(0.0)),
-                LitTile { world_pos, base_color: base },
+                LitTile {
+                    world_pos,
+                    base_color: base,
+                },
             ));
         }
     }
 
     // Player (carries a light)
     commands.spawn((
-        Sprite { color: Color::srgb(1.0, 0.95, 0.7), custom_size: Some(Vec2::splat(12.0)), ..default() },
+        Sprite {
+            color: Color::srgb(1.0, 0.95, 0.7),
+            custom_size: Some(Vec2::splat(12.0)),
+            ..default()
+        },
         Transform::from_translation(Vec3::new(0.0, 0.0, 1.0)),
         PlayerLight,
     ));
@@ -208,14 +237,21 @@ fn setup(mut commands: Commands) {
     // Orbit light visual dots
     for _ in 0..3 {
         commands.spawn((
-            Sprite { color: Color::srgb(1.0, 1.0, 0.9), custom_size: Some(Vec2::splat(8.0)), ..default() },
+            Sprite {
+                color: Color::srgb(1.0, 1.0, 0.9),
+                custom_size: Some(Vec2::splat(8.0)),
+                ..default()
+            },
             Transform::from_translation(Vec3::new(0.0, 0.0, 1.0)),
         ));
     }
 
     commands.spawn((
         Text::new("Ambient: 0.04"),
-        TextFont { font_size: 16.0, ..default() },
+        TextFont {
+            font_size: 16.0,
+            ..default()
+        },
         TextColor(Color::WHITE),
         Node {
             position_type: PositionType::Absolute,
@@ -227,7 +263,10 @@ fn setup(mut commands: Commands) {
     ));
     commands.spawn((
         Text::new("WASD — move   + — brighter   - — darker"),
-        TextFont { font_size: 14.0, ..default() },
+        TextFont {
+            font_size: 14.0,
+            ..default()
+        },
         TextColor(Color::srgb(0.6, 0.6, 0.6)),
         Node {
             position_type: PositionType::Absolute,
@@ -247,10 +286,18 @@ fn move_player(
 ) {
     let Ok(mut t) = q.single_mut() else { return };
     let mut dir = Vec2::ZERO;
-    if input.pressed(KeyCode::KeyW) || input.pressed(KeyCode::ArrowUp)    { dir.y += 1.0; }
-    if input.pressed(KeyCode::KeyS) || input.pressed(KeyCode::ArrowDown)   { dir.y -= 1.0; }
-    if input.pressed(KeyCode::KeyA) || input.pressed(KeyCode::ArrowLeft)   { dir.x -= 1.0; }
-    if input.pressed(KeyCode::KeyD) || input.pressed(KeyCode::ArrowRight)  { dir.x += 1.0; }
+    if input.pressed(KeyCode::KeyW) || input.pressed(KeyCode::ArrowUp) {
+        dir.y += 1.0;
+    }
+    if input.pressed(KeyCode::KeyS) || input.pressed(KeyCode::ArrowDown) {
+        dir.y -= 1.0;
+    }
+    if input.pressed(KeyCode::KeyA) || input.pressed(KeyCode::ArrowLeft) {
+        dir.x -= 1.0;
+    }
+    if input.pressed(KeyCode::KeyD) || input.pressed(KeyCode::ArrowRight) {
+        dir.x += 1.0;
+    }
     if dir != Vec2::ZERO {
         t.translation += (dir.normalize() * config.player_speed * time.delta_secs()).extend(0.0);
     }
@@ -275,15 +322,23 @@ fn apply_lighting(
     player_q: Query<&Transform, With<PlayerLight>>,
     mut tiles: Query<(&LitTile, &mut Sprite)>,
 ) {
-    let player_pos = player_q.single()
+    let player_pos = player_q
+        .single()
         .map(|t| t.translation.truncate())
         .unwrap_or(Vec2::ZERO);
 
     // Collect all light source positions with reach (tinted by colour).
-    let mut light_sources: Vec<(Vec2, f32)> = orbits.0.iter().map(|o| {
-        let pos = Vec2::new(o.orbit_radius * o.angle.cos(), o.orbit_radius * o.angle.sin());
-        (pos, o.reach)
-    }).collect();
+    let mut light_sources: Vec<(Vec2, f32)> = orbits
+        .0
+        .iter()
+        .map(|o| {
+            let pos = Vec2::new(
+                o.orbit_radius * o.angle.cos(),
+                o.orbit_radius * o.angle.sin(),
+            );
+            (pos, o.reach)
+        })
+        .collect();
     light_sources.push((player_pos, 130.0));
 
     for (tile, mut sprite) in &mut tiles {
@@ -293,7 +348,10 @@ fn apply_lighting(
         let mut b_total = 0.0_f32;
 
         for (idx, o) in orbits.0.iter().enumerate() {
-            let lpos = Vec2::new(o.orbit_radius * o.angle.cos(), o.orbit_radius * o.angle.sin());
+            let lpos = Vec2::new(
+                o.orbit_radius * o.angle.cos(),
+                o.orbit_radius * o.angle.sin(),
+            );
             let dist = tile.world_pos.distance(lpos);
             if dist < o.reach {
                 let t = 1.0 - dist / o.reach;

@@ -25,7 +25,7 @@
 
 use bevy::color::palettes::css;
 use bevy::prelude::*;
-use bevy_egui::{egui, EguiContexts, EguiPlugin};
+use bevy_egui::{EguiContexts, EguiPlugin, egui};
 use rand::Rng;
 
 /// Bundles every system, state, and resource for the ecosystem simulation.
@@ -148,7 +148,9 @@ fn main_menu_ui(
     mut next_state: ResMut<NextState<GameState>>,
     mut config: ResMut<SimulationConfig>,
 ) {
-    let Ok(ctx) = contexts.ctx_mut() else { return; };
+    let Ok(ctx) = contexts.ctx_mut() else {
+        return;
+    };
     egui::Window::new("Simulation Setup").show(ctx, |ui| {
         ui.label("Enter initial values:");
         ui.horizontal(|ui| {
@@ -175,7 +177,10 @@ fn main_menu_ui(
         ui.horizontal(|ui| {
             ui.label("Carrot Refill Interval (s):");
             let mut interval = config.carrot_refill_interval;
-            if ui.add(egui::DragValue::new(&mut interval).speed(0.5)).changed() {
+            if ui
+                .add(egui::DragValue::new(&mut interval).speed(0.5))
+                .changed()
+            {
                 config.carrot_refill_interval = interval;
             }
         });
@@ -195,33 +200,63 @@ fn setup_simulation(mut commands: Commands, config: Res<SimulationConfig>) {
     let mut rng = rand::thread_rng();
 
     for _ in 0..config.initial_rabbits {
-        let pos = Vec3::new(rng.gen_range(-400.0..400.0), rng.gen_range(-300.0..300.0), 0.0);
+        let pos = Vec3::new(
+            rng.gen_range(-400.0..400.0),
+            rng.gen_range(-300.0..300.0),
+            0.0,
+        );
         let angle = rng.gen_range(0.0..std::f32::consts::TAU);
         commands.spawn((
-            Sprite { color: Color::WHITE, custom_size: Some(Vec2::splat(15.0)), ..default() },
+            Sprite {
+                color: Color::WHITE,
+                custom_size: Some(Vec2::splat(15.0)),
+                ..default()
+            },
             Transform::from_translation(pos),
-            Rabbit { age: 0.0, lifespan: 25.0 },
+            Rabbit {
+                age: 0.0,
+                lifespan: 25.0,
+            },
             Velocity(Vec2::new(2.0 * angle.cos(), 2.0 * angle.sin())),
             CollisionRadius(7.5),
         ));
     }
 
     for _ in 0..config.initial_wolves {
-        let pos = Vec3::new(rng.gen_range(-400.0..400.0), rng.gen_range(-300.0..300.0), 0.0);
+        let pos = Vec3::new(
+            rng.gen_range(-400.0..400.0),
+            rng.gen_range(-300.0..300.0),
+            0.0,
+        );
         let angle = rng.gen_range(0.0..std::f32::consts::TAU);
         commands.spawn((
-            Sprite { color: css::DARK_GRAY.into(), custom_size: Some(Vec2::splat(20.0)), ..default() },
+            Sprite {
+                color: css::DARK_GRAY.into(),
+                custom_size: Some(Vec2::splat(20.0)),
+                ..default()
+            },
             Transform::from_translation(pos),
-            Wolf { age: 0.0, lifespan: 30.0 },
+            Wolf {
+                age: 0.0,
+                lifespan: 30.0,
+            },
             Velocity(Vec2::new(3.0 * angle.cos(), 3.0 * angle.sin())),
             CollisionRadius(10.0),
         ));
     }
 
     for _ in 0..config.carrot_max {
-        let pos = Vec3::new(rng.gen_range(-400.0..400.0), rng.gen_range(-300.0..300.0), 0.0);
+        let pos = Vec3::new(
+            rng.gen_range(-400.0..400.0),
+            rng.gen_range(-300.0..300.0),
+            0.0,
+        );
         commands.spawn((
-            Sprite { color: css::ORANGE.into(), custom_size: Some(Vec2::splat(10.0)), ..default() },
+            Sprite {
+                color: css::ORANGE.into(),
+                custom_size: Some(Vec2::splat(10.0)),
+                ..default()
+            },
             Transform::from_translation(pos),
             Carrot,
         ));
@@ -283,14 +318,26 @@ fn rabbit_eating_system(
     for (rabbit_transform, rabbit_radius) in query_rabbit.iter() {
         for (carrot_entity, carrot_transform, sprite) in query_carrot.iter() {
             let carrot_radius = sprite.custom_size.unwrap_or(Vec2::splat(10.0)).x / 2.0;
-            if circles_overlap(rabbit_transform.translation.truncate(), rabbit_radius.0, carrot_transform.translation.truncate(), carrot_radius) {
+            if circles_overlap(
+                rabbit_transform.translation.truncate(),
+                rabbit_radius.0,
+                carrot_transform.translation.truncate(),
+                carrot_radius,
+            ) {
                 commands.entity(carrot_entity).despawn();
                 let pos = rabbit_transform.translation;
                 let angle = rng.gen_range(0.0..std::f32::consts::TAU);
                 commands.spawn((
-                    Sprite { color: Color::WHITE, custom_size: Some(Vec2::splat(15.0)), ..default() },
+                    Sprite {
+                        color: Color::WHITE,
+                        custom_size: Some(Vec2::splat(15.0)),
+                        ..default()
+                    },
                     Transform::from_translation(pos),
-                    Rabbit { age: 0.0, lifespan: 25.0 },
+                    Rabbit {
+                        age: 0.0,
+                        lifespan: 25.0,
+                    },
                     Velocity(Vec2::new(2.0 * angle.cos(), 2.0 * angle.sin())),
                     CollisionRadius(7.5),
                 ));
@@ -309,14 +356,26 @@ fn wolf_eating_system(
     let mut rng = rand::thread_rng();
     for (wolf_transform, wolf_radius) in query_wolf.iter() {
         for (rabbit_entity, rabbit_transform, rabbit_radius) in query_rabbit.iter() {
-            if circles_overlap(wolf_transform.translation.truncate(), wolf_radius.0, rabbit_transform.translation.truncate(), rabbit_radius.0) {
+            if circles_overlap(
+                wolf_transform.translation.truncate(),
+                wolf_radius.0,
+                rabbit_transform.translation.truncate(),
+                rabbit_radius.0,
+            ) {
                 commands.entity(rabbit_entity).despawn();
                 let pos = wolf_transform.translation;
                 let angle = rng.gen_range(0.0..std::f32::consts::TAU);
                 commands.spawn((
-                    Sprite { color: css::DARK_GRAY.into(), custom_size: Some(Vec2::splat(20.0)), ..default() },
+                    Sprite {
+                        color: css::DARK_GRAY.into(),
+                        custom_size: Some(Vec2::splat(20.0)),
+                        ..default()
+                    },
                     Transform::from_translation(pos),
-                    Wolf { age: 0.0, lifespan: 30.0 },
+                    Wolf {
+                        age: 0.0,
+                        lifespan: 30.0,
+                    },
                     Velocity(Vec2::new(3.0 * angle.cos(), 3.0 * angle.sin())),
                     CollisionRadius(10.0),
                 ));
@@ -341,9 +400,17 @@ fn carrot_refill_system(
         }
         let mut rng = rand::thread_rng();
         for _ in 0..config.carrot_max {
-            let pos = Vec3::new(rng.gen_range(-400.0..400.0), rng.gen_range(-300.0..300.0), 0.0);
+            let pos = Vec3::new(
+                rng.gen_range(-400.0..400.0),
+                rng.gen_range(-300.0..300.0),
+                0.0,
+            );
             commands.spawn((
-                Sprite { color: css::ORANGE.into(), custom_size: Some(Vec2::splat(10.0)), ..default() },
+                Sprite {
+                    color: css::ORANGE.into(),
+                    custom_size: Some(Vec2::splat(10.0)),
+                    ..default()
+                },
                 Transform::from_translation(pos),
                 Carrot,
             ));
@@ -359,10 +426,12 @@ fn ui_population_system(
     query_carrot: Query<&Carrot>,
 ) {
     let rabbit_count = query_rabbit.iter().count();
-    let wolf_count   = query_wolf.iter().count();
+    let wolf_count = query_wolf.iter().count();
     let carrot_count = query_carrot.iter().count();
 
-    let Ok(ctx) = contexts.ctx_mut() else { return; };
+    let Ok(ctx) = contexts.ctx_mut() else {
+        return;
+    };
     egui::Window::new("Population").show(ctx, |ui| {
         ui.label(format!("Rabbits: {}", rabbit_count));
         ui.label(format!("Wolves:  {}", wolf_count));
@@ -378,8 +447,8 @@ mod tests {
     fn simulation_config_default_values_are_nonzero() {
         let cfg = SimulationConfig::default();
         assert!(cfg.initial_rabbits > 0);
-        assert!(cfg.initial_wolves  > 0);
-        assert!(cfg.carrot_max      > 0);
+        assert!(cfg.initial_wolves > 0);
+        assert!(cfg.carrot_max > 0);
         assert!(cfg.carrot_refill_interval > 0.0);
     }
 

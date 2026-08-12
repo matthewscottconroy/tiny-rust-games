@@ -111,15 +111,35 @@ fn setup(mut commands: Commands) {
     }
 
     let chars: &[(Vec3, Vec2, Color)] = &[
-        (Vec3::new(-150.0,  60.0, 0.0), Vec2::new( 55.0,  30.0), Color::srgb(0.85, 0.35, 0.2)),
-        (Vec3::new(  80.0, -40.0, 0.0), Vec2::new(-40.0,  65.0), Color::srgb(0.2,  0.6,  0.9)),
-        (Vec3::new( 180.0, 100.0, 0.0), Vec2::new(-70.0, -45.0), Color::srgb(0.8,  0.75, 0.1)),
-        (Vec3::new(-200.0,-100.0, 0.0), Vec2::new( 60.0, -55.0), Color::srgb(0.5,  0.85, 0.5)),
+        (
+            Vec3::new(-150.0, 60.0, 0.0),
+            Vec2::new(55.0, 30.0),
+            Color::srgb(0.85, 0.35, 0.2),
+        ),
+        (
+            Vec3::new(80.0, -40.0, 0.0),
+            Vec2::new(-40.0, 65.0),
+            Color::srgb(0.2, 0.6, 0.9),
+        ),
+        (
+            Vec3::new(180.0, 100.0, 0.0),
+            Vec2::new(-70.0, -45.0),
+            Color::srgb(0.8, 0.75, 0.1),
+        ),
+        (
+            Vec3::new(-200.0, -100.0, 0.0),
+            Vec2::new(60.0, -55.0),
+            Color::srgb(0.5, 0.85, 0.5),
+        ),
     ];
 
     for &(pos, vel, color) in chars {
         commands.spawn((
-            Sprite { color, custom_size: Some(Vec2::new(22.0, 32.0)), ..default() },
+            Sprite {
+                color,
+                custom_size: Some(Vec2::new(22.0, 32.0)),
+                ..default()
+            },
             Transform::from_translation(pos),
             Character { velocity: vel },
             YSorted,
@@ -139,7 +159,10 @@ fn setup(mut commands: Commands) {
 
     commands.spawn((
         Text::new(""),
-        TextFont { font_size: 14.0, ..default() },
+        TextFont {
+            font_size: 14.0,
+            ..default()
+        },
         TextColor(Color::srgb(0.8, 0.8, 0.8)),
         Node {
             position_type: PositionType::Absolute,
@@ -152,7 +175,10 @@ fn setup(mut commands: Commands) {
 
     commands.spawn((
         Text::new("WASD — move   walk behind/in-front of colored characters"),
-        TextFont { font_size: 14.0, ..default() },
+        TextFont {
+            font_size: 14.0,
+            ..default()
+        },
         TextColor(Color::srgb(0.55, 0.55, 0.55)),
         Node {
             position_type: PositionType::Absolute,
@@ -184,12 +210,22 @@ fn move_player(
     config: Res<YSortConfig>,
     mut query: Query<&mut Transform, With<Player>>,
 ) {
-    let Ok(mut t) = query.single_mut() else { return; };
+    let Ok(mut t) = query.single_mut() else {
+        return;
+    };
     let mut dir = Vec2::ZERO;
-    if input.pressed(KeyCode::KeyW) { dir.y += 1.0; }
-    if input.pressed(KeyCode::KeyS) { dir.y -= 1.0; }
-    if input.pressed(KeyCode::KeyA) { dir.x -= 1.0; }
-    if input.pressed(KeyCode::KeyD) { dir.x += 1.0; }
+    if input.pressed(KeyCode::KeyW) {
+        dir.y += 1.0;
+    }
+    if input.pressed(KeyCode::KeyS) {
+        dir.y -= 1.0;
+    }
+    if input.pressed(KeyCode::KeyA) {
+        dir.x -= 1.0;
+    }
+    if input.pressed(KeyCode::KeyD) {
+        dir.x += 1.0;
+    }
     if dir != Vec2::ZERO {
         let d = dir.normalize() * config.player_speed * time.delta_secs();
         t.translation.x += d.x;
@@ -206,8 +242,12 @@ fn wander_characters(
     for (mut transform, mut ch) in &mut query {
         transform.translation.x += ch.velocity.x * time.delta_secs();
         transform.translation.y += ch.velocity.y * time.delta_secs();
-        if transform.translation.x.abs() > config.wander_bound_x { ch.velocity.x *= -1.0; }
-        if transform.translation.y.abs() > config.wander_bound_y { ch.velocity.y *= -1.0; }
+        if transform.translation.x.abs() > config.wander_bound_x {
+            ch.velocity.x *= -1.0;
+        }
+        if transform.translation.y.abs() > config.wander_bound_y {
+            ch.velocity.y *= -1.0;
+        }
     }
 }
 
@@ -223,12 +263,13 @@ fn update_hud(
     player_query: Query<&Transform, With<Player>>,
     mut hud_query: Query<&mut Text, With<HudText>>,
 ) {
-    let Ok(t) = player_query.single() else { return; };
+    let Ok(t) = player_query.single() else {
+        return;
+    };
     for mut text in &mut hud_query {
         *text = Text::new(format!(
             "Player Y={:.0}  Z={:.4} (higher Z = in front)",
-            t.translation.y,
-            t.translation.z,
+            t.translation.y, t.translation.z,
         ));
     }
 }
@@ -260,8 +301,10 @@ mod tests {
 
     #[test]
     fn lower_y_has_higher_z() {
-        assert!(y_to_z(-200.0, scale()) > y_to_z(200.0, scale()),
-            "sprite lower on screen should have higher Z");
+        assert!(
+            y_to_z(-200.0, scale()) > y_to_z(200.0, scale()),
+            "sprite lower on screen should have higher Z"
+        );
     }
 
     #[test]
@@ -282,8 +325,7 @@ mod tests {
     #[test]
     fn setup_spawns_one_player() {
         let mut app = App::new();
-        app.add_plugins(MinimalPlugins)
-            .add_systems(Startup, setup);
+        app.add_plugins(MinimalPlugins).add_systems(Startup, setup);
         app.update();
 
         let mut q = app.world_mut().query::<&Player>();
@@ -293,8 +335,7 @@ mod tests {
     #[test]
     fn setup_spawns_four_characters() {
         let mut app = App::new();
-        app.add_plugins(MinimalPlugins)
-            .add_systems(Startup, setup);
+        app.add_plugins(MinimalPlugins).add_systems(Startup, setup);
         app.update();
 
         let mut q = app.world_mut().query::<&Character>();
@@ -305,8 +346,7 @@ mod tests {
     fn setup_spawns_five_y_sorted_entities() {
         // 4 characters + 1 player
         let mut app = App::new();
-        app.add_plugins(MinimalPlugins)
-            .add_systems(Startup, setup);
+        app.add_plugins(MinimalPlugins).add_systems(Startup, setup);
         app.update();
 
         let mut q = app.world_mut().query::<&YSorted>();

@@ -51,7 +51,9 @@ pub struct ScreenWrapConfig {
 
 impl Default for ScreenWrapConfig {
     fn default() -> Self {
-        Self { player_speed: 220.0 }
+        Self {
+            player_speed: 220.0,
+        }
     }
 }
 
@@ -88,16 +90,40 @@ fn setup(mut commands: Commands) {
     ));
 
     let objects: &[(Vec3, Vec2, Color)] = &[
-        (Vec3::new(-180.0,  80.0, 0.0), Vec2::new(110.0,   60.0), Color::srgb(0.8, 0.35, 0.2)),
-        (Vec3::new( 200.0, -90.0, 0.0), Vec2::new(-80.0,  130.0), Color::srgb(0.2, 0.55, 0.85)),
-        (Vec3::new(  60.0, 140.0, 0.0), Vec2::new(150.0,  -90.0), Color::srgb(0.8, 0.75, 0.1)),
-        (Vec3::new(-220.0,-130.0, 0.0), Vec2::new(-120.0, -70.0), Color::srgb(0.6, 0.2,  0.8)),
-        (Vec3::new( 140.0,  30.0, 0.0), Vec2::new(-60.0,  170.0), Color::srgb(0.85, 0.5, 0.15)),
+        (
+            Vec3::new(-180.0, 80.0, 0.0),
+            Vec2::new(110.0, 60.0),
+            Color::srgb(0.8, 0.35, 0.2),
+        ),
+        (
+            Vec3::new(200.0, -90.0, 0.0),
+            Vec2::new(-80.0, 130.0),
+            Color::srgb(0.2, 0.55, 0.85),
+        ),
+        (
+            Vec3::new(60.0, 140.0, 0.0),
+            Vec2::new(150.0, -90.0),
+            Color::srgb(0.8, 0.75, 0.1),
+        ),
+        (
+            Vec3::new(-220.0, -130.0, 0.0),
+            Vec2::new(-120.0, -70.0),
+            Color::srgb(0.6, 0.2, 0.8),
+        ),
+        (
+            Vec3::new(140.0, 30.0, 0.0),
+            Vec2::new(-60.0, 170.0),
+            Color::srgb(0.85, 0.5, 0.15),
+        ),
     ];
 
     for &(pos, vel, color) in objects {
         commands.spawn((
-            Sprite { color, custom_size: Some(Vec2::splat(22.0)), ..default() },
+            Sprite {
+                color,
+                custom_size: Some(Vec2::splat(22.0)),
+                ..default()
+            },
             Transform::from_translation(pos),
             Wrappable,
             Velocity(vel),
@@ -106,7 +132,10 @@ fn setup(mut commands: Commands) {
 
     commands.spawn((
         Text::new("WASD — move   objects and player wrap at screen edges"),
-        TextFont { font_size: 15.0, ..default() },
+        TextFont {
+            font_size: 15.0,
+            ..default()
+        },
         TextColor(Color::srgb(0.75, 0.75, 0.75)),
         Node {
             position_type: PositionType::Absolute,
@@ -125,9 +154,13 @@ fn setup(mut commands: Commands) {
 /// `-half` it jumps to the corresponding positive edge.  Values already in
 /// range are returned unchanged.
 pub fn wrap_coord(v: f32, half: f32) -> f32 {
-    if v > half       { v - 2.0 * half }
-    else if v < -half { v + 2.0 * half }
-    else              { v }
+    if v > half {
+        v - 2.0 * half
+    } else if v < -half {
+        v + 2.0 * half
+    } else {
+        v
+    }
 }
 
 // --- Systems ---
@@ -138,13 +171,27 @@ fn move_player(
     config: Res<ScreenWrapConfig>,
     mut query: Query<&mut Velocity, With<Player>>,
 ) {
-    let Ok(mut vel) = query.single_mut() else { return; };
+    let Ok(mut vel) = query.single_mut() else {
+        return;
+    };
     let mut dir = Vec2::ZERO;
-    if input.pressed(KeyCode::KeyW) { dir.y += 1.0; }
-    if input.pressed(KeyCode::KeyS) { dir.y -= 1.0; }
-    if input.pressed(KeyCode::KeyA) { dir.x -= 1.0; }
-    if input.pressed(KeyCode::KeyD) { dir.x += 1.0; }
-    vel.0 = if dir != Vec2::ZERO { dir.normalize() * config.player_speed } else { Vec2::ZERO };
+    if input.pressed(KeyCode::KeyW) {
+        dir.y += 1.0;
+    }
+    if input.pressed(KeyCode::KeyS) {
+        dir.y -= 1.0;
+    }
+    if input.pressed(KeyCode::KeyA) {
+        dir.x -= 1.0;
+    }
+    if input.pressed(KeyCode::KeyD) {
+        dir.x += 1.0;
+    }
+    vel.0 = if dir != Vec2::ZERO {
+        dir.normalize() * config.player_speed
+    } else {
+        Vec2::ZERO
+    };
 }
 
 /// Advances all entities with a [`Velocity`] component by `velocity * dt`.
@@ -156,12 +203,11 @@ fn move_objects(time: Res<Time>, mut query: Query<(&mut Transform, &Velocity)>) 
 }
 
 /// Applies toroidal wrapping to every [`Wrappable`] entity.
-fn wrap_positions(
-    mut query: Query<&mut Transform, With<Wrappable>>,
-    window_query: Query<&Window>,
-) {
-    let Ok(window) = window_query.single() else { return; };
-    let half_w = window.width()  / 2.0;
+fn wrap_positions(mut query: Query<&mut Transform, With<Wrappable>>, window_query: Query<&Window>) {
+    let Ok(window) = window_query.single() else {
+        return;
+    };
+    let half_w = window.width() / 2.0;
     let half_h = window.height() / 2.0;
 
     for mut transform in &mut query {
@@ -178,7 +224,7 @@ mod tests {
 
     #[test]
     fn wrap_coord_inside_range_unchanged() {
-        assert_eq!(wrap_coord(0.0,  100.0),  0.0);
+        assert_eq!(wrap_coord(0.0, 100.0), 0.0);
         assert_eq!(wrap_coord(50.0, 100.0), 50.0);
     }
 
@@ -220,8 +266,7 @@ mod tests {
     #[test]
     fn setup_spawns_one_player() {
         let mut app = App::new();
-        app.add_plugins(MinimalPlugins)
-            .add_systems(Startup, setup);
+        app.add_plugins(MinimalPlugins).add_systems(Startup, setup);
         app.update();
 
         let mut q = app.world_mut().query::<&Player>();
@@ -232,8 +277,7 @@ mod tests {
     fn setup_spawns_six_wrappable_entities() {
         // 1 player + 5 autonomous objects
         let mut app = App::new();
-        app.add_plugins(MinimalPlugins)
-            .add_systems(Startup, setup);
+        app.add_plugins(MinimalPlugins).add_systems(Startup, setup);
         app.update();
 
         let mut q = app.world_mut().query::<&Wrappable>();

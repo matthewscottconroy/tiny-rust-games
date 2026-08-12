@@ -40,7 +40,9 @@ impl INode2D for AnimationController {
         let speed = self.playback_speed;
 
         // Configure the AnimationPlayer
-        let mut player = self.base().get_node_as::<AnimationPlayer>("AnimationPlayer");
+        let mut player = self
+            .base()
+            .get_node_as::<AnimationPlayer>("AnimationPlayer");
         player.set_speed_scale(speed);
 
         // Connect animation_finished signal → on_animation_finished
@@ -66,7 +68,9 @@ impl AnimationController {
             format_anim_status(name.as_str(), count, self.playback_speed)
         );
         // Replay to loop
-        if let Some(mut player) = self.base().try_get_node_as::<AnimationPlayer>("AnimationPlayer")
+        if let Some(mut player) = self
+            .base()
+            .try_get_node_as::<AnimationPlayer>("AnimationPlayer")
         {
             player.call("play", &[Variant::from(anim_name)]);
         }
@@ -76,7 +80,9 @@ impl AnimationController {
     #[func]
     pub fn play_animation(&mut self, name: GString) {
         self.current_anim = name.to_string();
-        if let Some(mut player) = self.base().try_get_node_as::<AnimationPlayer>("AnimationPlayer")
+        if let Some(mut player) = self
+            .base()
+            .try_get_node_as::<AnimationPlayer>("AnimationPlayer")
         {
             player.call("play", &[Variant::from(name)]);
         }
@@ -85,7 +91,9 @@ impl AnimationController {
     /// Seek the animation timeline to an absolute position (in seconds).
     #[func]
     pub fn seek_to(&mut self, position: f64) {
-        if let Some(mut player) = self.base().try_get_node_as::<AnimationPlayer>("AnimationPlayer")
+        if let Some(mut player) = self
+            .base()
+            .try_get_node_as::<AnimationPlayer>("AnimationPlayer")
         {
             player.seek(position);
         }

@@ -49,6 +49,9 @@ impl Plugin for WaveSpawnerPlugin {
 /// Golden angle in radians (≈137.5°) for evenly distributed spawns.
 const GOLDEN_ANGLE: f32 = 2.399_963;
 
+// Enforced at compile time — a runtime test of a `const` can never fail.
+const _: () = assert!(GOLDEN_ANGLE > 0.0 && GOLDEN_ANGLE < std::f32::consts::TAU);
+
 /// Tunable parameters for the wave spawner. Override before adding the plugin,
 /// e.g. `app.insert_resource(WaveSpawnerConfig { wave_duration: 12.0, ..default() })`.
 #[derive(Resource, Clone, Copy, Debug)]
@@ -63,7 +66,11 @@ pub struct WaveSpawnerConfig {
 
 impl Default for WaveSpawnerConfig {
     fn default() -> Self {
-        Self { wave_duration: 8.0, countdown_duration: 3.0, spawn_radius: 280.0 }
+        Self {
+            wave_duration: 8.0,
+            countdown_duration: 3.0,
+            spawn_radius: 280.0,
+        }
     }
 }
 
@@ -89,7 +96,11 @@ pub enum WavePhase {
 
 impl Default for WaveState {
     fn default() -> Self {
-        Self { wave: 0, phase: WavePhase::Countdown, timer: 0.0 }
+        Self {
+            wave: 0,
+            phase: WavePhase::Countdown,
+            timer: 0.0,
+        }
     }
 }
 
@@ -109,7 +120,10 @@ pub enum HudLabel {
 fn setup(mut commands: Commands, config: Res<WaveSpawnerConfig>) {
     commands.spawn(Camera2d);
 
-    let label_style = TextFont { font_size: 22.0, ..default() };
+    let label_style = TextFont {
+        font_size: 22.0,
+        ..default()
+    };
 
     commands.spawn((
         Text::new("Wave: 0"),
@@ -195,7 +209,11 @@ fn spawn_wave(commands: &mut Commands, wave: u32, config: &WaveSpawnerConfig) {
         // Tint gets redder with each wave (clamped so it stays in range).
         let redness = (0.5 + wave as f32 * 0.1).min(1.0);
         commands.spawn((
-            Sprite { color: Color::srgb(redness, 0.2, 0.2), custom_size: Some(Vec2::splat(18.0)), ..default() },
+            Sprite {
+                color: Color::srgb(redness, 0.2, 0.2),
+                custom_size: Some(Vec2::splat(18.0)),
+                ..default()
+            },
             Transform::from_translation(pos),
             Enemy,
         ));
@@ -218,7 +236,11 @@ fn update_hud(
                     WavePhase::Countdown => config.countdown_duration - state.timer,
                     WavePhase::Active => config.wave_duration - state.timer,
                 };
-                let label_str = if state.phase == WavePhase::Active { "Wave ends in" } else { "Next wave in" };
+                let label_str = if state.phase == WavePhase::Active {
+                    "Wave ends in"
+                } else {
+                    "Next wave in"
+                };
                 text.0 = format!("{}: {:.1} s", label_str, remaining.max(0.0));
             }
         }
@@ -259,11 +281,6 @@ mod tests {
         let c = WaveSpawnerConfig::default();
         assert!(c.wave_duration > 0.0);
         assert!(c.countdown_duration > 0.0);
-    }
-
-    #[test]
-    fn golden_angle_is_in_valid_radian_range() {
-        assert!(GOLDEN_ANGLE > 0.0 && GOLDEN_ANGLE < std::f32::consts::TAU);
     }
 
     #[test]

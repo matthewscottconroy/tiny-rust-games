@@ -182,7 +182,10 @@ mod tests {
                 let dist = i as f32 * 0.05;
                 let time = j as f32 * 0.1;
                 let v = ripple_intensity(dist, time, 30.0, 3.0);
-                assert!(v >= 0.0 && v <= 1.0, "out of [0,1]: dist={dist} time={time} v={v}");
+                assert!(
+                    (0.0..=1.0).contains(&v),
+                    "out of [0,1]: dist={dist} time={time} v={v}"
+                );
             }
         }
     }
@@ -221,7 +224,10 @@ mod tests {
     fn ripple_intensity_frequency_effect() {
         let v_low = ripple_intensity(0.1, 0.0, 10.0, 3.0);
         let v_high = ripple_intensity(0.1, 0.0, 50.0, 3.0);
-        assert!((v_low - v_high).abs() > 1e-3, "frequency should change the wave");
+        assert!(
+            (v_low - v_high).abs() > 1e-3,
+            "frequency should change the wave"
+        );
     }
 
     /// Time advances produce different intensities at a fixed dist (animation works).
@@ -229,6 +235,9 @@ mod tests {
     fn ripple_intensity_animates_over_time() {
         let v0 = ripple_intensity(0.3, 0.0, 30.0, 3.0);
         let v1 = ripple_intensity(0.3, 1.0, 30.0, 3.0);
-        assert!((v0 - v1).abs() > 1e-3, "animation should produce different values over time");
+        assert!(
+            (v0 - v1).abs() > 1e-3,
+            "animation should produce different values over time"
+        );
     }
 }

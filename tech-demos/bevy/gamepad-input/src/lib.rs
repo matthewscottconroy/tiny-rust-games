@@ -66,7 +66,12 @@ pub struct GamepadInputConfig {
 
 impl Default for GamepadInputConfig {
     fn default() -> Self {
-        Self { move_speed: 220.0, dead_zone: 0.15, half_width: 380.0, half_height: 230.0 }
+        Self {
+            move_speed: 220.0,
+            dead_zone: 0.15,
+            half_width: 380.0,
+            half_height: 230.0,
+        }
     }
 }
 
@@ -89,7 +94,11 @@ struct ConnectionLabel;
 /// Applies a radial dead zone: returns [`Vec2::ZERO`] when `raw`'s magnitude is
 /// at or below `dead_zone`, otherwise passes `raw` through unchanged.
 pub fn apply_deadzone(raw: Vec2, dead_zone: f32) -> Vec2 {
-    if raw.length() > dead_zone { raw } else { Vec2::ZERO }
+    if raw.length() > dead_zone {
+        raw
+    } else {
+        Vec2::ZERO
+    }
 }
 
 /// Builds a movement axis from digital directional input, normalizing diagonals
@@ -99,7 +108,11 @@ pub fn keyboard_axis(left: bool, right: bool, up: bool, down: bool) -> Vec2 {
         right as i8 as f32 - left as i8 as f32,
         up as i8 as f32 - down as i8 as f32,
     );
-    if axis.length() > 1.0 { axis.normalize() } else { axis }
+    if axis.length() > 1.0 {
+        axis.normalize()
+    } else {
+        axis
+    }
 }
 
 // --- Setup ---
@@ -109,22 +122,37 @@ fn setup(mut commands: Commands) {
     commands.spawn(Camera2d);
 
     commands.spawn((
-        Sprite { color: Color::srgb(0.3, 0.7, 1.0), custom_size: Some(Vec2::splat(40.0)), ..default() },
+        Sprite {
+            color: Color::srgb(0.3, 0.7, 1.0),
+            custom_size: Some(Vec2::splat(40.0)),
+            ..default()
+        },
         Transform::default(),
         Player,
     ));
 
     // Button HUD — four face buttons.
     let buttons = [
-        (GamepadButton::South,  "South (A/X)",   Vec2::new(100.0, -120.0)),
-        (GamepadButton::East,   "East  (B/○)",   Vec2::new(220.0, -120.0)),
-        (GamepadButton::West,   "West  (X/□)",   Vec2::new(100.0, -150.0)),
-        (GamepadButton::North,  "North (Y/△)",   Vec2::new(220.0, -150.0)),
+        (
+            GamepadButton::South,
+            "South (A/X)",
+            Vec2::new(100.0, -120.0),
+        ),
+        (GamepadButton::East, "East  (B/○)", Vec2::new(220.0, -120.0)),
+        (GamepadButton::West, "West  (X/□)", Vec2::new(100.0, -150.0)),
+        (
+            GamepadButton::North,
+            "North (Y/△)",
+            Vec2::new(220.0, -150.0),
+        ),
     ];
     for (button, label_str, pos) in buttons {
         commands.spawn((
             Text::new(label_str),
-            TextFont { font_size: 18.0, ..default() },
+            TextFont {
+                font_size: 18.0,
+                ..default()
+            },
             TextColor(Color::srgba(0.6, 0.6, 0.6, 1.0)),
             Node {
                 position_type: PositionType::Absolute,
@@ -138,7 +166,10 @@ fn setup(mut commands: Commands) {
 
     commands.spawn((
         Text::new("No gamepad connected — using keyboard (WASD / arrows)"),
-        TextFont { font_size: 20.0, ..default() },
+        TextFont {
+            font_size: 20.0,
+            ..default()
+        },
         TextColor(Color::srgb(1.0, 0.8, 0.3)),
         Node {
             position_type: PositionType::Absolute,
@@ -161,7 +192,9 @@ fn move_player(
     mut player_query: Query<&mut Transform, With<Player>>,
     mut conn_query: Query<&mut Text, With<ConnectionLabel>>,
 ) {
-    let Ok(mut transform) = player_query.single_mut() else { return };
+    let Ok(mut transform) = player_query.single_mut() else {
+        return;
+    };
     let dt = time.delta_secs();
 
     let mut axis = Vec2::ZERO;
@@ -179,17 +212,17 @@ fn move_player(
 
     // Keyboard fallback (also merged when no gamepad).
     if !has_gamepad || axis == Vec2::ZERO {
-        let left  = keyboard.pressed(KeyCode::KeyA) || keyboard.pressed(KeyCode::ArrowLeft);
+        let left = keyboard.pressed(KeyCode::KeyA) || keyboard.pressed(KeyCode::ArrowLeft);
         let right = keyboard.pressed(KeyCode::KeyD) || keyboard.pressed(KeyCode::ArrowRight);
-        let up    = keyboard.pressed(KeyCode::KeyW) || keyboard.pressed(KeyCode::ArrowUp);
-        let down  = keyboard.pressed(KeyCode::KeyS) || keyboard.pressed(KeyCode::ArrowDown);
+        let up = keyboard.pressed(KeyCode::KeyW) || keyboard.pressed(KeyCode::ArrowUp);
+        let down = keyboard.pressed(KeyCode::KeyS) || keyboard.pressed(KeyCode::ArrowDown);
         axis = keyboard_axis(left, right, up, down);
     }
 
-    transform.translation.x =
-        (transform.translation.x + axis.x * config.move_speed * dt).clamp(-config.half_width, config.half_width);
-    transform.translation.y =
-        (transform.translation.y + axis.y * config.move_speed * dt).clamp(-config.half_height, config.half_height);
+    transform.translation.x = (transform.translation.x + axis.x * config.move_speed * dt)
+        .clamp(-config.half_width, config.half_width);
+    transform.translation.y = (transform.translation.y + axis.y * config.move_speed * dt)
+        .clamp(-config.half_height, config.half_height);
 
     // Update connection label.
     if let Ok(mut text) = conn_query.single_mut() {
@@ -202,13 +235,10 @@ fn move_player(
 }
 
 /// Highlights button labels when their corresponding button is held.
-fn update_button_hud(
-    gamepads: Query<&Gamepad>,
-    mut labels: Query<(&mut TextColor, &ButtonLabel)>,
-) {
+fn update_button_hud(gamepads: Query<&Gamepad>, mut labels: Query<(&mut TextColor, &ButtonLabel)>) {
     let gamepad = gamepads.iter().next();
     for (mut color, btn_label) in &mut labels {
-        let pressed = gamepad.map_or(false, |gp| gp.pressed(btn_label.0));
+        let pressed = gamepad.is_some_and(|gp| gp.pressed(btn_label.0));
         color.0 = if pressed {
             Color::srgb(1.0, 0.9, 0.2)
         } else {

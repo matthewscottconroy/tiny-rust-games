@@ -129,6 +129,9 @@ mod tests {
     #[test]
     fn smooth_follow_large_delta_approaches_target() {
         let result = smooth_follow(0.0, 100.0, 5.0, 10.0);
-        assert!(result > 99.0, "should be near target with large delta: {result}");
+        assert!(
+            result > 99.0,
+            "should be near target with large delta: {result}"
+        );
     }
 }

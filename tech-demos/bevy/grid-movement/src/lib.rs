@@ -84,9 +84,17 @@ fn setup(mut commands: Commands, config: Res<GridConfig>) {
 
     for row in -config.half..=config.half {
         for col in -config.half..=config.half {
-            let color = if (row + col) % 2 == 0 { config.color_a } else { config.color_b };
+            let color = if (row + col) % 2 == 0 {
+                config.color_a
+            } else {
+                config.color_b
+            };
             commands.spawn((
-                Sprite { color, custom_size: Some(Vec2::splat(config.cell - 2.0)), ..default() },
+                Sprite {
+                    color,
+                    custom_size: Some(Vec2::splat(config.cell - 2.0)),
+                    ..default()
+                },
                 Transform::from_xyz(col as f32 * config.cell, row as f32 * config.cell, -1.0),
             ));
         }
@@ -105,7 +113,10 @@ fn setup(mut commands: Commands, config: Res<GridConfig>) {
 
     commands.spawn((
         Text::new("Arrow keys or WASD — move one cell per press"),
-        TextFont { font_size: 15.0, ..default() },
+        TextFont {
+            font_size: 15.0,
+            ..default()
+        },
         TextColor(Color::srgb(0.8, 0.8, 0.8)),
         Node {
             position_type: PositionType::Absolute,
@@ -125,13 +136,23 @@ fn grid_move(
     config: Res<GridConfig>,
     mut query: Query<&mut GridPos, With<Player>>,
 ) {
-    let Ok(mut grid) = query.single_mut() else { return; };
+    let Ok(mut grid) = query.single_mut() else {
+        return;
+    };
 
     let mut delta = IVec2::ZERO;
-    if input.just_pressed(KeyCode::ArrowUp)    || input.just_pressed(KeyCode::KeyW) { delta.y += 1; }
-    if input.just_pressed(KeyCode::ArrowDown)  || input.just_pressed(KeyCode::KeyS) { delta.y -= 1; }
-    if input.just_pressed(KeyCode::ArrowLeft)  || input.just_pressed(KeyCode::KeyA) { delta.x -= 1; }
-    if input.just_pressed(KeyCode::ArrowRight) || input.just_pressed(KeyCode::KeyD) { delta.x += 1; }
+    if input.just_pressed(KeyCode::ArrowUp) || input.just_pressed(KeyCode::KeyW) {
+        delta.y += 1;
+    }
+    if input.just_pressed(KeyCode::ArrowDown) || input.just_pressed(KeyCode::KeyS) {
+        delta.y -= 1;
+    }
+    if input.just_pressed(KeyCode::ArrowLeft) || input.just_pressed(KeyCode::KeyA) {
+        delta.x -= 1;
+    }
+    if input.just_pressed(KeyCode::ArrowRight) || input.just_pressed(KeyCode::KeyD) {
+        delta.x += 1;
+    }
 
     if delta != IVec2::ZERO {
         let new_pos = grid.0 + delta;

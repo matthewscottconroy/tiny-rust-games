@@ -41,7 +41,10 @@ impl Plugin for UpgradeTreePlugin {
         app.init_resource::<UpgradeTreeConfig>()
             .init_resource::<TreeState>()
             .add_systems(Startup, setup)
-            .add_systems(Update, (handle_input, refresh_nodes, update_points_label).chain());
+            .add_systems(
+                Update,
+                (handle_input, refresh_nodes, update_points_label).chain(),
+            );
     }
 }
 
@@ -59,7 +62,10 @@ pub struct UpgradeTreeConfig {
 
 impl Default for UpgradeTreeConfig {
     fn default() -> Self {
-        Self { starting_points: 2, points_per_press: 1 }
+        Self {
+            starting_points: 2,
+            points_per_press: 1,
+        }
     }
 }
 
@@ -73,13 +79,25 @@ pub struct UpgradeNode {
 }
 
 /// True when `idx` is unlockable: prereqs satisfied, cost affordable, not yet unlocked.
-pub fn can_unlock(idx: usize, nodes: &[UpgradeNode], unlocked: &HashSet<usize>, points: u32) -> bool {
-    if unlocked.contains(&idx) { return false; }
+pub fn can_unlock(
+    idx: usize,
+    nodes: &[UpgradeNode],
+    unlocked: &HashSet<usize>,
+    points: u32,
+) -> bool {
+    if unlocked.contains(&idx) {
+        return false;
+    }
     let node = &nodes[idx];
-    if node.cost > points { return false; }
+    if node.cost > points {
+        return false;
+    }
     node.prereqs.iter().all(|p| unlocked.contains(p))
 }
 
+/// The upgrade tree, hand-aligned into columns so the tiers read as a table;
+/// `rustfmt` is told to leave it alone.
+#[rustfmt::skip]
 pub const NODES: &[UpgradeNode] = &[
     // Tier 0
     UpgradeNode { name: "Basics",       desc: "Starting node",          cost: 0, prereqs: &[] },
@@ -98,15 +116,15 @@ pub const NODES: &[UpgradeNode] = &[
 
 // Layout positions (world coords) for each node index.
 const NODE_POS: [(f32, f32); 9] = [
-    (-320.0,    0.0),  // 0 Basics
-    (-120.0,  120.0),  // 1 Quick Strike
-    (-120.0,    0.0),  // 2 Power Strike
-    (-120.0, -120.0),  // 3 Healing
-    (  80.0,  120.0),  // 4 Flurry
-    (  80.0,    0.0),  // 5 Slam
-    (  80.0, -120.0),  // 6 Regen
-    ( 280.0,   60.0),  // 7 Whirlwind
-    ( 280.0,  -60.0),  // 8 Recovery
+    (-320.0, 0.0),    // 0 Basics
+    (-120.0, 120.0),  // 1 Quick Strike
+    (-120.0, 0.0),    // 2 Power Strike
+    (-120.0, -120.0), // 3 Healing
+    (80.0, 120.0),    // 4 Flurry
+    (80.0, 0.0),      // 5 Slam
+    (80.0, -120.0),   // 6 Regen
+    (280.0, 60.0),    // 7 Whirlwind
+    (280.0, -60.0),   // 8 Recovery
 ];
 
 // ── ECS ───────────────────────────────────────────────────────────────────────
@@ -120,10 +138,16 @@ pub struct TreeState {
 
 impl FromWorld for TreeState {
     fn from_world(world: &mut World) -> Self {
-        let config = world.get_resource::<UpgradeTreeConfig>().copied().unwrap_or_default();
+        let config = world
+            .get_resource::<UpgradeTreeConfig>()
+            .copied()
+            .unwrap_or_default();
         let mut unlocked = HashSet::new();
         unlocked.insert(0); // Basics always unlocked.
-        Self { unlocked, points: config.starting_points }
+        Self {
+            unlocked,
+            points: config.starting_points,
+        }
     }
 }
 
@@ -142,13 +166,20 @@ fn setup(mut commands: Commands, state: Res<TreeState>) {
         let (x, y) = NODE_POS[i];
         commands.spawn((
             NodeSprite(i),
-            Sprite { color: Color::srgb(0.2, 0.2, 0.22), custom_size: Some(Vec2::new(130.0, 52.0)), ..default() },
+            Sprite {
+                color: Color::srgb(0.2, 0.2, 0.22),
+                custom_size: Some(Vec2::new(130.0, 52.0)),
+                ..default()
+            },
             Transform::from_translation(Vec3::new(x, y, 0.5)),
         ));
         // Node name label.
         commands.spawn((
             Text::new(format!("[{}] {}", i + 1, node.name)),
-            TextFont { font_size: 13.0, ..default() },
+            TextFont {
+                font_size: 13.0,
+                ..default()
+            },
             TextColor(Color::WHITE),
             Node {
                 position_type: PositionType::Absolute,
@@ -160,7 +191,10 @@ fn setup(mut commands: Commands, state: Res<TreeState>) {
         // Node desc / cost label.
         commands.spawn((
             Text::new(format!("{} ({}pt)", node.desc, node.cost)),
-            TextFont { font_size: 10.0, ..default() },
+            TextFont {
+                font_size: 10.0,
+                ..default()
+            },
             TextColor(Color::srgba(1.0, 1.0, 1.0, 0.6)),
             Node {
                 position_type: PositionType::Absolute,
@@ -172,7 +206,17 @@ fn setup(mut commands: Commands, state: Res<TreeState>) {
     }
 
     // Thin connector lines between prereq → child.
-    let edges: &[(usize, usize)] = &[(0,1),(0,2),(0,3),(1,4),(2,5),(3,6),(4,7),(5,7),(6,8)];
+    let edges: &[(usize, usize)] = &[
+        (0, 1),
+        (0, 2),
+        (0, 3),
+        (1, 4),
+        (2, 5),
+        (3, 6),
+        (4, 7),
+        (5, 7),
+        (6, 8),
+    ];
     for &(from, to) in edges {
         let (fx, fy) = NODE_POS[from];
         let (tx, ty) = NODE_POS[to];
@@ -183,7 +227,11 @@ fn setup(mut commands: Commands, state: Res<TreeState>) {
         let len = (dx * dx + dy * dy).sqrt();
         let angle = dy.atan2(dx);
         commands.spawn((
-            Sprite { color: Color::srgba(1.0, 1.0, 1.0, 0.15), custom_size: Some(Vec2::new(len, 2.0)), ..default() },
+            Sprite {
+                color: Color::srgba(1.0, 1.0, 1.0, 0.15),
+                custom_size: Some(Vec2::new(len, 2.0)),
+                ..default()
+            },
             Transform::from_translation(Vec3::new(mid_x, mid_y, 0.1))
                 .with_rotation(Quat::from_rotation_z(angle)),
         ));
@@ -192,16 +240,32 @@ fn setup(mut commands: Commands, state: Res<TreeState>) {
     commands.spawn((
         PointsLabel,
         Text::new(format!("Skill points: {}", state.points)),
-        TextFont { font_size: 18.0, ..default() },
+        TextFont {
+            font_size: 18.0,
+            ..default()
+        },
         TextColor(Color::srgb(1.0, 0.85, 0.3)),
-        Node { position_type: PositionType::Absolute, top: Val::Px(10.0), left: Val::Px(10.0), ..default() },
+        Node {
+            position_type: PositionType::Absolute,
+            top: Val::Px(10.0),
+            left: Val::Px(10.0),
+            ..default()
+        },
     ));
 
     commands.spawn((
         Text::new("SPACE — earn point   1–9 — unlock node   Yellow = available   Green = unlocked"),
-        TextFont { font_size: 13.0, ..default() },
+        TextFont {
+            font_size: 13.0,
+            ..default()
+        },
         TextColor(Color::srgba(1.0, 1.0, 1.0, 0.5)),
-        Node { position_type: PositionType::Absolute, bottom: Val::Px(10.0), left: Val::Px(10.0), ..default() },
+        Node {
+            position_type: PositionType::Absolute,
+            bottom: Val::Px(10.0),
+            left: Val::Px(10.0),
+            ..default()
+        },
     ));
 }
 
@@ -210,27 +274,33 @@ fn handle_input(
     config: Res<UpgradeTreeConfig>,
     mut state: ResMut<TreeState>,
 ) {
-    if keys.just_pressed(KeyCode::Space) { state.points += config.points_per_press; }
+    if keys.just_pressed(KeyCode::Space) {
+        state.points += config.points_per_press;
+    }
 
     let digit_keys = [
-        KeyCode::Digit1, KeyCode::Digit2, KeyCode::Digit3, KeyCode::Digit4,
-        KeyCode::Digit5, KeyCode::Digit6, KeyCode::Digit7, KeyCode::Digit8,
+        KeyCode::Digit1,
+        KeyCode::Digit2,
+        KeyCode::Digit3,
+        KeyCode::Digit4,
+        KeyCode::Digit5,
+        KeyCode::Digit6,
+        KeyCode::Digit7,
+        KeyCode::Digit8,
         KeyCode::Digit9,
     ];
     for (i, &key) in digit_keys.iter().enumerate() {
-        if keys.just_pressed(key) && i < NODES.len() {
-            if can_unlock(i, NODES, &state.unlocked, state.points) {
-                state.unlocked.insert(i);
-                state.points -= NODES[i].cost;
-            }
+        if keys.just_pressed(key)
+            && i < NODES.len()
+            && can_unlock(i, NODES, &state.unlocked, state.points)
+        {
+            state.unlocked.insert(i);
+            state.points -= NODES[i].cost;
         }
     }
 }
 
-fn refresh_nodes(
-    state: Res<TreeState>,
-    mut q: Query<(&NodeSprite, &mut Sprite)>,
-) {
+fn refresh_nodes(state: Res<TreeState>, mut q: Query<(&NodeSprite, &mut Sprite)>) {
     for (ns, mut sprite) in &mut q {
         let idx = ns.0;
         sprite.color = if state.unlocked.contains(&idx) {
@@ -254,7 +324,9 @@ fn update_points_label(state: Res<TreeState>, mut q: Query<&mut Text, With<Point
 mod tests {
     use super::*;
 
-    fn unlocked(ids: &[usize]) -> HashSet<usize> { ids.iter().cloned().collect() }
+    fn unlocked(ids: &[usize]) -> HashSet<usize> {
+        ids.iter().cloned().collect()
+    }
 
     #[test]
     fn basics_already_unlocked_cannot_unlock_again() {
@@ -304,8 +376,11 @@ mod tests {
     #[test]
     fn tree_state_default_unlocks_basics_and_uses_config_points() {
         let mut app = App::new();
-        app.insert_resource(UpgradeTreeConfig { starting_points: 5, points_per_press: 1 })
-            .init_resource::<TreeState>();
+        app.insert_resource(UpgradeTreeConfig {
+            starting_points: 5,
+            points_per_press: 1,
+        })
+        .init_resource::<TreeState>();
         let state = app.world().resource::<TreeState>();
         assert!(state.unlocked.contains(&0));
         assert_eq!(state.points, 5);

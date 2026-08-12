@@ -92,8 +92,9 @@ impl Default for TurnBasedConfig {
 // ─── Pure helpers ────────────────────────────────────────────────────────────
 
 /// Sorts `(index, initiative)` pairs in place, highest initiative first.
-pub fn sort_by_initiative(actors: &mut Vec<(usize, i32)>) {
-    actors.sort_by(|a, b| b.1.cmp(&a.1));
+pub fn sort_by_initiative(actors: &mut [(usize, i32)]) {
+    // `Reverse` flips the ordering, giving highest-initiative-first.
+    actors.sort_by_key(|&(_, initiative)| std::cmp::Reverse(initiative));
 }
 
 /// Returns the Manhattan distance between two grid cells.
@@ -196,7 +197,11 @@ fn setup(mut commands: Commands, config: Res<TurnBasedConfig>) {
                 Color::srgb(0.18, 0.18, 0.24)
             };
             commands.spawn((
-                Sprite { color, custom_size: Some(Vec2::splat(config.tile_px - 1.0)), ..default() },
+                Sprite {
+                    color,
+                    custom_size: Some(Vec2::splat(config.tile_px - 1.0)),
+                    ..default()
+                },
                 Transform::from_translation(cell_to_world(IVec2::new(c as i32, r as i32), &config)),
             ));
         }
@@ -204,15 +209,25 @@ fn setup(mut commands: Commands, config: Res<TurnBasedConfig>) {
 
     // Spawn player
     let player_cell = IVec2::new(1, 5);
-    let player = commands.spawn((
-        Sprite { color: Color::srgb(0.3, 0.85, 1.0), custom_size: Some(Vec2::splat(config.tile_px * 0.7)), ..default() },
-        Transform::from_translation(cell_to_world(player_cell, &config).with_z(1.0)),
-        Actor {
-            hp: config.player_hp, max_hp: config.player_hp,
-            ap: config.player_max_ap, max_ap: config.player_max_ap,
-            initiative: 10, cell: player_cell, is_player: true,
-        },
-    )).id();
+    let player = commands
+        .spawn((
+            Sprite {
+                color: Color::srgb(0.3, 0.85, 1.0),
+                custom_size: Some(Vec2::splat(config.tile_px * 0.7)),
+                ..default()
+            },
+            Transform::from_translation(cell_to_world(player_cell, &config).with_z(1.0)),
+            Actor {
+                hp: config.player_hp,
+                max_hp: config.player_hp,
+                ap: config.player_max_ap,
+                max_ap: config.player_max_ap,
+                initiative: 10,
+                cell: player_cell,
+                is_player: true,
+            },
+        ))
+        .id();
 
     // Spawn enemies
     let enemy_starts = [
@@ -222,30 +237,50 @@ fn setup(mut commands: Commands, config: Res<TurnBasedConfig>) {
     ];
     let mut entities = vec![(player, 10i32)];
     for (cell, init) in enemy_starts {
-        let e = commands.spawn((
-            Sprite { color: Color::srgb(0.9, 0.25, 0.2), custom_size: Some(Vec2::splat(config.tile_px * 0.65)), ..default() },
-            Transform::from_translation(cell_to_world(cell, &config).with_z(1.0)),
-            Actor {
-                hp: config.enemy_hp, max_hp: config.enemy_hp,
-                ap: config.enemy_max_ap, max_ap: config.enemy_max_ap,
-                initiative: init, cell, is_player: false,
-            },
-        )).id();
+        let e = commands
+            .spawn((
+                Sprite {
+                    color: Color::srgb(0.9, 0.25, 0.2),
+                    custom_size: Some(Vec2::splat(config.tile_px * 0.65)),
+                    ..default()
+                },
+                Transform::from_translation(cell_to_world(cell, &config).with_z(1.0)),
+                Actor {
+                    hp: config.enemy_hp,
+                    max_hp: config.enemy_hp,
+                    ap: config.enemy_max_ap,
+                    max_ap: config.enemy_max_ap,
+                    initiative: init,
+                    cell,
+                    is_player: false,
+                },
+            ))
+            .id();
         entities.push((e, init));
     }
 
     // Build sorted turn order
-    let mut indexed: Vec<(usize, i32)> = entities.iter().enumerate()
-        .map(|(i, (_, init))| (i, *init)).collect();
+    let mut indexed: Vec<(usize, i32)> = entities
+        .iter()
+        .enumerate()
+        .map(|(i, (_, init))| (i, *init))
+        .collect();
     sort_by_initiative(&mut indexed);
     let order: Vec<Entity> = indexed.iter().map(|(i, _)| entities[*i].0).collect();
 
-    commands.insert_resource(TurnState { order, current_idx: 0, phase: TurnPhase::PlayerTurn });
+    commands.insert_resource(TurnState {
+        order,
+        current_idx: 0,
+        phase: TurnPhase::PlayerTurn,
+    });
 
     // HUD
     commands.spawn((
         Text::new("Player turn  AP: 4/4"),
-        TextFont { font_size: 18.0, ..default() },
+        TextFont {
+            font_size: 18.0,
+            ..default()
+        },
         TextColor(Color::WHITE),
         Node {
             position_type: PositionType::Absolute,
@@ -257,7 +292,10 @@ fn setup(mut commands: Commands, config: Res<TurnBasedConfig>) {
     ));
     commands.spawn((
         Text::new("WASD — move/attack   SPACE — end turn"),
-        TextFont { font_size: 14.0, ..default() },
+        TextFont {
+            font_size: 14.0,
+            ..default()
+        },
         TextColor(Color::srgb(0.6, 0.6, 0.6)),
         Node {
             position_type: PositionType::Absolute,
@@ -280,37 +318,53 @@ fn handle_player_turn(
     }
 
     // Collect cells occupied by actors for collision.
-    let occupied: Vec<(Entity, IVec2)> = actors.iter()
+    let occupied: Vec<(Entity, IVec2)> = actors
+        .iter()
         .filter(|(_, a, _, _)| a.hp > 0)
         .map(|(e, a, _, _)| (e, a.cell))
         .collect();
 
-    let player_entity = ts.order.iter().find(|&&e| {
-        actors.get(e).map(|(_, a, _, _)| a.is_player).unwrap_or(false)
-    }).copied();
+    let player_entity = ts
+        .order
+        .iter()
+        .find(|&&e| {
+            actors
+                .get(e)
+                .map(|(_, a, _, _)| a.is_player)
+                .unwrap_or(false)
+        })
+        .copied();
     let Some(pe) = player_entity else { return };
-    let Ok((_, player, _, _)) = actors.get(pe) else { return };
-    if player.hp <= 0 {
-        drop(player);
+    // Copy the two values we need out of the query, so the shared borrow of
+    // `actors` ends here and the `get_mut` calls below are free to take it.
+    let (player_hp, player_ap) = {
+        let Ok((_, player, _, _)) = actors.get(pe) else {
+            return;
+        };
+        (player.hp, player.ap)
+    };
+    if player_hp <= 0 {
         advance_turn(&mut ts, &actors);
         return;
     }
     // AP is 0 at the start of a fresh turn — restore it before accepting input.
     // (Mid-turn depletion is handled below and correctly ends the turn there.)
-    if player.ap <= 0 {
-        drop(player);
+    if player_ap <= 0 {
         if let Ok((_, mut p, _, _)) = actors.get_mut(pe) {
             p.ap = p.max_ap;
         }
         return;
     }
-    drop(player);
 
     let dirs = [
-        (KeyCode::KeyW, IVec2::NEG_Y), (KeyCode::ArrowUp, IVec2::NEG_Y),
-        (KeyCode::KeyS, IVec2::Y),     (KeyCode::ArrowDown, IVec2::Y),
-        (KeyCode::KeyA, IVec2::NEG_X), (KeyCode::ArrowLeft, IVec2::NEG_X),
-        (KeyCode::KeyD, IVec2::X),     (KeyCode::ArrowRight, IVec2::X),
+        (KeyCode::KeyW, IVec2::NEG_Y),
+        (KeyCode::ArrowUp, IVec2::NEG_Y),
+        (KeyCode::KeyS, IVec2::Y),
+        (KeyCode::ArrowDown, IVec2::Y),
+        (KeyCode::KeyA, IVec2::NEG_X),
+        (KeyCode::ArrowLeft, IVec2::NEG_X),
+        (KeyCode::KeyD, IVec2::X),
+        (KeyCode::ArrowRight, IVec2::X),
     ];
     if input.just_pressed(KeyCode::Space) {
         advance_turn(&mut ts, &actors);
@@ -321,25 +375,33 @@ fn handle_player_turn(
         if !input.just_pressed(key) {
             continue;
         }
-        let Ok((_, player, _, _)) = actors.get(pe) else { break };
-        let target_cell = player.cell + delta;
-        if target_cell.x < 0 || target_cell.y < 0
-            || target_cell.x >= config.cols as i32 || target_cell.y >= config.rows as i32
+        // `target_cell` is a copy, so the shared borrow of `actors` taken here
+        // ends with this block and the `get_mut` calls below can proceed.
+        let target_cell = {
+            let Ok((_, player, _, _)) = actors.get(pe) else {
+                break;
+            };
+            player.cell + delta
+        };
+        if target_cell.x < 0
+            || target_cell.y < 0
+            || target_cell.x >= config.cols as i32
+            || target_cell.y >= config.rows as i32
         {
             break;
         }
         // Check for enemy at target cell.
-        let enemy_there = occupied.iter()
+        let enemy_there = occupied
+            .iter()
             .find(|(e, c)| *e != pe && *c == target_cell)
             .map(|(e, _)| *e);
-        drop(player);
 
         if let Some(enemy_e) = enemy_there {
             // Bump attack
-            if let Ok((_, mut player, _, _)) = actors.get_mut(pe) {
-                if player.ap >= 2 {
-                    player.ap -= 2;
-                }
+            if let Ok((_, mut player, _, _)) = actors.get_mut(pe)
+                && player.ap >= 2
+            {
+                player.ap -= 2;
             }
             if let Ok((_, mut enemy, _, mut sprite)) = actors.get_mut(enemy_e) {
                 enemy.hp -= config.player_atk;
@@ -349,36 +411,47 @@ fn handle_player_turn(
             }
         } else {
             // Move
-            if let Ok((_, mut player, mut t, _)) = actors.get_mut(pe) {
-                if player.ap >= 1 {
-                    player.cell = target_cell;
-                    player.ap -= 1;
-                    t.translation = cell_to_world(target_cell, &config).with_z(1.0);
-                }
+            if let Ok((_, mut player, mut t, _)) = actors.get_mut(pe)
+                && player.ap >= 1
+            {
+                player.cell = target_cell;
+                player.ap -= 1;
+                t.translation = cell_to_world(target_cell, &config).with_z(1.0);
             }
         }
         break;
     }
 
     // Auto-end if AP runs out.
-    if let Ok((_, player, _, _)) = actors.get(pe) {
-        if player.ap <= 0 {
-            advance_turn(&mut ts, &actors);
-        }
+    if let Ok((_, player, _, _)) = actors.get(pe)
+        && player.ap <= 0
+    {
+        advance_turn(&mut ts, &actors);
     }
 }
 
-fn advance_turn(ts: &mut TurnState, actors: &Query<(Entity, &mut Actor, &mut Transform, &mut Sprite)>) {
+fn advance_turn(
+    ts: &mut TurnState,
+    actors: &Query<(Entity, &mut Actor, &mut Transform, &mut Sprite)>,
+) {
     // Remove dead actors from order.
-    ts.order.retain(|&e| actors.get(e).map(|(_, a, _, _)| a.hp > 0).unwrap_or(false));
+    ts.order
+        .retain(|&e| actors.get(e).map(|(_, a, _, _)| a.hp > 0).unwrap_or(false));
     if ts.order.is_empty() {
         ts.phase = TurnPhase::GameOver;
         return;
     }
     ts.current_idx = (ts.current_idx + 1) % ts.order.len();
     let current = ts.order[ts.current_idx];
-    let is_player = actors.get(current).map(|(_, a, _, _)| a.is_player).unwrap_or(false);
-    ts.phase = if is_player { TurnPhase::PlayerTurn } else { TurnPhase::EnemyTurn };
+    let is_player = actors
+        .get(current)
+        .map(|(_, a, _, _)| a.is_player)
+        .unwrap_or(false);
+    ts.phase = if is_player {
+        TurnPhase::PlayerTurn
+    } else {
+        TurnPhase::EnemyTurn
+    };
 }
 
 fn run_enemy_turn(
@@ -395,7 +468,8 @@ fn run_enemy_turn(
     };
 
     // --- data-collection phase (immutable) -----------------------------------
-    let enemy_data = actors.get(enemy_e)
+    let enemy_data = actors
+        .get(enemy_e)
         .ok()
         .filter(|(_, a, _, _)| !a.is_player && a.hp > 0)
         .map(|(_, a, _, _)| a.cell);
@@ -404,7 +478,8 @@ fn run_enemy_turn(
         return;
     };
 
-    let player_info = actors.iter()
+    let player_info = actors
+        .iter()
         .find(|(_, a, _, _)| a.is_player && a.hp > 0)
         .map(|(e, a, _, _)| (e, a.cell));
     let Some((player_e, pc)) = player_info else {
@@ -412,7 +487,8 @@ fn run_enemy_turn(
         return;
     };
 
-    let occupied: Vec<IVec2> = actors.iter()
+    let occupied: Vec<IVec2> = actors
+        .iter()
         .filter(|(e, a, _, _)| *e != enemy_e && a.hp > 0)
         .map(|(_, a, _, _)| a.cell)
         .collect();
@@ -425,11 +501,11 @@ fn run_enemy_turn(
         }
     } else {
         let next = step_toward(enemy_cell, pc);
-        if !occupied.contains(&next) {
-            if let Ok((_, mut enemy, mut t, _)) = actors.get_mut(enemy_e) {
-                enemy.cell = next;
-                t.translation = cell_to_world(next, &config).with_z(1.0);
-            }
+        if !occupied.contains(&next)
+            && let Ok((_, mut enemy, mut t, _)) = actors.get_mut(enemy_e)
+        {
+            enemy.cell = next;
+            t.translation = cell_to_world(next, &config).with_z(1.0);
         }
     }
     if let Ok((_, mut enemy, _, _)) = actors.get_mut(enemy_e) {
@@ -462,17 +538,23 @@ fn update_hud(
                     TurnPhase::PlayerTurn => {
                         let ap = player.map(|p| p.ap).unwrap_or(0);
                         let hp = player.map(|p| p.hp).unwrap_or(0);
-                        format!("Player turn  HP: {}  AP: {}/{}  Enemies: {}", hp, ap, config.player_max_ap, enemies_alive)
+                        format!(
+                            "Player turn  HP: {}  AP: {}/{}  Enemies: {}",
+                            hp, ap, config.player_max_ap, enemies_alive
+                        )
                     }
                     TurnPhase::EnemyTurn => {
                         let hp = player.map(|p| p.hp).unwrap_or(0);
-                        format!("Enemy turn...  Player HP: {}  Enemies: {}", hp, enemies_alive)
+                        format!(
+                            "Enemy turn...  Player HP: {}  Enemies: {}",
+                            hp, enemies_alive
+                        )
                     }
                 };
                 color.0 = match ts.phase {
                     TurnPhase::PlayerTurn => Color::srgb(0.3, 0.9, 1.0),
-                    TurnPhase::EnemyTurn  => Color::srgb(1.0, 0.4, 0.3),
-                    TurnPhase::GameOver   => Color::srgb(1.0, 0.9, 0.2),
+                    TurnPhase::EnemyTurn => Color::srgb(1.0, 0.4, 0.3),
+                    TurnPhase::GameOver => Color::srgb(1.0, 0.9, 0.2),
                 };
             }
             HudLabel::Log => {}

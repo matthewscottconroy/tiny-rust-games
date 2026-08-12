@@ -11,7 +11,9 @@
 //!
 //! **Controls:** scroll wheel — zoom;  WASD — pan.
 
-use godot::classes::{Camera2D, ColorRect, INode2D, Input, InputEvent, InputEventMouseButton, Label, Node2D};
+use godot::classes::{
+    Camera2D, ColorRect, INode2D, Input, InputEvent, InputEventMouseButton, Label, Node2D,
+};
 use godot::global::MouseButton;
 use godot::prelude::*;
 
@@ -59,7 +61,11 @@ pub struct ZoomDemo {
 #[godot_api]
 impl INode2D for ZoomDemo {
     fn init(base: Base<Node2D>) -> Self {
-        Self { target_zoom: 1.0, current_zoom: 1.0, base }
+        Self {
+            target_zoom: 1.0,
+            current_zoom: 1.0,
+            base,
+        }
     }
 
     fn ready(&mut self) {
@@ -72,10 +78,10 @@ impl INode2D for ZoomDemo {
         // Scatter some coloured rects as landmarks
         let landmarks = [
             ((-200.0, -100.0), Color::from_rgb(0.8, 0.3, 0.3)),
-            ((150.0, 80.0),    Color::from_rgb(0.3, 0.7, 0.4)),
-            ((-100.0, 200.0),  Color::from_rgb(0.4, 0.5, 0.9)),
-            ((250.0, -180.0),  Color::from_rgb(0.9, 0.75, 0.2)),
-            ((0.0, 0.0),       Color::from_rgb(0.7, 0.7, 0.7)),
+            ((150.0, 80.0), Color::from_rgb(0.3, 0.7, 0.4)),
+            ((-100.0, 200.0), Color::from_rgb(0.4, 0.5, 0.9)),
+            ((250.0, -180.0), Color::from_rgb(0.9, 0.75, 0.2)),
+            ((0.0, 0.0), Color::from_rgb(0.7, 0.7, 0.7)),
         ];
         for ((x, y), color) in landmarks {
             let mut rect = ColorRect::new_alloc();
@@ -99,16 +105,16 @@ impl INode2D for ZoomDemo {
     }
 
     fn input(&mut self, event: Gd<InputEvent>) {
-        if let Ok(mb) = event.try_cast::<InputEventMouseButton>() {
-            if mb.is_pressed() {
-                let step = match mb.get_button_index() {
-                    MouseButton::WHEEL_UP   => -ZOOM_STEP,
-                    MouseButton::WHEEL_DOWN =>  ZOOM_STEP,
-                    _ => return,
-                };
-                // Zoom in = larger scalar (objects bigger), scroll up = zoom in
-                self.target_zoom = clamp_zoom(self.target_zoom - step, ZOOM_MIN, ZOOM_MAX);
-            }
+        if let Ok(mb) = event.try_cast::<InputEventMouseButton>()
+            && mb.is_pressed()
+        {
+            let step = match mb.get_button_index() {
+                MouseButton::WHEEL_UP => -ZOOM_STEP,
+                MouseButton::WHEEL_DOWN => ZOOM_STEP,
+                _ => return,
+            };
+            // Zoom in = larger scalar (objects bigger), scroll up = zoom in
+            self.target_zoom = clamp_zoom(self.target_zoom - step, ZOOM_MIN, ZOOM_MAX);
         }
     }
 
@@ -118,14 +124,23 @@ impl INode2D for ZoomDemo {
 
         // Pan
         let mut dir = Vector2::ZERO;
-        if input.is_action_pressed("ui_right") { dir.x += 1.0; }
-        if input.is_action_pressed("ui_left")  { dir.x -= 1.0; }
-        if input.is_action_pressed("ui_down")  { dir.y += 1.0; }
-        if input.is_action_pressed("ui_up")    { dir.y -= 1.0; }
+        if input.is_action_pressed("ui_right") {
+            dir.x += 1.0;
+        }
+        if input.is_action_pressed("ui_left") {
+            dir.x -= 1.0;
+        }
+        if input.is_action_pressed("ui_down") {
+            dir.y += 1.0;
+        }
+        if input.is_action_pressed("ui_up") {
+            dir.y -= 1.0;
+        }
         if dir != Vector2::ZERO {
             let pos = self.base().get_position();
             let zoom = self.current_zoom;
-            self.base_mut().set_position(pos + dir.normalized() * PAN_SPEED * dt / zoom);
+            self.base_mut()
+                .set_position(pos + dir.normalized() * PAN_SPEED * dt / zoom);
         }
 
         // Smooth zoom

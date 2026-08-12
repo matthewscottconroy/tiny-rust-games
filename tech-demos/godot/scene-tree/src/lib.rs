@@ -95,7 +95,7 @@ impl TreeExplorer {
 
 /// Returns the index of the first element in `names` equal to `target`, or
 /// `None` if no such element exists.
-pub fn find_by_name<'a>(names: &[&'a str], target: &str) -> Option<usize> {
+pub fn find_by_name(names: &[&str], target: &str) -> Option<usize> {
     names.iter().position(|&n| n == target)
 }
 
@@ -107,7 +107,11 @@ pub fn is_valid_index(index: i64, count: i64) -> bool {
 
 /// Returns all names from `names` that start with `prefix`.
 pub fn filter_by_prefix<'a>(names: &[&'a str], prefix: &str) -> Vec<&'a str> {
-    names.iter().copied().filter(|n| n.starts_with(prefix)).collect()
+    names
+        .iter()
+        .copied()
+        .filter(|n| n.starts_with(prefix))
+        .collect()
 }
 
 // ─── Tests ────────────────────────────────────────────────────────────────────

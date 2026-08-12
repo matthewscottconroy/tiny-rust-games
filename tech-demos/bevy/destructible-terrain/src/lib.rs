@@ -46,7 +46,10 @@ impl Plugin for DestructibleTerrainPlugin {
         app.init_resource::<DestructibleTerrainConfig>()
             .init_resource::<WallSet>()
             .add_systems(Startup, setup)
-            .add_systems(Update, (move_player, handle_attack, update_tile_colors).chain());
+            .add_systems(
+                Update,
+                (move_player, handle_attack, update_tile_colors).chain(),
+            );
     }
 }
 
@@ -66,7 +69,11 @@ pub struct DestructibleTerrainConfig {
 
 impl Default for DestructibleTerrainConfig {
     fn default() -> Self {
-        Self { player_speed: 140.0, attack_cd: 0.3, attack_damage: 1 }
+        Self {
+            player_speed: 140.0,
+            attack_cd: 0.3,
+            attack_damage: 1,
+        }
     }
 }
 
@@ -137,9 +144,11 @@ pub struct WallSet(pub HashSet<IVec2>);
 
 fn is_wall_cell(col: usize, row: usize) -> bool {
     // Border always wall.
-    if col == 0 || row == 0 || col == COLS - 1 || row == ROWS - 1 { return true; }
+    if col == 0 || row == 0 || col == COLS - 1 || row == ROWS - 1 {
+        return true;
+    }
     // Interior pillars at even positions.
-    col % 4 == 0 && row % 3 == 0
+    col.is_multiple_of(4) && row.is_multiple_of(3)
 }
 
 fn setup(mut commands: Commands, mut walls: ResMut<WallSet>) {
@@ -150,9 +159,17 @@ fn setup(mut commands: Commands, mut walls: ResMut<WallSet>) {
             let center = cell_center(col, row);
             let cell = IVec2::new(col as i32, row as i32);
             if is_wall_cell(col, row) {
-                let max_hp = if col == 0 || row == 0 || col == COLS - 1 || row == ROWS - 1 { 99 } else { 3 };
+                let max_hp = if col == 0 || row == 0 || col == COLS - 1 || row == ROWS - 1 {
+                    99
+                } else {
+                    3
+                };
                 commands.spawn((
-                    Tile { hp: max_hp, max_hp, cell },
+                    Tile {
+                        hp: max_hp,
+                        max_hp,
+                        cell,
+                    },
                     Sprite {
                         color: tile_color(max_hp, max_hp),
                         custom_size: Some(Vec2::splat(TILE_PX - 1.0)),
@@ -178,24 +195,47 @@ fn setup(mut commands: Commands, mut walls: ResMut<WallSet>) {
     // Start the player in the centre floor cell.
     let start = cell_center(COLS / 2, ROWS / 2);
     commands.spawn((
-        Player { facing: IVec2::new(0, 1), attack_cd: 0.0 },
-        Sprite { color: Color::srgb(0.3, 0.6, 1.0), custom_size: Some(Vec2::splat(TILE_PX - 6.0)), ..default() },
+        Player {
+            facing: IVec2::new(0, 1),
+            attack_cd: 0.0,
+        },
+        Sprite {
+            color: Color::srgb(0.3, 0.6, 1.0),
+            custom_size: Some(Vec2::splat(TILE_PX - 6.0)),
+            ..default()
+        },
         Transform::from_translation(start.extend(1.0)),
     ));
 
     commands.spawn((
         HudText,
         Text::new("SPACE — attack facing wall"),
-        TextFont { font_size: 14.0, ..default() },
+        TextFont {
+            font_size: 14.0,
+            ..default()
+        },
         TextColor(Color::WHITE),
-        Node { position_type: PositionType::Absolute, top: Val::Px(8.0), left: Val::Px(8.0), ..default() },
+        Node {
+            position_type: PositionType::Absolute,
+            top: Val::Px(8.0),
+            left: Val::Px(8.0),
+            ..default()
+        },
     ));
 
     commands.spawn((
         Text::new("WASD / Arrows — move   SPACE — break wall"),
-        TextFont { font_size: 13.0, ..default() },
+        TextFont {
+            font_size: 13.0,
+            ..default()
+        },
         TextColor(Color::srgba(1.0, 1.0, 1.0, 0.5)),
-        Node { position_type: PositionType::Absolute, bottom: Val::Px(8.0), left: Val::Px(8.0), ..default() },
+        Node {
+            position_type: PositionType::Absolute,
+            bottom: Val::Px(8.0),
+            left: Val::Px(8.0),
+            ..default()
+        },
     ));
 }
 
@@ -208,18 +248,34 @@ fn move_player(
     config: Res<DestructibleTerrainConfig>,
     mut q: Query<(&mut Player, &mut Transform)>,
 ) {
-    let Ok((mut player, mut tf)) = q.single_mut() else { return };
+    let Ok((mut player, mut tf)) = q.single_mut() else {
+        return;
+    };
     player.attack_cd = (player.attack_cd - time.delta_secs()).max(0.0);
 
     let mut dir = IVec2::ZERO;
-    if keys.pressed(KeyCode::KeyW) || keys.pressed(KeyCode::ArrowUp)    { dir.y += 1; }
-    if keys.pressed(KeyCode::KeyS) || keys.pressed(KeyCode::ArrowDown)  { dir.y -= 1; }
-    if keys.pressed(KeyCode::KeyA) || keys.pressed(KeyCode::ArrowLeft)  { dir.x -= 1; }
-    if keys.pressed(KeyCode::KeyD) || keys.pressed(KeyCode::ArrowRight) { dir.x += 1; }
-    if dir == IVec2::ZERO { return; }
+    if keys.pressed(KeyCode::KeyW) || keys.pressed(KeyCode::ArrowUp) {
+        dir.y += 1;
+    }
+    if keys.pressed(KeyCode::KeyS) || keys.pressed(KeyCode::ArrowDown) {
+        dir.y -= 1;
+    }
+    if keys.pressed(KeyCode::KeyA) || keys.pressed(KeyCode::ArrowLeft) {
+        dir.x -= 1;
+    }
+    if keys.pressed(KeyCode::KeyD) || keys.pressed(KeyCode::ArrowRight) {
+        dir.x += 1;
+    }
+    if dir == IVec2::ZERO {
+        return;
+    }
 
     // Only allow cardinal movement (pick one axis).
-    let dir = if dir.x != 0 { IVec2::new(dir.x, 0) } else { IVec2::new(0, dir.y) };
+    let dir = if dir.x != 0 {
+        IVec2::new(dir.x, 0)
+    } else {
+        IVec2::new(0, dir.y)
+    };
     player.facing = dir;
 
     let current_cell = world_to_cell(tf.translation.truncate());
@@ -227,7 +283,8 @@ fn move_player(
     if !walls.0.contains(&target_cell) {
         let target_pos = cell_center(target_cell.x as usize, target_cell.y as usize);
         let dt = time.delta_secs();
-        let move_vec = (target_pos - tf.translation.truncate()).normalize_or_zero() * config.player_speed * dt;
+        let move_vec =
+            (target_pos - tf.translation.truncate()).normalize_or_zero() * config.player_speed * dt;
         // Snap when very close to avoid jitter.
         if tf.translation.truncate().distance(target_pos) < config.player_speed * dt + 1.0 {
             tf.translation = target_pos.extend(1.0);
@@ -245,8 +302,12 @@ fn handle_attack(
     mut player_q: Query<(&mut Player, &Transform)>,
     mut tile_q: Query<(Entity, &mut Tile, &mut Sprite)>,
 ) {
-    let Ok((mut player, ptf)) = player_q.single_mut() else { return };
-    if !keys.just_pressed(KeyCode::Space) || player.attack_cd > 0.0 { return; }
+    let Ok((mut player, ptf)) = player_q.single_mut() else {
+        return;
+    };
+    if !keys.just_pressed(KeyCode::Space) || player.attack_cd > 0.0 {
+        return;
+    }
 
     let current_cell = world_to_cell(ptf.translation.truncate());
     let target_cell = current_cell + player.facing;

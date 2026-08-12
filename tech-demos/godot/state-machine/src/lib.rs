@@ -158,10 +158,10 @@ impl INode2D for StateMachine {
         self.current = transition(self.current, moving, jumping, attacking);
 
         let name = state_name(self.current);
-        if let Some(node) = self.base().get_node_or_null("Label") {
-            if let Ok(mut label) = node.try_cast::<Label>() {
-                label.set_text(name);
-            }
+        if let Some(node) = self.base().get_node_or_null("Label")
+            && let Ok(mut label) = node.try_cast::<Label>()
+        {
+            label.set_text(name);
         }
     }
 }

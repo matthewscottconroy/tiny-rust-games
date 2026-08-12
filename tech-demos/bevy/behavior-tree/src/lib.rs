@@ -39,7 +39,10 @@ impl Plugin for BehaviorTreePlugin {
     fn build(&self, app: &mut App) {
         app.init_resource::<BehaviorTreeConfig>()
             .add_systems(Startup, setup)
-            .add_systems(Update, (move_player, tick_guard, sync_disc, refresh_label).chain());
+            .add_systems(
+                Update,
+                (move_player, tick_guard, sync_disc, refresh_label).chain(),
+            );
     }
 }
 
@@ -84,11 +87,21 @@ impl Default for BehaviorTreeConfig {
 
 /// Result of ticking one BT node.
 #[derive(Clone, Copy, PartialEq, Eq, Debug)]
-pub enum NodeStatus { Running, Success, Failure }
+pub enum NodeStatus {
+    Running,
+    Success,
+    Failure,
+}
 
 /// The leaf actions and conditions the guard can execute or test.
 #[derive(Clone, Copy, Debug, PartialEq)]
-pub enum LeafKind { CanSeePlayer, IsNearPlayer, Chase, Attack, Patrol }
+pub enum LeafKind {
+    CanSeePlayer,
+    IsNearPlayer,
+    Chase,
+    Attack,
+    Patrol,
+}
 
 /// A node in the behavior tree.
 #[derive(Clone, Debug)]
@@ -108,9 +121,21 @@ pub struct BtCtx {
 pub fn eval_leaf(kind: LeafKind, ctx: &BtCtx) -> NodeStatus {
     let dist = ctx.guard_pos.distance(ctx.player_pos);
     match kind {
-        LeafKind::CanSeePlayer => if dist <= SIGHT_RANGE { NodeStatus::Success } else { NodeStatus::Failure },
-        LeafKind::IsNearPlayer => if dist <= ATTACK_RANGE { NodeStatus::Success } else { NodeStatus::Failure },
-        LeafKind::Chase  => NodeStatus::Running,
+        LeafKind::CanSeePlayer => {
+            if dist <= SIGHT_RANGE {
+                NodeStatus::Success
+            } else {
+                NodeStatus::Failure
+            }
+        }
+        LeafKind::IsNearPlayer => {
+            if dist <= ATTACK_RANGE {
+                NodeStatus::Success
+            } else {
+                NodeStatus::Failure
+            }
+        }
+        LeafKind::Chase => NodeStatus::Running,
         LeafKind::Attack => NodeStatus::Running,
         LeafKind::Patrol => NodeStatus::Running,
     }
@@ -122,21 +147,34 @@ pub fn tick_node(node: &BtNode, ctx: &BtCtx) -> (NodeStatus, Option<LeafKind>) {
         BtNode::Sequence(children) => {
             for child in children {
                 let (s, action) = tick_node(child, ctx);
-                if s == NodeStatus::Failure { return (NodeStatus::Failure, None); }
-                if s == NodeStatus::Running  { return (NodeStatus::Running, action); }
+                if s == NodeStatus::Failure {
+                    return (NodeStatus::Failure, None);
+                }
+                if s == NodeStatus::Running {
+                    return (NodeStatus::Running, action);
+                }
             }
             (NodeStatus::Success, None)
         }
         BtNode::Selector(children) => {
             for child in children {
                 let (s, action) = tick_node(child, ctx);
-                if s != NodeStatus::Failure { return (s, action); }
+                if s != NodeStatus::Failure {
+                    return (s, action);
+                }
             }
             (NodeStatus::Failure, None)
         }
         BtNode::Leaf(kind) => {
             let s = eval_leaf(*kind, ctx);
-            (s, if s != NodeStatus::Failure { Some(*kind) } else { None })
+            (
+                s,
+                if s != NodeStatus::Failure {
+                    Some(*kind)
+                } else {
+                    None
+                },
+            )
         }
     }
 }
@@ -185,41 +223,74 @@ struct StatusLabel;
 
 // ── Systems ─────────────────────────────────────────────────────────────────
 
-fn setup(mut commands: Commands, config: Res<BehaviorTreeConfig>) {
+fn setup(mut commands: Commands, _config: Res<BehaviorTreeConfig>) {
     commands.spawn(Camera2d);
 
     commands.spawn((
         Player,
-        Sprite { color: Color::srgb(0.25, 0.60, 1.0), custom_size: Some(Vec2::splat(20.0)), ..default() },
+        Sprite {
+            color: Color::srgb(0.25, 0.60, 1.0),
+            custom_size: Some(Vec2::splat(20.0)),
+            ..default()
+        },
         Transform::from_translation(Vec3::new(-240.0, 0.0, 1.0)),
     ));
 
     let origin = Vec2::new(120.0, 0.0);
     commands.spawn((
-        Guard { bt: build_guard_bt(), patrol_origin: origin, patrol_angle: 0.0, action: LeafKind::Patrol },
-        Sprite { color: Color::srgb(0.9, 0.3, 0.3), custom_size: Some(Vec2::splat(24.0)), ..default() },
+        Guard {
+            bt: build_guard_bt(),
+            patrol_origin: origin,
+            patrol_angle: 0.0,
+            action: LeafKind::Patrol,
+        },
+        Sprite {
+            color: Color::srgb(0.9, 0.3, 0.3),
+            custom_size: Some(Vec2::splat(24.0)),
+            ..default()
+        },
         Transform::from_translation(Vec3::new(origin.x, origin.y, 1.0)),
     ));
 
     commands.spawn((
         SightDisc,
-        Sprite { color: Color::srgba(1.0, 0.35, 0.35, 0.07), custom_size: Some(Vec2::splat(SIGHT_RANGE * 2.0)), ..default() },
+        Sprite {
+            color: Color::srgba(1.0, 0.35, 0.35, 0.07),
+            custom_size: Some(Vec2::splat(SIGHT_RANGE * 2.0)),
+            ..default()
+        },
         Transform::from_translation(Vec3::new(origin.x, origin.y, 0.0)),
     ));
 
     commands.spawn((
         StatusLabel,
         Text::new("Guard: Patrolling"),
-        TextFont { font_size: 20.0, ..default() },
+        TextFont {
+            font_size: 20.0,
+            ..default()
+        },
         TextColor(Color::WHITE),
-        Node { position_type: PositionType::Absolute, top: Val::Px(12.0), left: Val::Px(12.0), ..default() },
+        Node {
+            position_type: PositionType::Absolute,
+            top: Val::Px(12.0),
+            left: Val::Px(12.0),
+            ..default()
+        },
     ));
 
     commands.spawn((
         Text::new("WASD / Arrows — move player   approach the guard to trigger its BT"),
-        TextFont { font_size: 13.0, ..default() },
+        TextFont {
+            font_size: 13.0,
+            ..default()
+        },
         TextColor(Color::srgba(1.0, 1.0, 1.0, 0.5)),
-        Node { position_type: PositionType::Absolute, bottom: Val::Px(12.0), left: Val::Px(12.0), ..default() },
+        Node {
+            position_type: PositionType::Absolute,
+            bottom: Val::Px(12.0),
+            left: Val::Px(12.0),
+            ..default()
+        },
     ));
 }
 
@@ -230,31 +301,58 @@ fn move_player(
     mut q: Query<&mut Transform, With<Player>>,
 ) {
     let mut dir = Vec2::ZERO;
-    if keys.pressed(KeyCode::KeyW) || keys.pressed(KeyCode::ArrowUp)    { dir.y += 1.0; }
-    if keys.pressed(KeyCode::KeyS) || keys.pressed(KeyCode::ArrowDown)  { dir.y -= 1.0; }
-    if keys.pressed(KeyCode::KeyA) || keys.pressed(KeyCode::ArrowLeft)  { dir.x -= 1.0; }
-    if keys.pressed(KeyCode::KeyD) || keys.pressed(KeyCode::ArrowRight) { dir.x += 1.0; }
-    if dir == Vec2::ZERO { return; }
+    if keys.pressed(KeyCode::KeyW) || keys.pressed(KeyCode::ArrowUp) {
+        dir.y += 1.0;
+    }
+    if keys.pressed(KeyCode::KeyS) || keys.pressed(KeyCode::ArrowDown) {
+        dir.y -= 1.0;
+    }
+    if keys.pressed(KeyCode::KeyA) || keys.pressed(KeyCode::ArrowLeft) {
+        dir.x -= 1.0;
+    }
+    if keys.pressed(KeyCode::KeyD) || keys.pressed(KeyCode::ArrowRight) {
+        dir.x += 1.0;
+    }
+    if dir == Vec2::ZERO {
+        return;
+    }
     let Ok(mut tf) = q.single_mut() else { return };
     tf.translation += (dir.normalize() * config.player_speed * time.delta_secs()).extend(0.0);
-    tf.translation.x = tf.translation.x.clamp(-config.window_w / 2.0 + 14.0, config.window_w / 2.0 - 14.0);
-    tf.translation.y = tf.translation.y.clamp(-config.window_h / 2.0 + 14.0, config.window_h / 2.0 - 14.0);
+    tf.translation.x = tf
+        .translation
+        .x
+        .clamp(-config.window_w / 2.0 + 14.0, config.window_w / 2.0 - 14.0);
+    tf.translation.y = tf
+        .translation
+        .y
+        .clamp(-config.window_h / 2.0 + 14.0, config.window_h / 2.0 - 14.0);
 }
 
 fn tick_guard(
     time: Res<Time>,
     config: Res<BehaviorTreeConfig>,
     player_q: Query<&Transform, With<Player>>,
-    mut guard_q: Query<(&mut Guard, &mut Transform, &mut Sprite), (Without<Player>, Without<SightDisc>)>,
+    mut guard_q: Query<
+        (&mut Guard, &mut Transform, &mut Sprite),
+        (Without<Player>, Without<SightDisc>),
+    >,
 ) {
     let Ok(ptf) = player_q.single() else { return };
-    let Ok((mut guard, mut tf, mut sprite)) = guard_q.single_mut() else { return };
+    let Ok((mut guard, mut tf, mut sprite)) = guard_q.single_mut() else {
+        return;
+    };
     let guard_pos = tf.translation.truncate();
     let player_pos = ptf.translation.truncate();
     let dt = time.delta_secs();
 
     let bt = guard.bt.clone();
-    let (_, action) = tick_node(&bt, &BtCtx { guard_pos, player_pos });
+    let (_, action) = tick_node(
+        &bt,
+        &BtCtx {
+            guard_pos,
+            player_pos,
+        },
+    );
     let active = action.unwrap_or(LeafKind::Patrol);
     guard.action = active;
 
@@ -269,7 +367,8 @@ fn tick_guard(
         }
         LeafKind::Patrol => {
             guard.patrol_angle += dt * 0.75;
-            let target = guard.patrol_origin + Vec2::from_angle(guard.patrol_angle) * config.patrol_radius;
+            let target =
+                guard.patrol_origin + Vec2::from_angle(guard.patrol_angle) * config.patrol_radius;
             let dir = (target - guard_pos).normalize_or_zero();
             tf.translation += (dir * config.guard_speed * 0.55 * dt).extend(0.0);
             sprite.color = Color::srgb(0.9, 0.3, 0.3);
@@ -283,22 +382,24 @@ fn sync_disc(
     mut disc_q: Query<&mut Transform, (With<SightDisc>, Without<Guard>)>,
 ) {
     let Ok(gtf) = guard_q.single() else { return };
-    let Ok(mut dtf) = disc_q.single_mut() else { return };
+    let Ok(mut dtf) = disc_q.single_mut() else {
+        return;
+    };
     dtf.translation = Vec3::new(gtf.translation.x, gtf.translation.y, 0.0);
 }
 
-fn refresh_label(
-    guard_q: Query<&Guard>,
-    mut label_q: Query<&mut Text, With<StatusLabel>>,
-) {
+fn refresh_label(guard_q: Query<&Guard>, mut label_q: Query<&mut Text, With<StatusLabel>>) {
     let Ok(guard) = guard_q.single() else { return };
-    let Ok(mut text) = label_q.single_mut() else { return };
+    let Ok(mut text) = label_q.single_mut() else {
+        return;
+    };
     text.0 = match guard.action {
-        LeafKind::Chase  => "Guard: CHASING",
+        LeafKind::Chase => "Guard: CHASING",
         LeafKind::Attack => "Guard: ATTACKING",
         LeafKind::Patrol => "Guard: Patrolling",
-        _                => "Guard: ...",
-    }.to_string();
+        _ => "Guard: ...",
+    }
+    .to_string();
 }
 
 // ── Tests ─────────────────────────────────────────────────────────────────────
@@ -307,7 +408,12 @@ fn refresh_label(
 mod tests {
     use super::*;
 
-    fn ctx(guard: Vec2, player: Vec2) -> BtCtx { BtCtx { guard_pos: guard, player_pos: player } }
+    fn ctx(guard: Vec2, player: Vec2) -> BtCtx {
+        BtCtx {
+            guard_pos: guard,
+            player_pos: player,
+        }
+    }
 
     #[test]
     fn patrols_when_out_of_sight() {
@@ -353,9 +459,15 @@ mod tests {
     #[test]
     fn sight_boundary_exact() {
         let at_edge = ctx(Vec2::ZERO, Vec2::new(SIGHT_RANGE, 0.0));
-        assert_eq!(eval_leaf(LeafKind::CanSeePlayer, &at_edge), NodeStatus::Success);
+        assert_eq!(
+            eval_leaf(LeafKind::CanSeePlayer, &at_edge),
+            NodeStatus::Success
+        );
         let just_outside = ctx(Vec2::ZERO, Vec2::new(SIGHT_RANGE + 0.1, 0.0));
-        assert_eq!(eval_leaf(LeafKind::CanSeePlayer, &just_outside), NodeStatus::Failure);
+        assert_eq!(
+            eval_leaf(LeafKind::CanSeePlayer, &just_outside),
+            NodeStatus::Failure
+        );
     }
 
     #[test]

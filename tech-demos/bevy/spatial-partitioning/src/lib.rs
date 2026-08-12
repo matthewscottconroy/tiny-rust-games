@@ -44,7 +44,14 @@ impl Plugin for SpatialPartitioningPlugin {
             .add_systems(Startup, setup)
             .add_systems(
                 Update,
-                (move_balls, rebuild_grid, check_proximity, paint_balls, update_hud).chain(),
+                (
+                    move_balls,
+                    rebuild_grid,
+                    check_proximity,
+                    paint_balls,
+                    update_hud,
+                )
+                    .chain(),
             );
     }
 }
@@ -98,14 +105,22 @@ pub fn cell_of(pos: Vec2, cell_size: f32) -> IVec2 {
 /// The 3×3 neighbourhood (8 neighbours + self) of a cell.
 pub fn neighbour_cells(cell: IVec2) -> [IVec2; 9] {
     [
-        cell + IVec2::new(-1, -1), cell + IVec2::new(0, -1), cell + IVec2::new(1, -1),
-        cell + IVec2::new(-1,  0), cell,                      cell + IVec2::new(1,  0),
-        cell + IVec2::new(-1,  1), cell + IVec2::new(0,  1),  cell + IVec2::new(1,  1),
+        cell + IVec2::new(-1, -1),
+        cell + IVec2::new(0, -1),
+        cell + IVec2::new(1, -1),
+        cell + IVec2::new(-1, 0),
+        cell,
+        cell + IVec2::new(1, 0),
+        cell + IVec2::new(-1, 1),
+        cell + IVec2::new(0, 1),
+        cell + IVec2::new(1, 1),
     ]
 }
 
 /// Number of unique pairs in N entities (brute-force cost).
-pub fn brute_pairs(n: usize) -> usize { n.saturating_sub(1) * n / 2 }
+pub fn brute_pairs(n: usize) -> usize {
+    n.saturating_sub(1) * n / 2
+}
 
 // ── ECS ─────────────────────────────────────────────────────────────────────────
 
@@ -151,8 +166,15 @@ fn setup(mut commands: Commands, config: Res<SpatialPartitioningConfig>) {
         let vx = (rng() - 0.5) * config.max_speed;
         let vy = (rng() - 0.5) * config.max_speed;
         commands.spawn((
-            Ball { vel: Vec2::new(vx, vy), near: false },
-            Sprite { color: Color::srgb(0.3, 0.55, 1.0), custom_size: Some(Vec2::splat(config.ball_radius * 2.0)), ..default() },
+            Ball {
+                vel: Vec2::new(vx, vy),
+                near: false,
+            },
+            Sprite {
+                color: Color::srgb(0.3, 0.55, 1.0),
+                custom_size: Some(Vec2::splat(config.ball_radius * 2.0)),
+                ..default()
+            },
             Transform::from_translation(Vec3::new(x, y, 0.0)),
         ));
     }
@@ -160,9 +182,17 @@ fn setup(mut commands: Commands, config: Res<SpatialPartitioningConfig>) {
     commands.spawn((
         HudText,
         Text::new(""),
-        TextFont { font_size: 15.0, ..default() },
+        TextFont {
+            font_size: 15.0,
+            ..default()
+        },
         TextColor(Color::WHITE),
-        Node { position_type: PositionType::Absolute, top: Val::Px(10.0), left: Val::Px(10.0), ..default() },
+        Node {
+            position_type: PositionType::Absolute,
+            top: Val::Px(10.0),
+            left: Val::Px(10.0),
+            ..default()
+        },
     ));
 }
 
@@ -176,10 +206,22 @@ fn move_balls(
     let hh = config.world_height / 2.0 - config.ball_radius;
     for (mut ball, mut tf) in &mut q {
         tf.translation += (ball.vel * dt).extend(0.0);
-        if tf.translation.x >  hw { tf.translation.x =  hw; ball.vel.x *= -1.0; }
-        if tf.translation.x < -hw { tf.translation.x = -hw; ball.vel.x *= -1.0; }
-        if tf.translation.y >  hh { tf.translation.y =  hh; ball.vel.y *= -1.0; }
-        if tf.translation.y < -hh { tf.translation.y = -hh; ball.vel.y *= -1.0; }
+        if tf.translation.x > hw {
+            tf.translation.x = hw;
+            ball.vel.x *= -1.0;
+        }
+        if tf.translation.x < -hw {
+            tf.translation.x = -hw;
+            ball.vel.x *= -1.0;
+        }
+        if tf.translation.y > hh {
+            tf.translation.y = hh;
+            ball.vel.y *= -1.0;
+        }
+        if tf.translation.y < -hh {
+            tf.translation.y = -hh;
+            ball.vel.y *= -1.0;
+        }
     }
 }
 
@@ -203,12 +245,15 @@ fn check_proximity(
     mut ball_q: Query<&mut Ball>,
 ) {
     // Collect positions into a Vec for indexed access.
-    let positions: Vec<(Entity, Vec2)> = q.iter()
+    let positions: Vec<(Entity, Vec2)> = q
+        .iter()
         .map(|(e, tf)| (e, tf.translation.truncate()))
         .collect();
 
     // Reset near flag.
-    for mut b in &mut ball_q { b.near = false; }
+    for mut b in &mut ball_q {
+        b.near = false;
+    }
 
     let mut checks = 0usize;
     for (i, (ei, pos_i)) in positions.iter().enumerate() {
@@ -216,12 +261,18 @@ fn check_proximity(
         for ncell in neighbour_cells(cell) {
             if let Some(neighbours) = grid.0.get(&ncell) {
                 for &j in neighbours {
-                    if j <= i { continue; }
+                    if j <= i {
+                        continue;
+                    }
                     if let Some((ej, pos_j)) = positions.get(j) {
                         checks += 1;
                         if pos_i.distance(*pos_j) < config.proximity_radius {
-                            if let Ok(mut b) = ball_q.get_mut(*ei) { b.near = true; }
-                            if let Ok(mut b) = ball_q.get_mut(*ej) { b.near = true; }
+                            if let Ok(mut b) = ball_q.get_mut(*ei) {
+                                b.near = true;
+                            }
+                            if let Ok(mut b) = ball_q.get_mut(*ej) {
+                                b.near = true;
+                            }
                         }
                     }
                 }
@@ -251,8 +302,7 @@ fn update_hud(
     let saved = brute.saturating_sub(stats.spatial_checks);
     text.0 = format!(
         "Balls: {}  |  Brute-force pairs: {brute}  |  Spatial checks: {}  |  Saved: {saved}  |  Red = within proximity",
-        config.ball_count,
-        stats.spatial_checks,
+        config.ball_count, stats.spatial_checks,
     );
 }
 

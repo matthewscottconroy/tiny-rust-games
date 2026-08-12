@@ -79,10 +79,10 @@ impl INode2D for CanvasLayerWorld {
         // Update the HUD label to show current offset
         let text = hud_position_text(new_offset);
         // Navigate: Main → CanvasLayer → PosLabel
-        if let Some(canvas) = self.base().try_get_node_as::<CanvasLayer>("CanvasLayer") {
-            if let Some(mut label) = canvas.try_get_node_as::<Label>("PosLabel") {
-                label.set_text(text.as_str());
-            }
+        if let Some(canvas) = self.base().try_get_node_as::<CanvasLayer>("CanvasLayer")
+            && let Some(mut label) = canvas.try_get_node_as::<Label>("PosLabel")
+        {
+            label.set_text(text.as_str());
         }
     }
 }

@@ -8,7 +8,7 @@ runnable example **and** a drop-in building block for a larger project. The
 
 ```
 demo-name/
-├── Cargo.toml        # edition 2024; bevy.workspace = true
+├── Cargo.toml        # edition 2024; bevy.workspace = true; [lints] workspace = true
 └── src/
     ├── lib.rs        # the reusable block: a Plugin + Config + components + pure fns + tests
     └── main.rs       # a thin runner: DefaultPlugins + the plugin
@@ -114,3 +114,25 @@ cargo test -p health-and-damage  # one demo
 Pure functions are tested directly; ECS wiring is tested headlessly with
 `MinimalPlugins` (and, where the plugin is host-agnostic, by adding the plugin
 itself to a `MinimalPlugins` app).
+
+Two demos have no `#[cfg(test)]` module: `draw-window` and `audio` are pure
+engine wiring with no logic of their own. Do not add a ceremonial test to a demo
+in that category — say it is wiring-only instead.
+
+## Lints
+
+Every member's `Cargo.toml` ends with:
+
+```toml
+[lints]
+workspace = true
+```
+
+which pulls in `[workspace.lints.clippy]` from the workspace manifest. Three
+lints are allowed there — `type_complexity` and `too_many_arguments`, because
+Bevy system signatures are legitimately wide, and `needless_range_loop`, because
+the demos do 2D grid work where the index *is* the meaning. Everything else is a
+hard error: CI runs `cargo clippy --all-targets -- -D warnings`.
+
+A new demo that omits the `[lints]` section silently opts out of all of this, so
+copy it along with the rest of `Cargo.toml`.

@@ -60,11 +60,10 @@ impl INode2D for LineDrawing {
             let (bx, by) = points[i + 1];
             let (r, g, b) = cycle_color(i);
             let color = Color::from_rgb(r, g, b);
-            self.base_mut().draw_line_ex(
-                Vector2::new(ax, ay),
-                Vector2::new(bx, by),
-                color,
-            ).width(width).done();
+            self.base_mut()
+                .draw_line_ex(Vector2::new(ax, ay), Vector2::new(bx, by), color)
+                .width(width)
+                .done();
         }
     }
 }
@@ -177,9 +176,9 @@ mod tests {
     fn cycle_color_in_range() {
         for i in 0..12 {
             let (r, g, b) = cycle_color(i);
-            assert!(r >= 0.0 && r <= 1.0);
-            assert!(g >= 0.0 && g <= 1.0);
-            assert!(b >= 0.0 && b <= 1.0);
+            assert!((0.0..=1.0).contains(&r));
+            assert!((0.0..=1.0).contains(&g));
+            assert!((0.0..=1.0).contains(&b));
         }
     }
 }

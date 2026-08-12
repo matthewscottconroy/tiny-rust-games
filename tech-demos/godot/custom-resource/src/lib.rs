@@ -118,10 +118,7 @@ impl WeaponDisplay {
     /// Returns the weapon's DPS, or `0.0` if no weapon is assigned.
     #[func]
     pub fn get_dps(&self) -> f64 {
-        self.weapon
-            .as_ref()
-            .map(|w| w.bind().dps())
-            .unwrap_or(0.0)
+        self.weapon.as_ref().map(|w| w.bind().dps()).unwrap_or(0.0)
     }
 }
 

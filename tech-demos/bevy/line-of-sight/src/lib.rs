@@ -66,7 +66,12 @@ pub struct LineOfSightConfig {
 
 impl Default for LineOfSightConfig {
     fn default() -> Self {
-        Self { cols: 30, rows: 20, tile_px: 26.0, sight_radius: 8 }
+        Self {
+            cols: 30,
+            rows: 20,
+            tile_px: 26.0,
+            sight_radius: 8,
+        }
     }
 }
 
@@ -186,11 +191,7 @@ fn cell_to_world(cell: IVec2, config: &LineOfSightConfig) -> Vec3 {
     )
 }
 
-fn setup(
-    mut commands: Commands,
-    mut revealed: ResMut<Revealed>,
-    config: Res<LineOfSightConfig>,
-) {
+fn setup(mut commands: Commands, mut revealed: ResMut<Revealed>, config: Res<LineOfSightConfig>) {
     commands.spawn(Camera2d);
     let grid = make_grid();
 
@@ -226,7 +227,10 @@ fn setup(
 
     commands.spawn((
         Text::new("WASD / Arrow keys — move"),
-        TextFont { font_size: 16.0, ..default() },
+        TextFont {
+            font_size: 16.0,
+            ..default()
+        },
         TextColor(Color::WHITE),
         Node {
             position_type: PositionType::Absolute,
@@ -257,7 +261,10 @@ fn handle_input(
     for (key, delta) in dirs {
         if input.just_pressed(key) {
             let next = player.0 + delta;
-            if next.x >= 0 && next.y >= 0 && next.x < cols && next.y < rows
+            if next.x >= 0
+                && next.y >= 0
+                && next.x < cols
+                && next.y < rows
                 && grid.0[next.y as usize][next.x as usize]
             {
                 player.0 = next;
@@ -303,9 +310,17 @@ fn update_visibility(
             cy < grid.0.len() && cx < grid.0[0].len() && grid.0[cy][cx]
         };
         sprite.color = if visible.contains(cell) {
-            if walkable { Color::srgb(0.55, 0.5, 0.42) } else { Color::srgb(0.3, 0.3, 0.38) }
+            if walkable {
+                Color::srgb(0.55, 0.5, 0.42)
+            } else {
+                Color::srgb(0.3, 0.3, 0.38)
+            }
         } else if revealed.0.contains(cell) {
-            if walkable { Color::srgb(0.22, 0.2, 0.18) } else { Color::srgb(0.12, 0.12, 0.16) }
+            if walkable {
+                Color::srgb(0.22, 0.2, 0.18)
+            } else {
+                Color::srgb(0.12, 0.12, 0.16)
+            }
         } else {
             Color::BLACK
         };

@@ -67,22 +67,22 @@ impl Item {
     /// Short display label used in the inventory HUD.
     pub fn label(self) -> &'static str {
         match self {
-            Item::Gold   => "Gold",
+            Item::Gold => "Gold",
             Item::Potion => "Potion",
-            Item::Sword  => "Sword",
+            Item::Sword => "Sword",
             Item::Shield => "Shield",
-            Item::Gem    => "Gem",
+            Item::Gem => "Gem",
         }
     }
 
     /// Colour for the floating drop text.
     pub fn color(self) -> Color {
         match self {
-            Item::Gold   => Color::srgb(1.0, 0.85, 0.15),
+            Item::Gold => Color::srgb(1.0, 0.85, 0.15),
             Item::Potion => Color::srgb(0.3, 0.9, 0.45),
-            Item::Sword  => Color::srgb(0.7, 0.75, 0.9),
+            Item::Sword => Color::srgb(0.7, 0.75, 0.9),
             Item::Shield => Color::srgb(0.45, 0.6, 1.0),
-            Item::Gem    => Color::srgb(0.9, 0.3, 0.8),
+            Item::Gem => Color::srgb(0.9, 0.3, 0.8),
         }
     }
 }
@@ -96,7 +96,7 @@ pub fn total_weight(table: &[(Item, u32)]) -> u32 {
 ///
 /// Returns `None` for an empty or zero-weight table.
 /// `roll` is taken modulo `total_weight` so any `u32` is valid input.
-pub fn roll_loot<'a>(table: &'a [(Item, u32)], roll: u32) -> Option<&'a Item> {
+pub fn roll_loot(table: &[(Item, u32)], roll: u32) -> Option<&Item> {
     let total = total_weight(table);
     if total == 0 {
         return None;
@@ -125,11 +125,11 @@ pub fn lcg_next(state: u64) -> u64 {
 
 /// The default weighted loot pool.
 pub const TABLE: &[(Item, u32)] = &[
-    (Item::Gold,   50),
+    (Item::Gold, 50),
     (Item::Potion, 25),
-    (Item::Sword,  12),
+    (Item::Sword, 12),
     (Item::Shield, 10),
-    (Item::Gem,     3),
+    (Item::Gem, 3),
 ];
 
 // --- Configuration ---
@@ -197,8 +197,13 @@ fn setup(mut commands: Commands, config: Res<LootTableConfig>) {
 
     let side = config.enemy_half_size * 2.0;
     let positions: &[(f32, f32)] = &[
-        (-220.0,  90.0), (-80.0,  90.0), ( 80.0,  90.0), (220.0,  90.0),
-        (-150.0, -30.0), (  0.0, -30.0), (150.0, -30.0),
+        (-220.0, 90.0),
+        (-80.0, 90.0),
+        (80.0, 90.0),
+        (220.0, 90.0),
+        (-150.0, -30.0),
+        (0.0, -30.0),
+        (150.0, -30.0),
     ];
     for &(x, y) in positions {
         commands.spawn((
@@ -208,13 +213,18 @@ fn setup(mut commands: Commands, config: Res<LootTableConfig>) {
                 ..default()
             },
             Transform::from_xyz(x, y, 0.0),
-            Enemy { half_size: config.enemy_half_size },
+            Enemy {
+                half_size: config.enemy_half_size,
+            },
         ));
     }
 
     commands.spawn((
         Text::new("Inventory: (nothing yet)"),
-        TextFont { font_size: 15.0, ..default() },
+        TextFont {
+            font_size: 15.0,
+            ..default()
+        },
         TextColor(Color::srgb(0.85, 0.85, 0.85)),
         Node {
             position_type: PositionType::Absolute,
@@ -227,7 +237,10 @@ fn setup(mut commands: Commands, config: Res<LootTableConfig>) {
 
     commands.spawn((
         Text::new("Left-click a red square to kill an enemy and collect loot"),
-        TextFont { font_size: 14.0, ..default() },
+        TextFont {
+            font_size: 14.0,
+            ..default()
+        },
         TextColor(Color::srgb(0.5, 0.5, 0.5)),
         Node {
             position_type: PositionType::Absolute,
@@ -252,8 +265,12 @@ fn click_enemy(
     if !mouse.just_pressed(MouseButton::Left) {
         return;
     }
-    let Ok(window) = window_query.single() else { return };
-    let Ok((cam, cam_tf)) = cam_query.single() else { return };
+    let Ok(window) = window_query.single() else {
+        return;
+    };
+    let Ok((cam, cam_tf)) = cam_query.single() else {
+        return;
+    };
     let Some(cursor) = window
         .cursor_position()
         .and_then(|c| cam.viewport_to_world_2d(cam_tf, c).ok())
@@ -271,7 +288,10 @@ fn click_enemy(
                 let drop_pos = tf.translation + Vec3::Y * 36.0;
                 commands.spawn((
                     Text::new(format!("+{}", item.label())),
-                    TextFont { font_size: 16.0, ..default() },
+                    TextFont {
+                        font_size: 16.0,
+                        ..default()
+                    },
                     TextColor(item.color()),
                     Transform::from_translation(drop_pos),
                     DropLabel { elapsed: 0.0 },
@@ -299,14 +319,13 @@ fn tick_drops(
 }
 
 /// Rewrites the inventory HUD when the [`Inventory`] resource changes.
-fn refresh_inventory(
-    inventory: Res<Inventory>,
-    mut query: Query<&mut Text, With<InventoryLabel>>,
-) {
+fn refresh_inventory(inventory: Res<Inventory>, mut query: Query<&mut Text, With<InventoryLabel>>) {
     if !inventory.is_changed() {
         return;
     }
-    let Ok(mut text) = query.single_mut() else { return };
+    let Ok(mut text) = query.single_mut() else {
+        return;
+    };
     if inventory.0.is_empty() {
         *text = Text::new("Inventory: (nothing yet)");
     } else {

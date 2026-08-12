@@ -24,11 +24,7 @@ unsafe impl ExtensionLibrary for MinimapExt {}
 
 /// Maps `world_pos` (in a world of size `world_size`) to pixel coords within a
 /// minimap of size `minimap_size`.  Origin is the top-left of the minimap.
-pub fn world_to_minimap(
-    world_pos: Vector2,
-    world_size: Vector2,
-    minimap_size: Vector2,
-) -> Vector2 {
+pub fn world_to_minimap(world_pos: Vector2, world_size: Vector2, minimap_size: Vector2) -> Vector2 {
     Vector2::new(
         (world_pos.x / world_size.x * minimap_size.x).clamp(0.0, minimap_size.x),
         (world_pos.y / world_size.y * minimap_size.y).clamp(0.0, minimap_size.y),
@@ -115,10 +111,18 @@ impl INode2D for MinimapArena {
         let input = Input::singleton();
 
         let mut dir = Vector2::ZERO;
-        if input.is_action_pressed("ui_right") { dir.x += 1.0; }
-        if input.is_action_pressed("ui_left")  { dir.x -= 1.0; }
-        if input.is_action_pressed("ui_down")  { dir.y += 1.0; }
-        if input.is_action_pressed("ui_up")    { dir.y -= 1.0; }
+        if input.is_action_pressed("ui_right") {
+            dir.x += 1.0;
+        }
+        if input.is_action_pressed("ui_left") {
+            dir.x -= 1.0;
+        }
+        if input.is_action_pressed("ui_down") {
+            dir.y += 1.0;
+        }
+        if input.is_action_pressed("ui_up") {
+            dir.y -= 1.0;
+        }
 
         if dir != Vector2::ZERO {
             self.player_world_pos += dir.normalized() * self.speed * dt;
@@ -126,7 +130,10 @@ impl INode2D for MinimapArena {
         }
 
         // Sync player visual to screen coords
-        if let Some(mut r) = self.base().try_get_node_as::<godot::classes::ColorRect>("PlayerRect") {
+        if let Some(mut r) = self
+            .base()
+            .try_get_node_as::<godot::classes::ColorRect>("PlayerRect")
+        {
             r.set_position(Vector2::new(
                 self.player_world_pos.x * 0.5 - 10.0,
                 self.player_world_pos.y * 0.5 - 10.0,
@@ -152,12 +159,14 @@ impl INode2D for MinimapArena {
         // Enemies (red dots)
         for &ep in &self.enemy_world_positions.clone() {
             let mp = world_to_minimap(ep, WORLD_SIZE, MAP_SIZE);
-            self.base_mut().draw_circle(MAP_ORIGIN + mp, 3.0, Color::from_rgb(0.9, 0.2, 0.2));
+            self.base_mut()
+                .draw_circle(MAP_ORIGIN + mp, 3.0, Color::from_rgb(0.9, 0.2, 0.2));
         }
 
         // Player (blue dot)
         let pp = world_to_minimap(self.player_world_pos, WORLD_SIZE, MAP_SIZE);
-        self.base_mut().draw_circle(MAP_ORIGIN + pp, 4.0, Color::from_rgb(0.3, 0.7, 1.0));
+        self.base_mut()
+            .draw_circle(MAP_ORIGIN + pp, 4.0, Color::from_rgb(0.3, 0.7, 1.0));
     }
 }
 

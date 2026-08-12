@@ -10,8 +10,8 @@
 //! - Displaying joint count on a `Label` child.
 
 use godot::classes::{
-    CircleShape2D, CollisionShape2D, DampedSpringJoint2D, INode2D, Label, Node2D,
-    PinJoint2D, RigidBody2D,
+    CircleShape2D, CollisionShape2D, DampedSpringJoint2D, INode2D, Label, Node2D, PinJoint2D,
+    RigidBody2D,
 };
 use godot::prelude::*;
 

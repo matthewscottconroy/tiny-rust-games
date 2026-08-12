@@ -123,17 +123,24 @@ impl INode for MusicPlayer {
             ("PlayerB", "PlayerA")
         };
 
-        if let Some(mut out_player) = self.base().try_get_node_as::<AudioStreamPlayer>(active_name) {
+        if let Some(mut out_player) = self
+            .base()
+            .try_get_node_as::<AudioStreamPlayer>(active_name)
+        {
             out_player.set_volume_db(out_vol);
         }
-        if let Some(mut in_player) = self.base().try_get_node_as::<AudioStreamPlayer>(inactive_name) {
+        if let Some(mut in_player) = self
+            .base()
+            .try_get_node_as::<AudioStreamPlayer>(inactive_name)
+        {
             in_player.set_volume_db(in_vol);
         }
 
         if self.fade_progress >= 1.0 {
             // Fade complete — stop the old player and swap active.
-            if let Some(mut old_player) =
-                self.base().try_get_node_as::<AudioStreamPlayer>(active_name)
+            if let Some(mut old_player) = self
+                .base()
+                .try_get_node_as::<AudioStreamPlayer>(active_name)
             {
                 old_player.stop();
             }
@@ -154,19 +161,22 @@ impl MusicPlayer {
     #[func]
     pub fn crossfade_to(&mut self, stream_path: GString) {
         // Determine which player is inactive.
-        let inactive_name = if self.active == 0 { "PlayerB" } else { "PlayerA" };
+        let inactive_name = if self.active == 0 {
+            "PlayerB"
+        } else {
+            "PlayerA"
+        };
 
         let mut loader = ResourceLoader::singleton();
-        if let Some(res) = loader.load(&stream_path) {
-            if let Ok(stream) = res.try_cast::<godot::classes::AudioStream>() {
-                if let Some(mut player) =
-                    self.base().try_get_node_as::<AudioStreamPlayer>(inactive_name)
-                {
-                    player.set_stream(&stream);
-                    player.set_volume_db(-80.0);
-                    player.play();
-                }
-            }
+        if let Some(res) = loader.load(&stream_path)
+            && let Ok(stream) = res.try_cast::<godot::classes::AudioStream>()
+            && let Some(mut player) = self
+                .base()
+                .try_get_node_as::<AudioStreamPlayer>(inactive_name)
+        {
+            player.set_stream(&stream);
+            player.set_volume_db(-80.0);
+            player.play();
         }
 
         self.fade_progress = 0.0;

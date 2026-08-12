@@ -46,7 +46,12 @@ impl Plugin for TweenAnimationPlugin {
             .add_systems(Startup, (setup, trigger_entrance_tweens).chain())
             .add_systems(
                 Update,
-                (handle_keys, tick_scale_tweens, tick_slide_tweens, tick_alpha_tweens),
+                (
+                    handle_keys,
+                    tick_scale_tweens,
+                    tick_slide_tweens,
+                    tick_alpha_tweens,
+                ),
             );
     }
 }
@@ -149,20 +154,32 @@ fn setup(mut commands: Commands) {
     commands.spawn(Camera2d);
 
     commands.spawn((
-        Sprite { color: Color::srgb(0.9, 0.4, 0.2), custom_size: Some(Vec2::splat(60.0)), ..default() },
+        Sprite {
+            color: Color::srgb(0.9, 0.4, 0.2),
+            custom_size: Some(Vec2::splat(60.0)),
+            ..default()
+        },
         Transform::from_xyz(-200.0, 0.0, 0.0),
         ScaleBox,
     ));
 
     // Starts off-screen left; slide tween moves it to center.
     commands.spawn((
-        Sprite { color: Color::srgb(0.3, 0.75, 0.9), custom_size: Some(Vec2::splat(60.0)), ..default() },
+        Sprite {
+            color: Color::srgb(0.3, 0.75, 0.9),
+            custom_size: Some(Vec2::splat(60.0)),
+            ..default()
+        },
         Transform::from_xyz(-700.0, 0.0, 0.0),
         SlideBox,
     ));
 
     commands.spawn((
-        Sprite { color: Color::srgba(0.6, 0.9, 0.3, 1.0), custom_size: Some(Vec2::splat(60.0)), ..default() },
+        Sprite {
+            color: Color::srgba(0.6, 0.9, 0.3, 1.0),
+            custom_size: Some(Vec2::splat(60.0)),
+            ..default()
+        },
         Transform::from_xyz(200.0, 0.0, 0.0),
         AlphaBox,
     ));
@@ -174,7 +191,10 @@ fn setup(mut commands: Commands) {
     ] {
         commands.spawn((
             Text::new(label),
-            TextFont { font_size: 13.0, ..default() },
+            TextFont {
+                font_size: 13.0,
+                ..default()
+            },
             TextColor(Color::srgb(0.65, 0.65, 0.65)),
             Node {
                 position_type: PositionType::Absolute,
@@ -187,7 +207,10 @@ fn setup(mut commands: Commands) {
 
     commands.spawn((
         Text::new("1 = scale pop   2 = alpha pulse   (slide plays on startup)"),
-        TextFont { font_size: 14.0, ..default() },
+        TextFont {
+            font_size: 14.0,
+            ..default()
+        },
         TextColor(Color::srgb(0.55, 0.55, 0.55)),
         Node {
             position_type: PositionType::Absolute,
@@ -209,14 +232,21 @@ fn trigger_entrance_tweens(
 ) {
     if let Ok(entity) = slide_query.single() {
         commands.entity(entity).insert(SlideTween {
-            from_x: -700.0, to_x: 0.0, duration: config.slide_duration, elapsed: 0.0,
+            from_x: -700.0,
+            to_x: 0.0,
+            duration: config.slide_duration,
+            elapsed: 0.0,
         });
     }
 
     if let Ok(entity) = alpha_query.single() {
         commands.entity(entity).insert(AlphaTween {
-            from: 0.1, to: 1.0, duration: config.entrance_alpha_duration, elapsed: 0.0,
-            looping: true, base_color: Color::srgb(0.6, 0.9, 0.3),
+            from: 0.1,
+            to: 1.0,
+            duration: config.entrance_alpha_duration,
+            elapsed: 0.0,
+            looping: true,
+            base_color: Color::srgb(0.6, 0.9, 0.3),
         });
     }
 }
@@ -251,21 +281,29 @@ fn handle_keys(
     scale_query: Query<Entity, With<ScaleBox>>,
     alpha_query: Query<Entity, With<AlphaBox>>,
 ) {
-    if input.just_pressed(KeyCode::Digit1) {
-        if let Ok(entity) = scale_query.single() {
-            commands.entity(entity).insert(ScaleTween {
-                from: 1.0, to: config.scale_pop_to, duration: config.scale_pop_duration, elapsed: 0.0, looping: false,
-            });
-        }
+    if input.just_pressed(KeyCode::Digit1)
+        && let Ok(entity) = scale_query.single()
+    {
+        commands.entity(entity).insert(ScaleTween {
+            from: 1.0,
+            to: config.scale_pop_to,
+            duration: config.scale_pop_duration,
+            elapsed: 0.0,
+            looping: false,
+        });
     }
 
-    if input.just_pressed(KeyCode::Digit2) {
-        if let Ok(entity) = alpha_query.single() {
-            commands.entity(entity).insert(AlphaTween {
-                from: 0.0, to: 1.0, duration: config.key_alpha_duration, elapsed: 0.0,
-                looping: true, base_color: Color::srgb(0.6, 0.9, 0.3),
-            });
-        }
+    if input.just_pressed(KeyCode::Digit2)
+        && let Ok(entity) = alpha_query.single()
+    {
+        commands.entity(entity).insert(AlphaTween {
+            from: 0.0,
+            to: 1.0,
+            duration: config.key_alpha_duration,
+            elapsed: 0.0,
+            looping: true,
+            base_color: Color::srgb(0.6, 0.9, 0.3),
+        });
     }
 }
 
@@ -327,14 +365,20 @@ fn tick_alpha_tweens(
 
         let alpha = if tween.looping {
             let phase = raw_t % 2.0;
-            let t = if phase < 1.0 { smoothstep(phase) } else { smoothstep(2.0 - phase) };
+            let t = if phase < 1.0 {
+                smoothstep(phase)
+            } else {
+                smoothstep(2.0 - phase)
+            };
             tween.from + (tween.to - tween.from) * t
         } else {
             let t = smoothstep(raw_t.clamp(0.0, 1.0));
             tween.from + (tween.to - tween.from) * t
         };
 
-        let Color::Srgba(s) = tween.base_color else { continue };
+        let Color::Srgba(s) = tween.base_color else {
+            continue;
+        };
         sprite.color = Color::srgba(s.red, s.green, s.blue, alpha);
 
         if !tween.looping && raw_t >= 1.0 {
@@ -426,9 +470,21 @@ mod tests {
         let mut slide_q = app.world_mut().query::<&SlideBox>();
         let mut alpha_q = app.world_mut().query::<&AlphaBox>();
 
-        assert_eq!(scale_q.iter(app.world()).count(), 1, "should be exactly one ScaleBox");
-        assert_eq!(slide_q.iter(app.world()).count(), 1, "should be exactly one SlideBox");
-        assert_eq!(alpha_q.iter(app.world()).count(), 1, "should be exactly one AlphaBox");
+        assert_eq!(
+            scale_q.iter(app.world()).count(),
+            1,
+            "should be exactly one ScaleBox"
+        );
+        assert_eq!(
+            slide_q.iter(app.world()).count(),
+            1,
+            "should be exactly one SlideBox"
+        );
+        assert_eq!(
+            alpha_q.iter(app.world()).count(),
+            1,
+            "should be exactly one AlphaBox"
+        );
     }
 
     #[test]
@@ -440,6 +496,10 @@ mod tests {
         app.update();
 
         let mut q = app.world_mut().query::<(&SlideBox, &SlideTween)>();
-        assert_eq!(q.iter(app.world()).count(), 1, "SlideBox should have a SlideTween after startup");
+        assert_eq!(
+            q.iter(app.world()).count(),
+            1,
+            "SlideBox should have a SlideTween after startup"
+        );
     }
 }

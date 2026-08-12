@@ -63,7 +63,12 @@ pub struct ScreenShakeConfig {
 
 impl Default for ScreenShakeConfig {
     fn default() -> Self {
-        Self { max_offset: 40.0, max_roll: 0.08, trauma_decay: 1.2, trauma_add: 0.4 }
+        Self {
+            max_offset: 40.0,
+            max_roll: 0.08,
+            trauma_decay: 1.2,
+            trauma_add: 0.4,
+        }
     }
 }
 
@@ -88,7 +93,11 @@ fn setup(mut commands: Commands) {
                 Color::srgb(0.15, 0.15, 0.22)
             };
             commands.spawn((
-                Sprite { color, custom_size: Some(Vec2::splat(72.0)), ..default() },
+                Sprite {
+                    color,
+                    custom_size: Some(Vec2::splat(72.0)),
+                    ..default()
+                },
                 Transform::from_translation(Vec3::new(col as f32 * 80.0, row as f32 * 80.0, 0.0)),
             ));
         }
@@ -96,7 +105,10 @@ fn setup(mut commands: Commands) {
 
     commands.spawn((
         Text::new("SPACE — add trauma\nR — reset"),
-        TextFont { font_size: 22.0, ..default() },
+        TextFont {
+            font_size: 22.0,
+            ..default()
+        },
         TextColor(Color::WHITE),
         Node {
             position_type: PositionType::Absolute,
@@ -133,9 +145,15 @@ fn apply_shake(
     config: Res<ScreenShakeConfig>,
     mut query: Query<&mut Transform, With<ShakeCamera>>,
 ) {
-    let Ok(mut transform) = query.single_mut() else { return };
-    let (offset, roll) =
-        shake_offset(trauma.0, time.elapsed_secs(), config.max_offset, config.max_roll);
+    let Ok(mut transform) = query.single_mut() else {
+        return;
+    };
+    let (offset, roll) = shake_offset(
+        trauma.0,
+        time.elapsed_secs(),
+        config.max_offset,
+        config.max_roll,
+    );
     transform.translation.x = offset.x;
     transform.translation.y = offset.y;
     transform.rotation = Quat::from_rotation_z(roll);
@@ -176,8 +194,16 @@ mod tests {
         for i in 0..100 {
             let t = i as f32 * 0.1;
             let (offset, _) = shake_offset(1.0, t, c.max_offset, c.max_roll);
-            assert!(offset.x.abs() <= c.max_offset + 1e-5, "x={} exceeds max_offset", offset.x);
-            assert!(offset.y.abs() <= c.max_offset + 1e-5, "y={} exceeds max_offset", offset.y);
+            assert!(
+                offset.x.abs() <= c.max_offset + 1e-5,
+                "x={} exceeds max_offset",
+                offset.x
+            );
+            assert!(
+                offset.y.abs() <= c.max_offset + 1e-5,
+                "y={} exceeds max_offset",
+                offset.y
+            );
         }
     }
 
@@ -187,7 +213,11 @@ mod tests {
         for i in 0..100 {
             let t = i as f32 * 0.1;
             let (_, roll) = shake_offset(1.0, t, c.max_offset, c.max_roll);
-            assert!(roll.abs() <= c.max_roll + 1e-5, "roll={} exceeds max_roll", roll);
+            assert!(
+                roll.abs() <= c.max_roll + 1e-5,
+                "roll={} exceeds max_roll",
+                roll
+            );
         }
     }
 

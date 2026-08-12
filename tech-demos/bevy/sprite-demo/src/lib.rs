@@ -48,7 +48,9 @@ pub struct SpriteDemoConfig {
 
 impl Default for SpriteDemoConfig {
     fn default() -> Self {
-        Self { sprite_path: DEFAULT_SPRITE_PATH.to_string() }
+        Self {
+            sprite_path: DEFAULT_SPRITE_PATH.to_string(),
+        }
     }
 }
 
@@ -80,7 +82,9 @@ mod tests {
 
     #[test]
     fn config_override_is_preserved() {
-        let cfg = SpriteDemoConfig { sprite_path: "hero.png".to_string() };
+        let cfg = SpriteDemoConfig {
+            sprite_path: "hero.png".to_string(),
+        };
         assert_eq!(cfg.sprite_path, "hero.png");
     }
 }

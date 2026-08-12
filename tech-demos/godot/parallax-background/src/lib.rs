@@ -123,10 +123,7 @@ impl INode2D for ParallaxDemo {
             layer.set_motion_scale(Vector2::new(0.8, 0.0));
         }
 
-        godot_print!(
-            "[ParallaxDemo] Ready — scroll_speed={}",
-            self.scroll_speed
-        );
+        godot_print!("[ParallaxDemo] Ready — scroll_speed={}", self.scroll_speed);
     }
 
     fn process(&mut self, delta: f64) {

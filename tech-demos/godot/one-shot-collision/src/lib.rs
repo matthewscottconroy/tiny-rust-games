@@ -69,7 +69,12 @@ impl ICharacterBody2D for OneShotCollision {
             self.vel_x = rvx;
             self.vel_y = rvy;
             self.bounce_count += 1;
-            godot_print!("Bounce #{} off normal ({:.2}, {:.2})", self.bounce_count, nx, ny);
+            godot_print!(
+                "Bounce #{} off normal ({:.2}, {:.2})",
+                self.bounce_count,
+                nx,
+                ny
+            );
         }
     }
 }

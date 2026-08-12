@@ -53,10 +53,7 @@ impl INode2D for RayCasting {
             .get_mouse_position();
 
         let origin = self.base().get_global_position();
-        let (dx, dy) = normalize_2d(
-            mouse_pos.x - origin.x,
-            mouse_pos.y - origin.y,
-        );
+        let (dx, dy) = normalize_2d(mouse_pos.x - origin.x, mouse_pos.y - origin.y);
         let (ex, ey) = ray_endpoint(origin.x, origin.y, dx, dy, self.ray_length);
         let end = Vector2::new(ex, ey);
 

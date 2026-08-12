@@ -64,7 +64,10 @@ pub struct PathfindingConfig {
 
 impl Default for PathfindingConfig {
     fn default() -> Self {
-        Self { tile: 40.0, step_interval: 0.22 }
+        Self {
+            tile: 40.0,
+            step_interval: 0.22,
+        }
     }
 }
 
@@ -147,7 +150,11 @@ fn setup(mut commands: Commands, config: Res<PathfindingConfig>) {
             };
             let pos = cell_to_world(IVec2::new(c as i32, r as i32), cols, rows, tile);
             commands.spawn((
-                Sprite { color, custom_size: Some(Vec2::splat(tile - 2.0)), ..default() },
+                Sprite {
+                    color,
+                    custom_size: Some(Vec2::splat(tile - 2.0)),
+                    ..default()
+                },
                 Transform::from_translation(pos),
             ));
         }
@@ -159,7 +166,11 @@ fn setup(mut commands: Commands, config: Res<PathfindingConfig>) {
     // Player.
     let player_world = cell_to_world(player_start, cols, rows, tile);
     commands.spawn((
-        Sprite { color: Color::srgb(0.2, 0.9, 0.9), custom_size: Some(Vec2::splat(tile * 0.6)), ..default() },
+        Sprite {
+            color: Color::srgb(0.2, 0.9, 0.9),
+            custom_size: Some(Vec2::splat(tile * 0.6)),
+            ..default()
+        },
         Transform::from_translation(player_world.with_z(1.0)),
         PlayerMarker,
     ));
@@ -167,9 +178,17 @@ fn setup(mut commands: Commands, config: Res<PathfindingConfig>) {
     // Seeker.
     let seeker_world = cell_to_world(seeker_start, cols, rows, tile);
     commands.spawn((
-        Sprite { color: Color::srgb(0.9, 0.2, 0.2), custom_size: Some(Vec2::splat(tile * 0.55)), ..default() },
+        Sprite {
+            color: Color::srgb(0.9, 0.2, 0.2),
+            custom_size: Some(Vec2::splat(tile * 0.55)),
+            ..default()
+        },
         Transform::from_translation(seeker_world.with_z(1.0)),
-        Seeker { cell: seeker_start, path: Vec::new(), timer: 0.0 },
+        Seeker {
+            cell: seeker_start,
+            path: Vec::new(),
+            timer: 0.0,
+        },
     ));
 
     commands.insert_resource(PlayerCell(player_start));
@@ -177,7 +196,10 @@ fn setup(mut commands: Commands, config: Res<PathfindingConfig>) {
 
     commands.spawn((
         Text::new("Arrow keys / WASD — move   Red chases you"),
-        TextFont { font_size: 18.0, ..default() },
+        TextFont {
+            font_size: 18.0,
+            ..default()
+        },
         TextColor(Color::WHITE),
         Node {
             position_type: PositionType::Absolute,
@@ -196,14 +218,14 @@ fn handle_input(
     mut seeker_query: Query<&mut Seeker>,
 ) {
     let dirs = [
-        (KeyCode::ArrowUp,    IVec2::new(0, -1)),
-        (KeyCode::ArrowDown,  IVec2::new(0,  1)),
-        (KeyCode::ArrowLeft,  IVec2::new(-1, 0)),
-        (KeyCode::ArrowRight, IVec2::new( 1, 0)),
-        (KeyCode::KeyW,       IVec2::new(0, -1)),
-        (KeyCode::KeyS,       IVec2::new(0,  1)),
-        (KeyCode::KeyA,       IVec2::new(-1, 0)),
-        (KeyCode::KeyD,       IVec2::new( 1, 0)),
+        (KeyCode::ArrowUp, IVec2::new(0, -1)),
+        (KeyCode::ArrowDown, IVec2::new(0, 1)),
+        (KeyCode::ArrowLeft, IVec2::new(-1, 0)),
+        (KeyCode::ArrowRight, IVec2::new(1, 0)),
+        (KeyCode::KeyW, IVec2::new(0, -1)),
+        (KeyCode::KeyS, IVec2::new(0, 1)),
+        (KeyCode::KeyA, IVec2::new(-1, 0)),
+        (KeyCode::KeyD, IVec2::new(1, 0)),
     ];
     let rows = grid.0.len() as i32;
     let cols = grid.0[0].len() as i32;
@@ -211,7 +233,10 @@ fn handle_input(
     for (key, delta) in dirs {
         if input.just_pressed(key) {
             let next = player_cell.0 + delta;
-            if next.x >= 0 && next.y >= 0 && next.x < cols && next.y < rows
+            if next.x >= 0
+                && next.y >= 0
+                && next.x < cols
+                && next.y < rows
                 && grid.0[next.y as usize][next.x as usize]
             {
                 player_cell.0 = next;
@@ -220,11 +245,8 @@ fn handle_input(
             }
         }
     }
-    if moved {
-        if let Ok(mut seeker) = seeker_query.single_mut() {
-            seeker.path = astar(&grid.0, seeker.cell, player_cell.0)
-                .unwrap_or_default();
-        }
+    if moved && let Ok(mut seeker) = seeker_query.single_mut() {
+        seeker.path = astar(&grid.0, seeker.cell, player_cell.0).unwrap_or_default();
     }
 }
 
@@ -236,7 +258,9 @@ fn move_seeker(
     config: Res<PathfindingConfig>,
     mut query: Query<&mut Seeker>,
 ) {
-    let Ok(mut seeker) = query.single_mut() else { return };
+    let Ok(mut seeker) = query.single_mut() else {
+        return;
+    };
     seeker.timer += time.delta_secs();
     if seeker.timer < config.step_interval {
         return;
@@ -288,7 +312,12 @@ pub fn astar(grid: &[Vec<bool>], start: IVec2, goal: IVec2) -> Option<Vec<IVec2>
     g_score.insert((start.x, start.y), 0);
     open.push(Reverse((h(start), 0, start.x, start.y)));
 
-    let neighbors = [IVec2::new(1, 0), IVec2::new(-1, 0), IVec2::new(0, 1), IVec2::new(0, -1)];
+    let neighbors = [
+        IVec2::new(1, 0),
+        IVec2::new(-1, 0),
+        IVec2::new(0, 1),
+        IVec2::new(0, -1),
+    ];
 
     while let Some(Reverse((_, g, cx, cy))) = open.pop() {
         let current = IVec2::new(cx, cy);

@@ -2,9 +2,13 @@
 
 A collection of small, self-contained [Bevy](https://bevyengine.org/) `0.18` demos,
 each isolating a single engine concept or gameplay system. Every demo has
-module-level rustdoc, `///` item docs, and a `#[cfg(test)]` test module — most
-game logic is factored into `pub fn` pure functions so it can be unit-tested
-headlessly without a window.
+module-level rustdoc and `///` item docs, and every demo with logic to exercise
+has a `#[cfg(test)]` test module — most game logic is factored into `pub fn`
+pure functions so it can be unit-tested headlessly without a window. The two
+exceptions are `draw-window` and `audio`, which are pure engine wiring and have
+no logic of their own to test.
+
+See [`DEMO_ANATOMY.md`](DEMO_ANATOMY.md) for the shape every demo follows.
 
 ## Workspace
 

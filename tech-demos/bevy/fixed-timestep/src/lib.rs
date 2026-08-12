@@ -38,7 +38,11 @@ pub struct FixedTimestepPlugin;
 
 impl Plugin for FixedTimestepPlugin {
     fn build(&self, app: &mut App) {
-        let config = app.world().get_resource::<FixedTimestepConfig>().copied().unwrap_or_default();
+        let config = app
+            .world()
+            .get_resource::<FixedTimestepConfig>()
+            .copied()
+            .unwrap_or_default();
         app.init_resource::<FixedTimestepConfig>()
             .insert_resource(Time::<Fixed>::from_hz(config.tick_hz))
             .init_resource::<FrameCounters>()
@@ -88,7 +92,11 @@ pub fn apply_gravity(vy: f32, gravity: f32, dt: f32) -> f32 {
 
 /// Reflects vertical velocity off the floor with restitution when below `floor` and moving down.
 pub fn bounce_floor(y: f32, vy: f32, floor: f32, restitution: f32) -> f32 {
-    if y < floor && vy < 0.0 { vy * -restitution } else { vy }
+    if y < floor && vy < 0.0 {
+        vy * -restitution
+    } else {
+        vy
+    }
 }
 
 /// Reflects a velocity component when the position exceeds `limit` on either side.
@@ -129,7 +137,11 @@ fn setup(mut commands: Commands, config: Res<FixedTimestepConfig>) {
 
     // Ball A — falls under simulated gravity
     commands.spawn((
-        Sprite { color: Color::srgb(0.9, 0.4, 0.1), custom_size: Some(Vec2::splat(30.0)), ..default() },
+        Sprite {
+            color: Color::srgb(0.9, 0.4, 0.1),
+            custom_size: Some(Vec2::splat(30.0)),
+            ..default()
+        },
         Transform::from_xyz(-100.0, 200.0, 0.0),
         Velocity(Vec2::new(120.0, 0.0)),
         Ball,
@@ -137,7 +149,11 @@ fn setup(mut commands: Commands, config: Res<FixedTimestepConfig>) {
 
     // Ball B — pure horizontal motion
     commands.spawn((
-        Sprite { color: Color::srgb(0.2, 0.7, 0.9), custom_size: Some(Vec2::splat(30.0)), ..default() },
+        Sprite {
+            color: Color::srgb(0.2, 0.7, 0.9),
+            custom_size: Some(Vec2::splat(30.0)),
+            ..default()
+        },
         Transform::from_xyz(100.0, 0.0, 0.0),
         Velocity(Vec2::new(-200.0, 60.0)),
         Ball,
@@ -145,7 +161,10 @@ fn setup(mut commands: Commands, config: Res<FixedTimestepConfig>) {
 
     commands.spawn((
         Text::new("Fixed: 0  |  Update: 0"),
-        TextFont { font_size: 20.0, ..default() },
+        TextFont {
+            font_size: 20.0,
+            ..default()
+        },
         TextColor(Color::WHITE),
         Node {
             position_type: PositionType::Absolute,
@@ -157,8 +176,14 @@ fn setup(mut commands: Commands, config: Res<FixedTimestepConfig>) {
     ));
 
     commands.spawn((
-        Text::new(format!("Physics at {} Hz fixed step — rendering uncapped", config.tick_hz as u32)),
-        TextFont { font_size: 14.0, ..default() },
+        Text::new(format!(
+            "Physics at {} Hz fixed step — rendering uncapped",
+            config.tick_hz as u32
+        )),
+        TextFont {
+            font_size: 14.0,
+            ..default()
+        },
         TextColor(Color::srgb(0.7, 0.7, 0.7)),
         Node {
             position_type: PositionType::Absolute,
@@ -186,12 +211,17 @@ fn physics_step(
 }
 
 /// Reflects balls when they hit the arena walls or floor/ceiling.
-fn bounce_walls(config: Res<FixedTimestepConfig>, mut query: Query<(&Transform, &mut Velocity), With<Ball>>) {
+fn bounce_walls(
+    config: Res<FixedTimestepConfig>,
+    mut query: Query<(&Transform, &mut Velocity), With<Ball>>,
+) {
     for (transform, mut velocity) in &mut query {
         let p = transform.translation;
         velocity.0.y = bounce_floor(p.y, velocity.0.y, config.floor, config.restitution);
         velocity.0.x = reflect_wall(p.x, velocity.0.x, config.wall);
-        if p.y > config.ceiling && velocity.0.y > 0.0 { velocity.0.y *= -1.0; }
+        if p.y > config.ceiling && velocity.0.y > 0.0 {
+            velocity.0.y *= -1.0;
+        }
     }
 }
 
@@ -233,7 +263,7 @@ mod tests {
     fn frame_counters_default_to_zero() {
         let c = FrameCounters::default();
         assert_eq!(c.update, 0);
-        assert_eq!(c.fixed,  0);
+        assert_eq!(c.fixed, 0);
     }
 
     #[test]

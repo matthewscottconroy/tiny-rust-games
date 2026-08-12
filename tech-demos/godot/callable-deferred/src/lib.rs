@@ -94,8 +94,7 @@ impl DeferredDemo {
     pub fn request_add_child(&mut self) {
         self.pending_ops.push("add_child deferred".into());
         godot_print!("[DeferredDemo] scheduling do_add_child via call_deferred");
-        self.base_mut()
-            .call_deferred("do_add_child", &[]);
+        self.base_mut().call_deferred("do_add_child", &[]);
         self.update_log_label();
     }
 

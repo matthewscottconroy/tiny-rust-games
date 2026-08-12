@@ -77,24 +77,50 @@ fn setup(mut commands: Commands) {
     commands.spawn(Camera2d);
 
     let items: &[(Vec3, Color, f32)] = &[
-        (Vec3::new(-200.0,  80.0, 0.0), Color::srgb(0.9, 0.35, 0.2), 38.0),
-        (Vec3::new(   0.0,  80.0, 0.0), Color::srgb(0.2, 0.65, 0.9), 28.0),
-        (Vec3::new( 200.0,  80.0, 0.0), Color::srgb(0.7, 0.9,  0.2), 48.0),
-        (Vec3::new(-100.0, -80.0, 0.0), Color::srgb(0.8, 0.3,  0.8), 34.0),
-        (Vec3::new( 100.0, -80.0, 0.0), Color::srgb(0.95, 0.75, 0.1), 42.0),
+        (
+            Vec3::new(-200.0, 80.0, 0.0),
+            Color::srgb(0.9, 0.35, 0.2),
+            38.0,
+        ),
+        (Vec3::new(0.0, 80.0, 0.0), Color::srgb(0.2, 0.65, 0.9), 28.0),
+        (
+            Vec3::new(200.0, 80.0, 0.0),
+            Color::srgb(0.7, 0.9, 0.2),
+            48.0,
+        ),
+        (
+            Vec3::new(-100.0, -80.0, 0.0),
+            Color::srgb(0.8, 0.3, 0.8),
+            34.0,
+        ),
+        (
+            Vec3::new(100.0, -80.0, 0.0),
+            Color::srgb(0.95, 0.75, 0.1),
+            42.0,
+        ),
     ];
 
     for &(pos, color, radius) in items {
         commands.spawn((
-            Sprite { color, custom_size: Some(Vec2::splat(radius * 2.0)), ..default() },
+            Sprite {
+                color,
+                custom_size: Some(Vec2::splat(radius * 2.0)),
+                ..default()
+            },
             Transform::from_translation(pos),
-            Draggable { base_color: color, radius },
+            Draggable {
+                base_color: color,
+                radius,
+            },
         ));
     }
 
     commands.spawn((
         Text::new(""),
-        TextFont { font_size: 15.0, ..default() },
+        TextFont {
+            font_size: 15.0,
+            ..default()
+        },
         TextColor(Color::srgb(0.8, 0.8, 0.8)),
         Node {
             position_type: PositionType::Absolute,
@@ -107,7 +133,10 @@ fn setup(mut commands: Commands) {
 
     commands.spawn((
         Text::new("Left-drag — move shapes"),
-        TextFont { font_size: 14.0, ..default() },
+        TextFont {
+            font_size: 14.0,
+            ..default()
+        },
         TextColor(Color::srgb(0.55, 0.55, 0.55)),
         Node {
             position_type: PositionType::Absolute,
@@ -139,9 +168,9 @@ pub fn cursor_to_world(
 pub fn lighten(color: Color, amount: f32) -> Color {
     if let Color::Srgba(s) = color {
         Color::srgb(
-            (s.red   + amount).min(1.0),
+            (s.red + amount).min(1.0),
             (s.green + amount).min(1.0),
-            (s.blue  + amount).min(1.0),
+            (s.blue + amount).min(1.0),
         )
     } else {
         color
@@ -158,8 +187,12 @@ fn update_hover(
     drag: Res<DragState>,
     mut label_query: Query<&mut Text, With<HoverLabel>>,
 ) {
-    let Ok(window) = window_query.single() else { return; };
-    let Ok((cam, cam_transform)) = cam_query.single() else { return; };
+    let Ok(window) = window_query.single() else {
+        return;
+    };
+    let Ok((cam, cam_transform)) = cam_query.single() else {
+        return;
+    };
     let cursor = cursor_to_world(window, cam, cam_transform);
 
     let mut hovered_name: Option<String> = None;
@@ -197,16 +230,22 @@ fn handle_drag(
     mut drag: ResMut<DragState>,
     mut query: Query<(Entity, &mut Transform, &Draggable)>,
 ) {
-    let Ok(window) = window_query.single() else { return; };
-    let Ok((cam, cam_transform)) = cam_query.single() else { return; };
-    let Some(cursor) = cursor_to_world(window, cam, cam_transform) else { return; };
+    let Ok(window) = window_query.single() else {
+        return;
+    };
+    let Ok((cam, cam_transform)) = cam_query.single() else {
+        return;
+    };
+    let Some(cursor) = cursor_to_world(window, cam, cam_transform) else {
+        return;
+    };
 
     if mouse.just_pressed(MouseButton::Left) {
         let mut best: Option<(Entity, f32, Vec2)> = None;
         for (entity, transform, draggable) in &query {
             let pos = transform.translation.truncate();
             let dist = cursor.distance(pos);
-            if dist < draggable.radius && best.map_or(true, |(_, d, _)| dist < d) {
+            if dist < draggable.radius && best.is_none_or(|(_, d, _)| dist < d) {
                 best = Some((entity, dist, pos));
             }
         }
@@ -216,14 +255,13 @@ fn handle_drag(
         }
     }
 
-    if mouse.pressed(MouseButton::Left) {
-        if let Some(dragged) = drag.entity {
-            if let Ok((_, mut transform, _)) = query.get_mut(dragged) {
-                let target = cursor + drag.offset;
-                transform.translation.x = target.x;
-                transform.translation.y = target.y;
-            }
-        }
+    if mouse.pressed(MouseButton::Left)
+        && let Some(dragged) = drag.entity
+        && let Ok((_, mut transform, _)) = query.get_mut(dragged)
+    {
+        let target = cursor + drag.offset;
+        transform.translation.x = target.x;
+        transform.translation.y = target.y;
     }
 
     if mouse.just_released(MouseButton::Left) {
@@ -248,20 +286,24 @@ mod tests {
     fn lighten_increases_all_channels() {
         let base = Color::srgb(0.5, 0.3, 0.1);
         let lit = lighten(base, 0.2);
-        let Color::Srgba(s) = lit else { panic!("expected Srgba") };
-        assert!((s.red   - 0.7).abs() < 1e-5);
+        let Color::Srgba(s) = lit else {
+            panic!("expected Srgba")
+        };
+        assert!((s.red - 0.7).abs() < 1e-5);
         assert!((s.green - 0.5).abs() < 1e-5);
-        assert!((s.blue  - 0.3).abs() < 1e-5);
+        assert!((s.blue - 0.3).abs() < 1e-5);
     }
 
     #[test]
     fn lighten_clamps_at_one() {
         let base = Color::srgb(0.9, 0.9, 0.9);
         let lit = lighten(base, 0.5);
-        let Color::Srgba(s) = lit else { panic!("expected Srgba") };
-        assert_eq!(s.red,   1.0);
+        let Color::Srgba(s) = lit else {
+            panic!("expected Srgba")
+        };
+        assert_eq!(s.red, 1.0);
         assert_eq!(s.green, 1.0);
-        assert_eq!(s.blue,  1.0);
+        assert_eq!(s.blue, 1.0);
     }
 
     #[test]
@@ -274,8 +316,7 @@ mod tests {
     #[test]
     fn setup_spawns_five_draggables() {
         let mut app = App::new();
-        app.add_plugins(MinimalPlugins)
-            .add_systems(Startup, setup);
+        app.add_plugins(MinimalPlugins).add_systems(Startup, setup);
         app.update();
 
         let mut q = app.world_mut().query::<&Draggable>();

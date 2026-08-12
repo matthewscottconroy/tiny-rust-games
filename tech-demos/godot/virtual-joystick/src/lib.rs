@@ -63,18 +63,15 @@ impl IControl for VirtualJoystick {
                 }
                 self.base_mut().queue_redraw();
             }
-        } else if let Ok(motion) = event.try_cast::<InputEventMouseMotion>() {
-            if self.active {
-                let pos = motion.get_position();
-                let (cx, cy) = clamp_to_circle(
-                    pos.x - self.origin_x,
-                    pos.y - self.origin_y,
-                    self.radius,
-                );
-                self.current_x = self.origin_x + cx;
-                self.current_y = self.origin_y + cy;
-                self.base_mut().queue_redraw();
-            }
+        } else if let Ok(motion) = event.try_cast::<InputEventMouseMotion>()
+            && self.active
+        {
+            let pos = motion.get_position();
+            let (cx, cy) =
+                clamp_to_circle(pos.x - self.origin_x, pos.y - self.origin_y, self.radius);
+            self.current_x = self.origin_x + cx;
+            self.current_y = self.origin_y + cy;
+            self.base_mut().queue_redraw();
         }
     }
 
@@ -130,14 +127,7 @@ impl VirtualJoystick {
 // ---------------------------------------------------------------------------
 
 /// Compute a normalised, dead-zone-applied axis from origin and current touch points.
-pub fn compute_axis(
-    ox: f32,
-    oy: f32,
-    cx: f32,
-    cy: f32,
-    radius: f32,
-    dead_zone: f32,
-) -> (f32, f32) {
+pub fn compute_axis(ox: f32, oy: f32, cx: f32, cy: f32, radius: f32, dead_zone: f32) -> (f32, f32) {
     let dx = cx - ox;
     let dy = cy - oy;
     let len = (dx * dx + dy * dy).sqrt();

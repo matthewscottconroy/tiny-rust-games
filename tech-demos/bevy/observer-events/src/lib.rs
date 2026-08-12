@@ -48,7 +48,13 @@ impl Plugin for ObserverEventsPlugin {
             .add_systems(Startup, setup)
             .add_systems(
                 Update,
-                (fire_traditional, react_traditional, fire_observer, update_visuals).chain(),
+                (
+                    fire_traditional,
+                    react_traditional,
+                    fire_observer,
+                    update_visuals,
+                )
+                    .chain(),
             );
     }
 }
@@ -74,7 +80,9 @@ pub struct ObserverConfig {
 
 impl Default for ObserverConfig {
     fn default() -> Self {
-        Self { flash_duration: 0.3 }
+        Self {
+            flash_duration: 0.3,
+        }
     }
 }
 
@@ -86,12 +94,7 @@ impl Default for ObserverConfig {
 /// much time has elapsed since the hit.
 ///
 /// Returns `flash` at `elapsed = 0` and `base` once `elapsed >= duration`.
-pub fn flash_color(
-    elapsed: f32,
-    duration: f32,
-    base: [f32; 3],
-    flash: [f32; 3],
-) -> [f32; 3] {
+pub fn flash_color(elapsed: f32, duration: f32, base: [f32; 3], flash: [f32; 3]) -> [f32; 3] {
     if duration <= 0.0 || elapsed >= duration {
         return base;
     }
@@ -281,11 +284,7 @@ fn fire_traditional(
 }
 
 /// Triggers an [`ObserverHit`] event when `E` is pressed.
-fn fire_observer(
-    keys: Res<ButtonInput<KeyCode>>,
-    targets: Res<Targets>,
-    mut commands: Commands,
-) {
+fn fire_observer(keys: Res<ButtonInput<KeyCode>>, targets: Res<Targets>, mut commands: Commands) {
     if keys.just_pressed(KeyCode::KeyE) {
         commands.trigger(ObserverHit {
             target: targets.observer,

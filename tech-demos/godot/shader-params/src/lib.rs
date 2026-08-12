@@ -32,10 +32,10 @@ impl INode2D for ShaderParamsDemo {
 
     fn ready(&mut self) {
         let mesh = self.base().get_node_as::<MeshInstance2D>("MeshInstance2D");
-        if let Some(mat) = mesh.get_material() {
-            if let Ok(shader_mat) = mat.try_cast::<ShaderMaterial>() {
-                self.shader_material = Some(shader_mat);
-            }
+        if let Some(mat) = mesh.get_material()
+            && let Ok(shader_mat) = mat.try_cast::<ShaderMaterial>()
+        {
+            self.shader_material = Some(shader_mat);
         }
     }
 
@@ -87,7 +87,10 @@ mod tests {
     #[test]
     fn wave_value_amplitude_scales_output() {
         let v = wave_value(0.25, 1.0, 2.0);
-        assert!((v - 2.0).abs() < 1e-5, "quarter period should give amplitude: {v}");
+        assert!(
+            (v - 2.0).abs() < 1e-5,
+            "quarter period should give amplitude: {v}"
+        );
     }
 
     #[test]
@@ -103,7 +106,10 @@ mod tests {
     #[test]
     fn elapsed_to_phase_wraps_at_one() {
         let phase = elapsed_to_phase(1.0, 1.0);
-        assert!(phase < 1e-6, "phase should wrap to ~0 at elapsed=1, speed=1: {phase}");
+        assert!(
+            phase < 1e-6,
+            "phase should wrap to ~0 at elapsed=1, speed=1: {phase}"
+        );
     }
 
     #[test]

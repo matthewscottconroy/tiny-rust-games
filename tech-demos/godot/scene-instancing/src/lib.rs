@@ -109,9 +109,15 @@ impl SceneInstancer {
         if let Some(node) = instance_opt {
             self.base_mut().add_child(&node);
             self.instance_count += 1;
-            godot_print!("[SceneInstancer] Spawned instance #{}.", self.instance_count);
+            godot_print!(
+                "[SceneInstancer] Spawned instance #{}.",
+                self.instance_count
+            );
         } else {
-            godot_print!("[SceneInstancer] Failed to load or instantiate scene: {}", path);
+            godot_print!(
+                "[SceneInstancer] Failed to load or instantiate scene: {}",
+                path
+            );
         }
 
         self.update_label();
@@ -127,7 +133,7 @@ impl SceneInstancer {
 
         // Only free nodes that are NOT the Label (keep the UI intact).
         for child in children {
-            if child.get_class() != GString::from("Label") {
+            if child.get_class() != "Label" {
                 let mut c = child;
                 c.queue_free();
             }

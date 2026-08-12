@@ -108,7 +108,10 @@ impl IControl for OptionsMenu {
 
     fn ready(&mut self) {
         // Populate difficulty options.
-        if let Some(mut opt) = self.base().try_get_node_as::<OptionButton>("DifficultyOption") {
+        if let Some(mut opt) = self
+            .base()
+            .try_get_node_as::<OptionButton>("DifficultyOption")
+        {
             opt.add_item("Easy");
             opt.add_item("Normal");
             opt.add_item("Hard");
@@ -131,31 +134,33 @@ impl OptionsMenu {
     /// stores them in `self.config`.
     #[func]
     pub fn on_apply(&mut self) {
-        let difficulty = if let Some(opt) =
-            self.base().try_get_node_as::<OptionButton>("DifficultyOption")
+        let difficulty = if let Some(opt) = self
+            .base()
+            .try_get_node_as::<OptionButton>("DifficultyOption")
         {
             opt.get_selected() as u8
         } else {
             1
         };
 
-        let fullscreen = if let Some(cb) =
-            self.base().try_get_node_as::<CheckBox>("FullscreenCheck")
-        {
-            cb.is_pressed()
-        } else {
-            false
-        };
+        let fullscreen =
+            if let Some(cb) = self.base().try_get_node_as::<CheckBox>("FullscreenCheck") {
+                cb.is_pressed()
+            } else {
+                false
+            };
 
-        let volume = if let Some(slider) =
-            self.base().try_get_node_as::<HSlider>("VolumeSlider")
-        {
+        let volume = if let Some(slider) = self.base().try_get_node_as::<HSlider>("VolumeSlider") {
             validate_volume(slider.get_value() as f32)
         } else {
             100.0
         };
 
-        self.config = MenuConfig { difficulty, fullscreen, volume };
+        self.config = MenuConfig {
+            difficulty,
+            fullscreen,
+            volume,
+        };
         godot_print!(
             "[OptionsMenu] Applied — difficulty: {}, fullscreen: {}, volume: {:.0}",
             difficulty_name(difficulty),

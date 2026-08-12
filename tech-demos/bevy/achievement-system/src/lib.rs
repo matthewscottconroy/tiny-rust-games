@@ -42,13 +42,13 @@ impl Plugin for AchievementSystemPlugin {
     fn build(&self, app: &mut App) {
         app.add_message::<UnlockMsg>()
             .insert_resource(AchievementRegistry(vec![
-                Achievement::new("First Point",   1),
-                Achievement::new("Scorer",        10),
-                Achievement::new("High Scorer",   50),
-                Achievement::new("First Step",    1),
-                Achievement::new("Walker",        25),
-                Achievement::new("First Kill",    1),
-                Achievement::new("Monster Slayer",10),
+                Achievement::new("First Point", 1),
+                Achievement::new("Scorer", 10),
+                Achievement::new("High Scorer", 50),
+                Achievement::new("First Step", 1),
+                Achievement::new("Walker", 25),
+                Achievement::new("First Kill", 1),
+                Achievement::new("Monster Slayer", 10),
             ]))
             .init_resource::<Score>()
             .init_resource::<StepCount>()
@@ -56,7 +56,13 @@ impl Plugin for AchievementSystemPlugin {
             .add_systems(Startup, setup)
             .add_systems(
                 Update,
-                (handle_input, check_achievements, update_hud, announce_unlocks).chain(),
+                (
+                    handle_input,
+                    check_achievements,
+                    update_hud,
+                    announce_unlocks,
+                )
+                    .chain(),
             );
     }
 }
@@ -100,7 +106,12 @@ pub struct Achievement {
 impl Achievement {
     /// Creates a fresh, locked achievement at zero progress.
     pub fn new(name: &'static str, goal: u32) -> Self {
-        Self { name, goal, progress: 0, unlocked: false }
+        Self {
+            name,
+            goal,
+            progress: 0,
+            unlocked: false,
+        }
     }
 }
 
@@ -136,7 +147,10 @@ fn setup(mut commands: Commands, registry: Res<AchievementRegistry>) {
 
     commands.spawn((
         Text::new("SPACE = score   WASD = steps   K = kill"),
-        TextFont { font_size: 15.0, ..default() },
+        TextFont {
+            font_size: 15.0,
+            ..default()
+        },
         TextColor(Color::srgb(0.55, 0.55, 0.55)),
         Node {
             position_type: PositionType::Absolute,
@@ -149,7 +163,10 @@ fn setup(mut commands: Commands, registry: Res<AchievementRegistry>) {
     for (i, ach) in registry.0.iter().enumerate() {
         commands.spawn((
             Text::new(progress_text(ach.name, ach.progress, ach.goal)),
-            TextFont { font_size: 16.0, ..default() },
+            TextFont {
+                font_size: 16.0,
+                ..default()
+            },
             TextColor(Color::srgb(0.78, 0.78, 0.78)),
             Node {
                 position_type: PositionType::Absolute,
@@ -192,9 +209,9 @@ fn check_achievements(
 ) {
     // Map each achievement index to the relevant counter.
     let counters: [u32; 7] = [
-        score.0, score.0, score.0,  // First Point, Scorer, High Scorer
-        steps.0, steps.0,           // First Step, Walker
-        kills.0, kills.0,           // First Kill, Monster Slayer
+        score.0, score.0, score.0, // First Point, Scorer, High Scorer
+        steps.0, steps.0, // First Step, Walker
+        kills.0, kills.0, // First Kill, Monster Slayer
     ];
     for (i, &counter) in counters.iter().enumerate() {
         let ach = &mut registry.0[i];

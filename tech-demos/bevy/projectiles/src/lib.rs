@@ -57,7 +57,11 @@ pub struct ProjectilesConfig {
 
 impl Default for ProjectilesConfig {
     fn default() -> Self {
-        Self { player_speed: 200.0, bullet_speed: 500.0, offscreen_margin: 600.0 }
+        Self {
+            player_speed: 200.0,
+            bullet_speed: 500.0,
+            offscreen_margin: 600.0,
+        }
     }
 }
 
@@ -103,7 +107,10 @@ fn setup(mut commands: Commands) {
 
     commands.spawn((
         Text::new("WASD — move   Arrow keys — fire"),
-        TextFont { font_size: 16.0, ..default() },
+        TextFont {
+            font_size: 16.0,
+            ..default()
+        },
         TextColor(Color::srgb(0.8, 0.8, 0.8)),
         Node {
             position_type: PositionType::Absolute,
@@ -123,13 +130,23 @@ fn move_player(
     config: Res<ProjectilesConfig>,
     mut query: Query<(&mut Transform, &mut Player)>,
 ) {
-    let Ok((mut transform, mut player)) = query.single_mut() else { return; };
+    let Ok((mut transform, mut player)) = query.single_mut() else {
+        return;
+    };
 
     let mut dir = Vec2::ZERO;
-    if input.pressed(KeyCode::KeyW) { dir.y += 1.0; }
-    if input.pressed(KeyCode::KeyS) { dir.y -= 1.0; }
-    if input.pressed(KeyCode::KeyA) { dir.x -= 1.0; }
-    if input.pressed(KeyCode::KeyD) { dir.x += 1.0; }
+    if input.pressed(KeyCode::KeyW) {
+        dir.y += 1.0;
+    }
+    if input.pressed(KeyCode::KeyS) {
+        dir.y -= 1.0;
+    }
+    if input.pressed(KeyCode::KeyA) {
+        dir.x -= 1.0;
+    }
+    if input.pressed(KeyCode::KeyD) {
+        dir.x += 1.0;
+    }
 
     if dir != Vec2::ZERO {
         let normalized = dir.normalize();
@@ -147,13 +164,23 @@ fn fire_bullets(
     config: Res<ProjectilesConfig>,
     player_query: Query<&Transform, With<Player>>,
 ) {
-    let Ok(transform) = player_query.single() else { return; };
+    let Ok(transform) = player_query.single() else {
+        return;
+    };
 
     let mut directions: Vec<Vec2> = Vec::new();
-    if input.just_pressed(KeyCode::ArrowUp)    { directions.push(Vec2::Y); }
-    if input.just_pressed(KeyCode::ArrowDown)  { directions.push(Vec2::NEG_Y); }
-    if input.just_pressed(KeyCode::ArrowLeft)  { directions.push(Vec2::NEG_X); }
-    if input.just_pressed(KeyCode::ArrowRight) { directions.push(Vec2::X); }
+    if input.just_pressed(KeyCode::ArrowUp) {
+        directions.push(Vec2::Y);
+    }
+    if input.just_pressed(KeyCode::ArrowDown) {
+        directions.push(Vec2::NEG_Y);
+    }
+    if input.just_pressed(KeyCode::ArrowLeft) {
+        directions.push(Vec2::NEG_X);
+    }
+    if input.just_pressed(KeyCode::ArrowRight) {
+        directions.push(Vec2::X);
+    }
 
     for dir in directions {
         commands.spawn((
@@ -197,8 +224,7 @@ mod tests {
     #[test]
     fn setup_spawns_one_player() {
         let mut app = App::new();
-        app.add_plugins(MinimalPlugins)
-            .add_systems(Startup, setup);
+        app.add_plugins(MinimalPlugins).add_systems(Startup, setup);
         app.update();
 
         let mut q = app.world_mut().query::<&Player>();
@@ -208,8 +234,7 @@ mod tests {
     #[test]
     fn no_bullets_at_startup() {
         let mut app = App::new();
-        app.add_plugins(MinimalPlugins)
-            .add_systems(Startup, setup);
+        app.add_plugins(MinimalPlugins).add_systems(Startup, setup);
         app.update();
 
         let mut q = app.world_mut().query::<&Bullet>();
@@ -219,8 +244,7 @@ mod tests {
     #[test]
     fn player_starts_at_origin() {
         let mut app = App::new();
-        app.add_plugins(MinimalPlugins)
-            .add_systems(Startup, setup);
+        app.add_plugins(MinimalPlugins).add_systems(Startup, setup);
         app.update();
 
         let mut q = app.world_mut().query::<(&Player, &Transform)>();

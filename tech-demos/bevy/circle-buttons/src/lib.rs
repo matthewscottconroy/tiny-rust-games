@@ -200,13 +200,20 @@ fn spawn_circles(
     mut materials: ResMut<Assets<ColorMaterial>>,
     config: Res<CircleGuiConfig>,
 ) {
-    for (i, pos) in circle_layout(config.count, config.spacing).into_iter().enumerate() {
+    for (i, pos) in circle_layout(config.count, config.spacing)
+        .into_iter()
+        .enumerate()
+    {
         let color = color_for_index(&config.colors, i);
         commands.spawn((
             Mesh2d(meshes.add(Circle::new(config.radius))),
             MeshMaterial2d(materials.add(ColorMaterial::from(color))),
             Transform::from_translation(pos.extend(0.0)),
-            CircleButton { index: i, radius: config.radius, color },
+            CircleButton {
+                index: i,
+                radius: config.radius,
+                color,
+            },
         ));
     }
 }
@@ -214,7 +221,10 @@ fn spawn_circles(
 fn spawn_hud(mut commands: Commands) {
     commands.spawn((
         Text::new("Hover and click a circle"),
-        TextFont { font_size: 20.0, ..default() },
+        TextFont {
+            font_size: 20.0,
+            ..default()
+        },
         TextColor(Color::WHITE),
         Node {
             position_type: PositionType::Absolute,
@@ -233,14 +243,21 @@ fn cursor_world(
 ) -> Option<Vec2> {
     let window = windows.single().ok()?;
     let (camera, cam_t) = camera_q.single().ok()?;
-    camera.viewport_to_world_2d(cam_t, window.cursor_position()?).ok()
+    camera
+        .viewport_to_world_2d(cam_t, window.cursor_position()?)
+        .ok()
 }
 
 fn handle_mouse(
     mouse: Res<ButtonInput<MouseButton>>,
     windows: Query<&Window, With<PrimaryWindow>>,
     camera_q: Query<(&Camera, &GlobalTransform)>,
-    circles: Query<(Entity, &CircleButton, &Transform, &MeshMaterial2d<ColorMaterial>)>,
+    circles: Query<(
+        Entity,
+        &CircleButton,
+        &Transform,
+        &MeshMaterial2d<ColorMaterial>,
+    )>,
     mut materials: ResMut<Assets<ColorMaterial>>,
     mut hover: ResMut<HoverState>,
     mut click_events: MessageWriter<CircleClicked>,
@@ -278,31 +295,30 @@ fn handle_mouse(
 
     // Update hover highlight only when the hovered circle changes.
     if new_entity != hover.hovered {
-        if let Some(prev) = hover.hovered {
-            if let Some(s) = snaps.iter().find(|s| s.entity == prev) {
-                if let Some(mat) = materials.get_mut(&s.handle) {
-                    mat.color = s.color;
-                }
-            }
+        if let Some(prev) = hover.hovered
+            && let Some(s) = snaps.iter().find(|s| s.entity == prev)
+            && let Some(mat) = materials.get_mut(&s.handle)
+        {
+            mat.color = s.color;
         }
-        if let Some(s) = hovered {
-            if let Some(mat) = materials.get_mut(&s.handle) {
-                mat.color = lighten_color(s.color, 0.25);
-            }
+        if let Some(s) = hovered
+            && let Some(mat) = materials.get_mut(&s.handle)
+        {
+            mat.color = lighten_color(s.color, 0.25);
         }
         hover.hovered = new_entity;
     }
 
     // Fire event on click.
-    if mouse.just_pressed(MouseButton::Left) {
-        if let Some(s) = hovered {
-            click_events.write(CircleClicked {
-                index: s.index,
-                color: s.color,
-                position: s.center,
-            });
-            click_state.last_clicked = Some(s.index);
-        }
+    if mouse.just_pressed(MouseButton::Left)
+        && let Some(s) = hovered
+    {
+        click_events.write(CircleClicked {
+            index: s.index,
+            color: s.color,
+            position: s.center,
+        });
+        click_state.last_clicked = Some(s.index);
     }
 }
 
@@ -350,7 +366,10 @@ mod tests {
     fn layout_two_circles_symmetric() {
         let pos = circle_layout(2, 100.0);
         assert_eq!(pos.len(), 2);
-        assert!((pos[0].x + pos[1].x).abs() < 1e-5, "should be symmetric around origin");
+        assert!(
+            (pos[0].x + pos[1].x).abs() < 1e-5,
+            "should be symmetric around origin"
+        );
         assert!((pos[1].x - pos[0].x - 100.0).abs() < 1e-5);
     }
 
@@ -391,7 +410,11 @@ mod tests {
     fn offset_center_is_handled() {
         let center = Vec2::new(100.0, 200.0);
         assert!(point_in_circle(center + Vec2::new(10.0, 0.0), center, 20.0));
-        assert!(!point_in_circle(center + Vec2::new(25.0, 0.0), center, 20.0));
+        assert!(!point_in_circle(
+            center + Vec2::new(25.0, 0.0),
+            center,
+            20.0
+        ));
     }
 
     // ── color_for_index ──────────────────────────────────────────────────────
@@ -463,15 +486,25 @@ mod tests {
             .add_message::<CircleClicked>()
             // Spawn only the CircleButton component (no mesh/material — Assets not
             // available in MinimalPlugins) to verify the layout count.
-            .add_systems(Startup, |mut commands: Commands, config: Res<CircleGuiConfig>| {
-                for (i, pos) in circle_layout(config.count, config.spacing).into_iter().enumerate() {
-                    let color = color_for_index(&config.colors, i);
-                    commands.spawn((
-                        Transform::from_translation(pos.extend(0.0)),
-                        CircleButton { index: i, radius: config.radius, color },
-                    ));
-                }
-            });
+            .add_systems(
+                Startup,
+                |mut commands: Commands, config: Res<CircleGuiConfig>| {
+                    for (i, pos) in circle_layout(config.count, config.spacing)
+                        .into_iter()
+                        .enumerate()
+                    {
+                        let color = color_for_index(&config.colors, i);
+                        commands.spawn((
+                            Transform::from_translation(pos.extend(0.0)),
+                            CircleButton {
+                                index: i,
+                                radius: config.radius,
+                                color,
+                            },
+                        ));
+                    }
+                },
+            );
         app.update();
         let count = app
             .world_mut()

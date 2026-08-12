@@ -46,7 +46,10 @@ impl Plugin for ComboSystemPlugin {
             .init_resource::<Score>()
             .init_resource::<ComboFlash>()
             .add_systems(Startup, setup)
-            .add_systems(Update, (collect_input, check_combos, tick_flash, update_hud).chain());
+            .add_systems(
+                Update,
+                (collect_input, check_combos, tick_flash, update_hud).chain(),
+            );
     }
 }
 
@@ -64,7 +67,10 @@ pub struct ComboSystemConfig {
 
 impl Default for ComboSystemConfig {
     fn default() -> Self {
-        Self { buffer_cap: 8, flash_duration: 1.2 }
+        Self {
+            buffer_cap: 8,
+            flash_duration: 1.2,
+        }
     }
 }
 
@@ -120,11 +126,7 @@ fn combos() -> Vec<ComboEntry> {
         ComboEntry {
             name: "ZIGZAG!",
             color: Color::srgb(1.0, 0.8, 0.2),
-            pattern: &[
-                KeyCode::ArrowLeft,
-                KeyCode::ArrowRight,
-                KeyCode::ArrowLeft,
-            ],
+            pattern: &[KeyCode::ArrowLeft, KeyCode::ArrowRight, KeyCode::ArrowLeft],
         },
         ComboEntry {
             name: "DIVE!",
@@ -152,7 +154,11 @@ struct ComboFlash {
 
 impl Default for ComboFlash {
     fn default() -> Self {
-        Self { name: String::new(), color: Color::WHITE, timer: 0.0 }
+        Self {
+            name: String::new(),
+            color: Color::WHITE,
+            timer: 0.0,
+        }
     }
 }
 
@@ -168,7 +174,10 @@ enum HudLabel {
 fn setup(mut commands: Commands) {
     commands.spawn(Camera2d);
 
-    let style = TextFont { font_size: 22.0, ..default() };
+    let style = TextFont {
+        font_size: 22.0,
+        ..default()
+    };
 
     commands.spawn((
         Text::new("Buffer: "),
@@ -184,7 +193,10 @@ fn setup(mut commands: Commands) {
     ));
     commands.spawn((
         Text::new(""),
-        TextFont { font_size: 38.0, ..default() },
+        TextFont {
+            font_size: 38.0,
+            ..default()
+        },
         TextColor(Color::WHITE),
         Node {
             position_type: PositionType::Absolute,
@@ -209,10 +221,11 @@ fn setup(mut commands: Commands) {
 
     // Combo guide
     commands.spawn((
-        Text::new(
-            "Combos:\n↑↑  Double Up\n↑→↓←  Spin\n←→←  Zigzag\n↓↓  Dive",
-        ),
-        TextFont { font_size: 18.0, ..default() },
+        Text::new("Combos:\n↑↑  Double Up\n↑→↓←  Spin\n←→←  Zigzag\n↓↓  Dive"),
+        TextFont {
+            font_size: 18.0,
+            ..default()
+        },
         TextColor(Color::srgb(0.6, 0.6, 0.6)),
         Node {
             position_type: PositionType::Absolute,
@@ -288,7 +301,12 @@ fn update_hud(
         KeyCode::ArrowRight => "→",
         _ => "?",
     };
-    let buf_str: String = buf.0.iter().map(|k| key_name(*k)).collect::<Vec<_>>().join(" ");
+    let buf_str: String = buf
+        .0
+        .iter()
+        .map(|k| key_name(*k))
+        .collect::<Vec<_>>()
+        .join(" ");
 
     for (mut text, mut color, label) in &mut query {
         match label {

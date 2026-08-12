@@ -33,7 +33,7 @@ pub fn time_string(hour: f32) -> String {
 /// `true` between 06:00 and 20:00.
 pub fn is_daytime(hour: f32) -> bool {
     let h = hour.rem_euclid(24.0);
-    h >= 6.0 && h < 20.0
+    (6.0..20.0).contains(&h)
 }
 
 /// Lerps sky colour from deep midnight blue → dawn orange → noon sky → dusk → midnight.
@@ -41,9 +41,9 @@ pub fn sky_color(hour: f32) -> Color {
     let h = hour.rem_euclid(24.0);
     // Keyframe colours
     let midnight = Color::from_rgb(0.03, 0.03, 0.12);
-    let dawn     = Color::from_rgb(0.85, 0.45, 0.15);
-    let noon     = Color::from_rgb(0.45, 0.72, 0.95);
-    let dusk     = Color::from_rgb(0.75, 0.35, 0.1);
+    let dawn = Color::from_rgb(0.85, 0.45, 0.15);
+    let noon = Color::from_rgb(0.45, 0.72, 0.95);
+    let dusk = Color::from_rgb(0.75, 0.35, 0.1);
 
     let (a, b, t) = if h < 6.0 {
         (midnight, dawn, h / 6.0)
@@ -71,13 +71,13 @@ pub fn lerp_color(a: Color, b: Color, t: f32) -> Color {
 pub fn time_period(hour: f32) -> &'static str {
     let h = hour.rem_euclid(24.0);
     match h as u32 {
-        0..=5   => "Night",
-        6..=8   => "Dawn",
-        9..=11  => "Morning",
+        0..=5 => "Night",
+        6..=8 => "Dawn",
+        9..=11 => "Morning",
         12..=13 => "Noon",
         14..=17 => "Afternoon",
         18..=19 => "Dusk",
-        _       => "Night",
+        _ => "Night",
     }
 }
 
@@ -95,7 +95,12 @@ pub struct GameClockDemo {
 #[godot_api]
 impl INode2D for GameClockDemo {
     fn init(base: Base<Node2D>) -> Self {
-        Self { hour: 6.0, speed: 60.0, paused: false, base }
+        Self {
+            hour: 6.0,
+            speed: 60.0,
+            paused: false,
+            base,
+        }
     }
 
     fn ready(&mut self) {
@@ -175,7 +180,9 @@ impl GameClockDemo {
         }
     }
 
-    pub fn get_hour(&self) -> f32 { self.hour }
+    pub fn get_hour(&self) -> f32 {
+        self.hour
+    }
 }
 
 // ── Tests ─────────────────────────────────────────────────────────────────────
@@ -236,7 +243,7 @@ mod tests {
     #[test]
     fn sky_color_varies_across_day() {
         let c_night = sky_color(2.0);
-        let c_noon  = sky_color(12.0);
+        let c_noon = sky_color(12.0);
         assert!((c_night.b - c_noon.b).abs() > 0.1);
     }
 

@@ -62,7 +62,11 @@ pub struct InventoryUiConfig {
 
 impl Default for InventoryUiConfig {
     fn default() -> Self {
-        Self { cols: COLS, rows: ROWS, cell: CELL }
+        Self {
+            cols: COLS,
+            rows: ROWS,
+            cell: CELL,
+        }
     }
 }
 
@@ -89,10 +93,16 @@ pub fn find_slot_at(cursor: Vec2) -> Option<(usize, usize)> {
         -(ROWS as f32 - 1.0) * CELL * 0.5 - CELL * 0.5 - 60.0,
     );
     let rel = cursor - origin;
-    if rel.x < 0.0 || rel.y < 0.0 { return None; }
+    if rel.x < 0.0 || rel.y < 0.0 {
+        return None;
+    }
     let col = (rel.x / CELL) as usize;
     let row = (rel.y / CELL) as usize;
-    if col < COLS && row < ROWS { Some((col, row)) } else { None }
+    if col < COLS && row < ROWS {
+        Some((col, row))
+    } else {
+        None
+    }
 }
 
 /// Returns the index of the first `None` slot, scanning row-major.
@@ -103,25 +113,31 @@ pub fn first_empty_slot(slots: &[Option<Item>]) -> Option<usize> {
 // ── Item ──────────────────────────────────────────────────────────────────────
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
-pub enum Item { Sword, Shield, Potion, Gem, Key }
+pub enum Item {
+    Sword,
+    Shield,
+    Potion,
+    Gem,
+    Key,
+}
 
 impl Item {
     pub fn color(self) -> Color {
         match self {
-            Item::Sword  => Color::srgb(0.7, 0.75, 0.95),
+            Item::Sword => Color::srgb(0.7, 0.75, 0.95),
             Item::Shield => Color::srgb(0.55, 0.45, 0.85),
             Item::Potion => Color::srgb(0.3, 0.9, 0.4),
-            Item::Gem    => Color::srgb(0.9, 0.3, 0.8),
-            Item::Key    => Color::srgb(1.0, 0.85, 0.2),
+            Item::Gem => Color::srgb(0.9, 0.3, 0.8),
+            Item::Key => Color::srgb(1.0, 0.85, 0.2),
         }
     }
     pub fn label(self) -> &'static str {
         match self {
-            Item::Sword  => "⚔",
+            Item::Sword => "⚔",
             Item::Shield => "🛡",
             Item::Potion => "⚗",
-            Item::Gem    => "💎",
-            Item::Key    => "🗝",
+            Item::Gem => "💎",
+            Item::Key => "🗝",
         }
     }
 }
@@ -165,7 +181,10 @@ fn setup(mut commands: Commands, grid: Res<ItemGrid>) {
 
     commands.spawn((
         Text::new("left-click: pick up / place   R: reset"),
-        TextFont { font_size: 15.0, ..default() },
+        TextFont {
+            font_size: 15.0,
+            ..default()
+        },
         TextColor(Color::srgb(0.55, 0.55, 0.55)),
         Node {
             position_type: PositionType::Absolute,
@@ -177,7 +196,10 @@ fn setup(mut commands: Commands, grid: Res<ItemGrid>) {
 
     commands.spawn((
         Text::new("Holding: nothing"),
-        TextFont { font_size: 16.0, ..default() },
+        TextFont {
+            font_size: 16.0,
+            ..default()
+        },
         TextColor(Color::srgb(0.9, 0.9, 0.6)),
         HeldLabel,
         Node {
@@ -192,22 +214,27 @@ fn setup(mut commands: Commands, grid: Res<ItemGrid>) {
         for col in 0..COLS {
             let pos = slot_world_pos(col, row);
             let item = grid.slots[row * COLS + col];
-            commands.spawn((
-                Sprite {
-                    color: slot_color(item, false),
-                    custom_size: Some(Vec2::splat(CELL - 4.0)),
-                    ..default()
-                },
-                Transform::from_xyz(pos.x, pos.y, 0.0),
-                SlotSprite(col, row),
-            )).with_children(|p| {
-                p.spawn((
-                    Text2d::new(item.map(|i| i.label()).unwrap_or("")),
-                    TextFont { font_size: 22.0, ..default() },
-                    TextColor(Color::WHITE),
-                    Transform::from_xyz(0.0, 0.0, 1.0),
-                ));
-            });
+            commands
+                .spawn((
+                    Sprite {
+                        color: slot_color(item, false),
+                        custom_size: Some(Vec2::splat(CELL - 4.0)),
+                        ..default()
+                    },
+                    Transform::from_xyz(pos.x, pos.y, 0.0),
+                    SlotSprite(col, row),
+                ))
+                .with_children(|p| {
+                    p.spawn((
+                        Text2d::new(item.map(|i| i.label()).unwrap_or("")),
+                        TextFont {
+                            font_size: 22.0,
+                            ..default()
+                        },
+                        TextColor(Color::WHITE),
+                        Transform::from_xyz(0.0, 0.0, 1.0),
+                    ));
+                });
         }
     }
 }
@@ -218,11 +245,15 @@ fn slot_color(item: Option<Item>, hovered: bool) -> Color {
     } else {
         Color::srgb(0.18, 0.18, 0.22)
     };
-    if hovered { Color::srgb(
-        (base.to_linear().red + 0.2).min(1.0),
-        (base.to_linear().green + 0.2).min(1.0),
-        (base.to_linear().blue + 0.2).min(1.0),
-    )} else { base }
+    if hovered {
+        Color::srgb(
+            (base.to_linear().red + 0.2).min(1.0),
+            (base.to_linear().green + 0.2).min(1.0),
+            (base.to_linear().blue + 0.2).min(1.0),
+        )
+    } else {
+        base
+    }
 }
 
 fn handle_click(
@@ -238,14 +269,24 @@ fn handle_click(
         held.0 = None;
         return;
     }
-    if !buttons.just_pressed(MouseButton::Left) { return; }
+    if !buttons.just_pressed(MouseButton::Left) {
+        return;
+    }
 
-    let Ok((camera, cam_tf)) = camera_q.single() else { return };
+    let Ok((camera, cam_tf)) = camera_q.single() else {
+        return;
+    };
     let Ok(window) = windows.single() else { return };
-    let Some(cursor) = window.cursor_position() else { return };
-    let Ok(world) = camera.viewport_to_world_2d(cam_tf, cursor) else { return };
+    let Some(cursor) = window.cursor_position() else {
+        return;
+    };
+    let Ok(world) = camera.viewport_to_world_2d(cam_tf, cursor) else {
+        return;
+    };
 
-    let Some((col, row)) = find_slot_at(world) else { return };
+    let Some((col, row)) = find_slot_at(world) else {
+        return;
+    };
     let idx = row * COLS + col;
 
     match (held.0, grid.slots[idx]) {
@@ -275,7 +316,9 @@ fn sync_display(
     mut texts: Query<&mut Text2d>,
     mut held_label: Query<&mut Text, With<HeldLabel>>,
 ) {
-    if !grid.is_changed() && !held.is_changed() { return; }
+    if !grid.is_changed() && !held.is_changed() {
+        return;
+    }
 
     for (ss, mut sprite, children) in &mut slots {
         let item = grid.slots[ss.1 * COLS + ss.0];
@@ -290,7 +333,7 @@ fn sync_display(
     if let Ok(mut t) = held_label.single_mut() {
         *t = Text::new(match held.0 {
             Some(item) => format!("Holding: {}", item.label()),
-            None       => "Holding: nothing".to_string(),
+            None => "Holding: nothing".to_string(),
         });
     }
 }

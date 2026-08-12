@@ -63,7 +63,9 @@ pub struct TimeScaleConfig {
 
 impl Default for TimeScaleConfig {
     fn default() -> Self {
-        Self { speeds: [0.25, 0.5, 1.0, 2.0] }
+        Self {
+            speeds: [0.25, 0.5, 1.0, 2.0],
+        }
     }
 }
 
@@ -94,21 +96,36 @@ fn setup(mut commands: Commands) {
     ];
     for (radius, angular_speed, color) in configs {
         commands.spawn((
-            Sprite { color, custom_size: Some(Vec2::splat(24.0)), ..default() },
+            Sprite {
+                color,
+                custom_size: Some(Vec2::splat(24.0)),
+                ..default()
+            },
             Transform::from_translation(Vec3::new(radius, 0.0, 0.0)),
-            Orbiter { radius, angle: 0.0, angular_speed },
+            Orbiter {
+                radius,
+                angle: 0.0,
+                angular_speed,
+            },
         ));
     }
 
     // Central reference dot.
     commands.spawn((
-        Sprite { color: Color::WHITE, custom_size: Some(Vec2::splat(10.0)), ..default() },
+        Sprite {
+            color: Color::WHITE,
+            custom_size: Some(Vec2::splat(10.0)),
+            ..default()
+        },
         Transform::default(),
     ));
 
     commands.spawn((
         Text::new("Speed: 1.00×  [running]"),
-        TextFont { font_size: 22.0, ..default() },
+        TextFont {
+            font_size: 22.0,
+            ..default()
+        },
         TextColor(Color::WHITE),
         Node {
             position_type: PositionType::Absolute,
@@ -121,7 +138,10 @@ fn setup(mut commands: Commands) {
 
     commands.spawn((
         Text::new("1 = 0.25×   2 = 0.5×   3 = 1×   4 = 2×   SPACE = pause"),
-        TextFont { font_size: 18.0, ..default() },
+        TextFont {
+            font_size: 18.0,
+            ..default()
+        },
         TextColor(Color::srgba(1.0, 1.0, 1.0, 0.7)),
         Node {
             position_type: PositionType::Absolute,
@@ -169,12 +189,15 @@ fn orbit_system(time: Res<Time>, mut query: Query<(&mut Transform, &mut Orbiter)
 }
 
 /// Keeps the HUD label in sync with the current virtual time state.
-fn update_hud(
-    virtual_time: Res<Time<Virtual>>,
-    mut query: Query<&mut Text, With<SpeedLabel>>,
-) {
-    let Ok(mut text) = query.single_mut() else { return };
-    let status = if virtual_time.is_paused() { "paused" } else { "running" };
+fn update_hud(virtual_time: Res<Time<Virtual>>, mut query: Query<&mut Text, With<SpeedLabel>>) {
+    let Ok(mut text) = query.single_mut() else {
+        return;
+    };
+    let status = if virtual_time.is_paused() {
+        "paused"
+    } else {
+        "running"
+    };
     text.0 = format!("Speed: {:.2}×  [{}]", virtual_time.relative_speed(), status);
 }
 
@@ -200,7 +223,11 @@ mod tests {
 
     #[test]
     fn orbit_angle_advances_with_time() {
-        let mut orbiter = Orbiter { radius: 100.0, angle: 0.0, angular_speed: 1.0 };
+        let mut orbiter = Orbiter {
+            radius: 100.0,
+            angle: 0.0,
+            angular_speed: 1.0,
+        };
         let dt = 0.5_f32;
         orbiter.angle += orbiter.angular_speed * dt;
         assert!((orbiter.angle - 0.5).abs() < 1e-5);

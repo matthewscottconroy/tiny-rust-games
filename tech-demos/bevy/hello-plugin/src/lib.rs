@@ -79,7 +79,11 @@ mod tests {
         app.update();
 
         let mut q = app.world_mut().query::<(&Person, &Name)>();
-        assert_eq!(q.iter(app.world()).count(), 3, "each person should have a Name");
+        assert_eq!(
+            q.iter(app.world()).count(),
+            3,
+            "each person should have a Name"
+        );
     }
 
     #[test]

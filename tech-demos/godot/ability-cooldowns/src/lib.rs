@@ -33,6 +33,19 @@ pub struct Ability {
     pub active: bool,
 }
 
+/// The three abilities the demo registers on startup.
+///
+/// Hand-aligned into columns so the abilities read as a table; `rustfmt` is told
+/// to leave it alone.
+#[rustfmt::skip]
+pub fn default_abilities() -> Vec<Ability> {
+    vec![
+        Ability { name: "Fireball".into(), cooldown: 3.0, remaining: 0.0, active: false },
+        Ability { name: "Shield".into(),   cooldown: 5.0, remaining: 0.0, active: false },
+        Ability { name: "Dash".into(),     cooldown: 1.0, remaining: 0.0, active: false },
+    ]
+}
+
 // ─── Pure functions ───────────────────────────────────────────────────────────
 
 /// Advances the cooldown timer by `delta`, clamping at 0.
@@ -116,17 +129,16 @@ pub struct AbilityManager {
 impl INode for AbilityManager {
     fn init(base: Base<Node>) -> Self {
         Self {
-            abilities: vec![
-                Ability { name: "Fireball".into(), cooldown: 3.0, remaining: 0.0, active: false },
-                Ability { name: "Shield".into(),   cooldown: 5.0, remaining: 0.0, active: false },
-                Ability { name: "Dash".into(),     cooldown: 1.0, remaining: 0.0, active: false },
-            ],
+            abilities: default_abilities(),
             base,
         }
     }
 
     fn ready(&mut self) {
-        godot_print!("[AbilityManager] Ready — {} abilities registered.", self.abilities.len());
+        godot_print!(
+            "[AbilityManager] Ready — {} abilities registered.",
+            self.abilities.len()
+        );
     }
 
     fn process(&mut self, delta: f64) {

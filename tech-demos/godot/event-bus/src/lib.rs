@@ -111,15 +111,15 @@ impl INode for EventListener {
 
     fn ready(&mut self) {
         // Connect to the EventBus signals if the bus is present in the tree.
-        if let Some(bus_node) = self.base().get_node_or_null("/root/EventBus") {
-            if let Ok(mut bus) = bus_node.try_cast::<EventBus>() {
-                let on_died = self.base().callable("on_player_died");
-                let on_item = self.base().callable("on_item_collected");
-                let on_level = self.base().callable("on_level_completed");
-                bus.connect("player_died", &on_died);
-                bus.connect("item_collected", &on_item);
-                bus.connect("level_completed", &on_level);
-            }
+        if let Some(bus_node) = self.base().get_node_or_null("/root/EventBus")
+            && let Ok(mut bus) = bus_node.try_cast::<EventBus>()
+        {
+            let on_died = self.base().callable("on_player_died");
+            let on_item = self.base().callable("on_item_collected");
+            let on_level = self.base().callable("on_level_completed");
+            bus.connect("player_died", &on_died);
+            bus.connect("item_collected", &on_item);
+            bus.connect("level_completed", &on_level);
         }
     }
 }

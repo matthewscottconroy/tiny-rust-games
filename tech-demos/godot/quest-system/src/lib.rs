@@ -115,10 +115,7 @@ impl INode for QuestManager {
                 progress: 0,
             },
         ];
-        Self {
-            quests,
-            base,
-        }
+        Self { quests, base }
     }
 
     fn ready(&mut self) {
@@ -132,12 +129,12 @@ impl QuestManager {
     #[func]
     pub fn start_quest(&mut self, id: i32) -> bool {
         let uid = id as u32;
-        if let Some(q) = self.quests.iter_mut().find(|q| q.id == uid) {
-            if can_start(status_to_u8(q.status)) {
-                q.status = QuestStatus::Active;
-                self.refresh_label();
-                return true;
-            }
+        if let Some(q) = self.quests.iter_mut().find(|q| q.id == uid)
+            && can_start(status_to_u8(q.status))
+        {
+            q.status = QuestStatus::Active;
+            self.refresh_label();
+            return true;
         }
         false
     }
@@ -147,15 +144,15 @@ impl QuestManager {
     #[func]
     pub fn advance_quest(&mut self, id: i32, amount: i32) {
         let uid = id as u32;
-        if let Some(q) = self.quests.iter_mut().find(|q| q.id == uid) {
-            if q.status == QuestStatus::Active {
-                q.progress = q.progress.saturating_add(amount.max(0) as u32);
-                if q.progress >= q.objective_count {
-                    q.progress = q.objective_count;
-                    q.status = QuestStatus::Completed;
-                }
-                self.refresh_label();
+        if let Some(q) = self.quests.iter_mut().find(|q| q.id == uid)
+            && q.status == QuestStatus::Active
+        {
+            q.progress = q.progress.saturating_add(amount.max(0) as u32);
+            if q.progress >= q.objective_count {
+                q.progress = q.objective_count;
+                q.status = QuestStatus::Completed;
             }
+            self.refresh_label();
         }
     }
 
@@ -163,11 +160,11 @@ impl QuestManager {
     #[func]
     pub fn fail_quest(&mut self, id: i32) {
         let uid = id as u32;
-        if let Some(q) = self.quests.iter_mut().find(|q| q.id == uid) {
-            if q.status == QuestStatus::Active {
-                q.status = QuestStatus::Failed;
-                self.refresh_label();
-            }
+        if let Some(q) = self.quests.iter_mut().find(|q| q.id == uid)
+            && q.status == QuestStatus::Active
+        {
+            q.status = QuestStatus::Failed;
+            self.refresh_label();
         }
     }
 
@@ -184,11 +181,11 @@ impl QuestManager {
     #[func]
     pub fn unlock_quest(&mut self, id: i32) {
         let uid = id as u32;
-        if let Some(q) = self.quests.iter_mut().find(|q| q.id == uid) {
-            if q.status == QuestStatus::Locked {
-                q.status = QuestStatus::Available;
-                self.refresh_label();
-            }
+        if let Some(q) = self.quests.iter_mut().find(|q| q.id == uid)
+            && q.status == QuestStatus::Locked
+        {
+            q.status = QuestStatus::Available;
+            self.refresh_label();
         }
     }
 
@@ -207,10 +204,10 @@ impl QuestManager {
         } else {
             lines.join("\n")
         };
-        if let Some(node) = self.base().get_node_or_null("Label") {
-            if let Ok(mut label) = node.try_cast::<Label>() {
-                label.set_text(text.as_str());
-            }
+        if let Some(node) = self.base().get_node_or_null("Label")
+            && let Ok(mut label) = node.try_cast::<Label>()
+        {
+            label.set_text(text.as_str());
         }
     }
 }
@@ -257,7 +254,7 @@ mod tests {
     #[test]
     fn can_start_only_available() {
         assert!(!can_start(0)); // Locked
-        assert!(can_start(1));  // Available
+        assert!(can_start(1)); // Available
         assert!(!can_start(2)); // Active
         assert!(!can_start(3)); // Completed
         assert!(!can_start(4)); // Failed
@@ -274,7 +271,10 @@ mod tests {
         ];
         for s in statuses {
             let v = status_to_u8(s);
-            assert_eq!(status_label(v), format!("{:?}", s).as_str().split("::").last().unwrap());
+            assert_eq!(
+                status_label(v),
+                format!("{:?}", s).as_str().split("::").last().unwrap()
+            );
         }
     }
 

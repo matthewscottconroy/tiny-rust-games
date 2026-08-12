@@ -59,7 +59,11 @@ pub struct DragAndDropConfig {
 
 impl Default for DragAndDropConfig {
     fn default() -> Self {
-        Self { square_size: 60.0, grid_size: 20.0, drag_z: 1.0 }
+        Self {
+            square_size: 60.0,
+            grid_size: 20.0,
+            drag_z: 1.0,
+        }
     }
 }
 
@@ -241,13 +245,13 @@ fn end_drag(
     if !mouse.just_released(MouseButton::Left) {
         return;
     }
-    if let Some(entity) = drag_state.dragging.take() {
-        if let Ok(mut transform) = transforms.get_mut(entity) {
-            let snapped = snap_to_grid(transform.translation.truncate(), config.grid_size);
-            transform.translation.x = snapped.x;
-            transform.translation.y = snapped.y;
-            transform.translation.z = 0.0;
-        }
+    if let Some(entity) = drag_state.dragging.take()
+        && let Ok(mut transform) = transforms.get_mut(entity)
+    {
+        let snapped = snap_to_grid(transform.translation.truncate(), config.grid_size);
+        transform.translation.x = snapped.x;
+        transform.translation.y = snapped.y;
+        transform.translation.z = 0.0;
     }
 }
 
@@ -261,11 +265,7 @@ mod tests {
 
     #[test]
     fn point_in_box_center() {
-        assert!(point_in_box(
-            Vec2::ZERO,
-            Vec2::ZERO,
-            Vec2::splat(30.0)
-        ));
+        assert!(point_in_box(Vec2::ZERO, Vec2::ZERO, Vec2::splat(30.0)));
     }
 
     #[test]

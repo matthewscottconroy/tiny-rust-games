@@ -46,7 +46,13 @@ impl Plugin for NotificationSystemPlugin {
             .add_systems(Startup, setup)
             .add_systems(
                 Update,
-                (handle_input, spawn_toasts, tick_notifications, layout_notifications).chain(),
+                (
+                    handle_input,
+                    spawn_toasts,
+                    tick_notifications,
+                    layout_notifications,
+                )
+                    .chain(),
             );
     }
 }
@@ -137,7 +143,10 @@ fn setup(mut commands: Commands) {
 
     commands.spawn((
         Text::new("1 = info   2 = warning   3 = error   SPACE = generic"),
-        TextFont { font_size: 15.0, ..default() },
+        TextFont {
+            font_size: 15.0,
+            ..default()
+        },
         TextColor(Color::srgb(0.55, 0.55, 0.55)),
         Node {
             position_type: PositionType::Absolute,
@@ -194,12 +203,18 @@ fn spawn_toasts(
                     ..default()
                 },
                 BackgroundColor(Color::srgba(0.1, 0.1, 0.15, 0.92)),
-                Notification { elapsed: 0.0, lifetime: config.lifetime },
+                Notification {
+                    elapsed: 0.0,
+                    lifetime: config.lifetime,
+                },
             ))
             .with_children(|parent| {
                 parent.spawn((
                     Text::new(msg.text.clone()),
-                    TextFont { font_size: 14.0, ..default() },
+                    TextFont {
+                        font_size: 14.0,
+                        ..default()
+                    },
                     TextColor(msg.color),
                     NotificationText,
                 ));

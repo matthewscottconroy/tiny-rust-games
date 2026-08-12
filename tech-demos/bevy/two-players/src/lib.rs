@@ -56,8 +56,15 @@ impl Default for TwoPlayersConfig {
 
 /// Returns a normalized movement direction from four boolean key states.
 pub fn input_dir(up: bool, down: bool, left: bool, right: bool) -> Vec2 {
-    let raw = Vec2::new(right as i8 as f32 - left as i8 as f32, up as i8 as f32 - down as i8 as f32);
-    if raw != Vec2::ZERO { raw.normalize() } else { Vec2::ZERO }
+    let raw = Vec2::new(
+        right as i8 as f32 - left as i8 as f32,
+        up as i8 as f32 - down as i8 as f32,
+    );
+    if raw != Vec2::ZERO {
+        raw.normalize()
+    } else {
+        Vec2::ZERO
+    }
 }
 
 /// Returns the per-frame translation delta given a unit direction, speed, and timestep.
@@ -80,13 +87,19 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
     let texture: Handle<Image> = asset_server.load("sprite.png");
 
     commands.spawn((
-        Sprite { image: texture.clone(), ..default() },
+        Sprite {
+            image: texture.clone(),
+            ..default()
+        },
         Transform::from_xyz(-100.0, 0.0, 0.0),
         Player1,
     ));
 
     commands.spawn((
-        Sprite { image: texture, ..default() },
+        Sprite {
+            image: texture,
+            ..default()
+        },
         Transform::from_xyz(100.0, 0.0, 0.0),
         Player2,
     ));

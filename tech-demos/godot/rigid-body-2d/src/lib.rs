@@ -9,7 +9,7 @@
 //! - Displaying the current speed on a `Label` child node.
 //! - Exposing a `apply_explosion_impulse` func for external triggering.
 
-use godot::classes::{Input, IRigidBody2D, Label, RigidBody2D};
+use godot::classes::{IRigidBody2D, Input, Label, RigidBody2D};
 use godot::prelude::*;
 
 // ─── Extension entry point ───────────────────────────────────────────────────
@@ -78,13 +78,27 @@ pub fn speed_label(speed: f32) -> String {
 /// assert_eq!(fx, 0.0);
 /// assert_eq!(fy, 0.0);
 /// ```
-pub fn impulse_from_input(up: bool, down: bool, left: bool, right: bool, strength: f32) -> (f32, f32) {
+pub fn impulse_from_input(
+    up: bool,
+    down: bool,
+    left: bool,
+    right: bool,
+    strength: f32,
+) -> (f32, f32) {
     let mut fx = 0.0f32;
     let mut fy = 0.0f32;
-    if up    { fy -= strength; }
-    if down  { fy += strength; }
-    if left  { fx -= strength; }
-    if right { fx += strength; }
+    if up {
+        fy -= strength;
+    }
+    if down {
+        fy += strength;
+    }
+    if left {
+        fx -= strength;
+    }
+    if right {
+        fx += strength;
+    }
     (fx, fy)
 }
 
@@ -129,9 +143,9 @@ impl IRigidBody2D for PhysicsBody {
     fn physics_process(&mut self, delta: f64) {
         let input = Input::singleton();
 
-        let up    = input.is_action_pressed("ui_up");
-        let down  = input.is_action_pressed("ui_down");
-        let left  = input.is_action_pressed("ui_left");
+        let up = input.is_action_pressed("ui_up");
+        let down = input.is_action_pressed("ui_down");
+        let left = input.is_action_pressed("ui_left");
         let right = input.is_action_pressed("ui_right");
 
         let strength = self.impulse_strength;

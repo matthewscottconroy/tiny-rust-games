@@ -56,7 +56,10 @@ pub struct HudConfig {
 
 impl Default for HudConfig {
     fn default() -> Self {
-        Self { score_per_press: 10, damage_per_press: 10.0 }
+        Self {
+            score_per_press: 10,
+            damage_per_press: 10.0,
+        }
     }
 }
 
@@ -77,7 +80,10 @@ pub struct PlayerHealth {
 
 impl Default for PlayerHealth {
     fn default() -> Self {
-        Self { current: 100.0, max: 100.0 }
+        Self {
+            current: 100.0,
+            max: 100.0,
+        }
     }
 }
 
@@ -108,7 +114,10 @@ fn setup(mut commands: Commands) {
 
     commands.spawn((
         Text::new("Score: 0"),
-        TextFont { font_size: 28.0, ..default() },
+        TextFont {
+            font_size: 28.0,
+            ..default()
+        },
         TextColor(Color::WHITE),
         Node {
             position_type: PositionType::Absolute,
@@ -121,7 +130,10 @@ fn setup(mut commands: Commands) {
 
     commands.spawn((
         Text::new("Health"),
-        TextFont { font_size: 18.0, ..default() },
+        TextFont {
+            font_size: 18.0,
+            ..default()
+        },
         TextColor(Color::srgb(0.9, 0.9, 0.9)),
         Node {
             position_type: PositionType::Absolute,
@@ -157,7 +169,10 @@ fn setup(mut commands: Commands) {
 
     commands.spawn((
         Text::new("SPACE = +10 score    D = -10 health"),
-        TextFont { font_size: 14.0, ..default() },
+        TextFont {
+            font_size: 14.0,
+            ..default()
+        },
         TextColor(Color::srgb(0.7, 0.7, 0.7)),
         Node {
             position_type: PositionType::Absolute,
@@ -187,7 +202,9 @@ fn handle_input(
 
 /// Rewrites the score label when [`Score`] changes.
 fn update_score_text(score: Res<Score>, mut query: Query<&mut Text, With<ScoreText>>) {
-    if !score.is_changed() { return; }
+    if !score.is_changed() {
+        return;
+    }
     for mut text in &mut query {
         *text = Text::new(format!("Score: {}", score.0));
     }
@@ -198,7 +215,9 @@ fn update_health_bar(
     health: Res<PlayerHealth>,
     mut fill_query: Query<&mut Node, With<HealthFill>>,
 ) {
-    if !health.is_changed() { return; }
+    if !health.is_changed() {
+        return;
+    }
     let pct = (health.current / health.max * 100.0).clamp(0.0, 100.0);
     for mut node in &mut fill_query {
         node.width = Val::Percent(pct);

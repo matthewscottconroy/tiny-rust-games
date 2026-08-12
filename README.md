@@ -17,9 +17,30 @@ The purpose of this repository is to hold example implementations of some very s
 | [`tech-demos/brackets/`](tech-demos/brackets/) | A [bracket-lib](https://github.com/amethyst/bracket-lib) mouse-control demo. |
 | [`tic-tac-toe/`](tic-tac-toe/) | The reference "well-known game": an engine-agnostic `tic-tac-toe-lib` core with `-cli` and `-brackets` front-ends (goal #4 in practice). |
 
-Every demo ships module-level rustdoc and a `#[cfg(test)]` test module. Continuous
-integration builds and tests all demos on each push — see
-[`.github/workflows/ci.yml`](.github/workflows/ci.yml).
+Every demo ships module-level rustdoc, and every demo with logic to exercise
+ships a `#[cfg(test)]` test module — the exceptions are the two pure-wiring Bevy
+demos (`draw-window`, `audio`), which contain nothing but engine setup.
+
+Each engine directory documents the shape its demos share:
+[Bevy](tech-demos/bevy/DEMO_ANATOMY.md) and
+[Godot](tech-demos/godot/DEMO_ANATOMY.md). Read the relevant one before adding a
+demo.
+
+Per-demo `README.md` files are reserved for demos whose architecture is not
+obvious from the source; everything else is covered by the engine's demo index
+plus the module rustdoc.
+
+## Continuous integration
+
+[`.github/workflows/ci.yml`](.github/workflows/ci.yml) runs on every push and
+pull request. It enforces, across every crate:
+
+- `cargo fmt --check` — deliberately hand-aligned data tables opt out with
+  `#[rustfmt::skip]`;
+- `cargo clippy --all-targets -- -D warnings`;
+- `cargo test`;
+- `--locked`, so the committed `Cargo.lock` files are verified rather than
+  silently updated.
 
 ## Building
 
@@ -29,7 +50,28 @@ cd tech-demos/bevy && cargo run -p hello-world
 
 # Godot demos (standalone crates; Godot 4.3+ needed only to *run* them):
 cd tech-demos/godot/hello-world && cargo build
+
+# Tic-tac-toe in the terminal:
+cd tic-tac-toe/tic-tac-toe-cli && cargo run
 ```
 
-Building the Bevy demos on Linux needs the ALSA and udev headers:
-`sudo apt-get install -y libasound2-dev libudev-dev`.
+### Linux prerequisites
+
+The Bevy and bracket-lib demos link against ALSA and udev (audio and gamepad
+input) and, through `winit`, against wayland and xkbcommon. The Godot demos need
+none of these — gdext bundles its own bindings.
+
+```bash
+# Debian / Ubuntu
+sudo apt-get install -y libasound2-dev libudev-dev libwayland-dev libxkbcommon-dev
+
+# Fedora
+sudo dnf install -y alsa-lib-devel systemd-devel wayland-devel libxkbcommon-devel
+```
+
+Missing wayland headers surface as a `wayland-sys` build-script panic reading
+`Package 'wayland-client' was not found`, which is easy to mistake for a Rust
+problem.
+
+If a bracket-lib demo fails while building its transitive `expat-sys`
+dependency under CMake ≥ 4.0, build with `CMAKE_POLICY_VERSION_MINIMUM=3.5`.

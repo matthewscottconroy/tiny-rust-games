@@ -42,14 +42,26 @@ pub struct AbilityCooldownsPlugin;
 impl Plugin for AbilityCooldownsPlugin {
     fn build(&self, app: &mut App) {
         app.init_resource::<AbilityCooldownsConfig>()
-            .insert_resource(Abilities([
-                Ability { name: "Dash",   cooldown_max: 1.0, cooldown_remaining: 0.0, color: Color::srgb(0.3, 0.8, 1.0), key_label: "Q" },
-                Ability { name: "Shield", cooldown_max: 3.0, cooldown_remaining: 0.0, color: Color::srgb(0.4, 1.0, 0.4), key_label: "W" },
-                Ability { name: "Nova",   cooldown_max: 8.0, cooldown_remaining: 0.0, color: Color::srgb(1.0, 0.6, 0.2), key_label: "E" },
-            ]))
+            .insert_resource(Abilities(default_abilities()))
             .add_systems(Startup, setup)
-            .add_systems(Update, (tick_cooldowns, handle_input, update_ui, tick_flashes).chain());
+            .add_systems(
+                Update,
+                (tick_cooldowns, handle_input, update_ui, tick_flashes).chain(),
+            );
     }
+}
+
+/// The three abilities the demo starts with, ordered as they appear in the HUD.
+///
+/// Hand-aligned into columns so the abilities read as a table; `rustfmt` is told
+/// to leave it alone.
+#[rustfmt::skip]
+pub fn default_abilities() -> [Ability; 3] {
+    [
+        Ability { name: "Dash",   cooldown_max: 1.0, cooldown_remaining: 0.0, color: Color::srgb(0.3, 0.8, 1.0), key_label: "Q" },
+        Ability { name: "Shield", cooldown_max: 3.0, cooldown_remaining: 0.0, color: Color::srgb(0.4, 1.0, 0.4), key_label: "W" },
+        Ability { name: "Nova",   cooldown_max: 8.0, cooldown_remaining: 0.0, color: Color::srgb(1.0, 0.6, 0.2), key_label: "E" },
+    ]
 }
 
 // ── Configuration ─────────────────────────────────────────────────────────────
@@ -111,11 +123,15 @@ pub struct Ability {
 }
 
 /// True when the ability has finished charging.
-pub fn is_ready(a: &Ability) -> bool { a.cooldown_remaining <= 0.0 }
+pub fn is_ready(a: &Ability) -> bool {
+    a.cooldown_remaining <= 0.0
+}
 
 /// Charge fraction: 0.0 = just used, 1.0 = fully charged.
 pub fn cooldown_fraction(a: &Ability) -> f32 {
-    if a.cooldown_max <= 0.0 { return 1.0; }
+    if a.cooldown_max <= 0.0 {
+        return 1.0;
+    }
     1.0 - (a.cooldown_remaining / a.cooldown_max).clamp(0.0, 1.0)
 }
 
@@ -126,7 +142,9 @@ pub fn tick_ability(a: &mut Ability, dt: f32) {
 
 /// Attempt to use the ability. Returns `true` and starts the cooldown if ready.
 pub fn use_ability(a: &mut Ability) -> bool {
-    if !is_ready(a) { return false; }
+    if !is_ready(a) {
+        return false;
+    }
     a.cooldown_remaining = a.cooldown_max;
     true
 }
@@ -137,9 +155,10 @@ pub fn use_ability(a: &mut Ability) -> bool {
 #[derive(Resource)]
 pub struct Abilities(pub [Ability; 3]);
 
-/// Marker on the ability UI slot entity (indexes match [`Abilities`]).
+/// Marker on the ability UI slot panel. The slot's index lives on its
+/// [`FillBar`] child, which is the part that actually animates.
 #[derive(Component)]
-struct AbilitySlot(usize);
+struct AbilitySlot;
 
 /// Inner fill bar for each slot.
 #[derive(Component)]
@@ -147,7 +166,10 @@ struct FillBar(usize);
 
 /// Flash overlay shown when an ability fires.
 #[derive(Component)]
-struct FlashOverlay { timer: f32, ability: usize }
+struct FlashOverlay {
+    timer: f32,
+    ability: usize,
+}
 
 /// Player sprite used for the ability flash effect.
 #[derive(Component)]
@@ -159,7 +181,11 @@ fn setup(mut commands: Commands, abilities: Res<Abilities>, config: Res<AbilityC
     // Player sprite centre stage.
     commands.spawn((
         Player,
-        Sprite { color: config.player_color, custom_size: Some(Vec2::splat(36.0)), ..default() },
+        Sprite {
+            color: config.player_color,
+            custom_size: Some(Vec2::splat(36.0)),
+            ..default()
+        },
         Transform::from_translation(Vec3::new(0.0, 60.0, 1.0)),
     ));
 
@@ -170,29 +196,47 @@ fn setup(mut commands: Commands, abilities: Res<Abilities>, config: Res<AbilityC
 
         // Background panel.
         commands.spawn((
-            AbilitySlot(i),
-            Sprite { color: Color::srgb(0.15, 0.15, 0.18), custom_size: Some(Vec2::new(config.slot_w, config.slot_h)), ..default() },
+            AbilitySlot,
+            Sprite {
+                color: Color::srgb(0.15, 0.15, 0.18),
+                custom_size: Some(Vec2::new(config.slot_w, config.slot_h)),
+                ..default()
+            },
             Transform::from_translation(Vec3::new(x, config.slot_y, 0.0)),
         ));
 
         // Fill bar (width driven by cooldown_fraction).
         commands.spawn((
             FillBar(i),
-            Sprite { color: ability.color, custom_size: Some(Vec2::new(config.slot_w - 4.0, config.slot_h - 4.0)), ..default() },
+            Sprite {
+                color: ability.color,
+                custom_size: Some(Vec2::new(config.slot_w - 4.0, config.slot_h - 4.0)),
+                ..default()
+            },
             Transform::from_translation(Vec3::new(x, config.slot_y, 0.5)),
         ));
     }
 
     commands.spawn((
         Text::new("Q — Dash (1s)   W — Shield (3s)   E — Nova (8s)"),
-        TextFont { font_size: 14.0, ..default() },
+        TextFont {
+            font_size: 14.0,
+            ..default()
+        },
         TextColor(Color::srgba(1.0, 1.0, 1.0, 0.55)),
-        Node { position_type: PositionType::Absolute, bottom: Val::Px(10.0), left: Val::Px(10.0), ..default() },
+        Node {
+            position_type: PositionType::Absolute,
+            bottom: Val::Px(10.0),
+            left: Val::Px(10.0),
+            ..default()
+        },
     ));
 }
 
 fn tick_cooldowns(time: Res<Time>, mut abilities: ResMut<Abilities>) {
-    for a in &mut abilities.0 { tick_ability(a, time.delta_secs()); }
+    for a in &mut abilities.0 {
+        tick_ability(a, time.delta_secs());
+    }
 }
 
 fn handle_input(
@@ -202,10 +246,15 @@ fn handle_input(
     player_q: Query<Entity, With<Player>>,
 ) {
     let keys_map = [KeyCode::KeyQ, KeyCode::KeyW, KeyCode::KeyE];
-    let Ok(player_e) = player_q.single() else { return };
+    let Ok(player_e) = player_q.single() else {
+        return;
+    };
     for (i, &key) in keys_map.iter().enumerate() {
         if keys.just_pressed(key) && use_ability(&mut abilities.0[i]) {
-            commands.entity(player_e).insert(FlashOverlay { timer: 0.18, ability: i });
+            commands.entity(player_e).insert(FlashOverlay {
+                timer: 0.18,
+                ability: i,
+            });
         }
     }
 }
@@ -240,7 +289,9 @@ fn tick_flashes(
     config: Res<AbilityCooldownsConfig>,
     mut q: Query<(Entity, &mut FlashOverlay, &mut Sprite), With<Player>>,
 ) {
-    let Ok((entity, mut flash, mut sprite)) = q.single_mut() else { return };
+    let Ok((entity, mut flash, mut sprite)) = q.single_mut() else {
+        return;
+    };
     flash.timer -= time.delta_secs();
     if flash.timer <= 0.0 {
         sprite.color = config.player_color;
@@ -257,7 +308,13 @@ mod tests {
     use super::*;
 
     fn ability(max: f32, remaining: f32) -> Ability {
-        Ability { name: "Test", cooldown_max: max, cooldown_remaining: remaining, color: Color::WHITE, key_label: "X" }
+        Ability {
+            name: "Test",
+            cooldown_max: max,
+            cooldown_remaining: remaining,
+            color: Color::WHITE,
+            key_label: "X",
+        }
     }
 
     #[test]

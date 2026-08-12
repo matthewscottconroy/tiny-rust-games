@@ -25,7 +25,9 @@ unsafe impl ExtensionLibrary for LineTrailExt {}
 /// Alpha for trail point `index` (0 = oldest), given `total` points.
 /// Oldest point fades to 0; newest is fully opaque.
 pub fn trail_alpha(index: usize, total: usize) -> f32 {
-    if total <= 1 { return 1.0; }
+    if total <= 1 {
+        return 1.0;
+    }
     index as f32 / (total - 1) as f32
 }
 
@@ -40,14 +42,21 @@ pub fn trim_trail(points: &mut Vec<Vector2>, max_len: usize) {
 /// `true` when the new position is far enough from the last recorded point
 /// to be worth appending (avoids redundant micro-updates).
 pub fn should_append(points: &[Vector2], new_pos: Vector2, min_dist: f32) -> bool {
-    points.last().map_or(true, |last| last.distance_to(new_pos) >= min_dist)
+    points
+        .last()
+        .is_none_or(|last| last.distance_to(new_pos) >= min_dist)
 }
 
 // ── TrailDemo — root Node2D ───────────────────────────────────────────────────
 
 const MAX_TRAIL: usize = 80;
 const PLAYER_SPEED: f32 = 180.0;
-const TRAIL_COLOR: Color = Color { r: 0.4, g: 0.8, b: 1.0, a: 1.0 };
+const TRAIL_COLOR: Color = Color {
+    r: 0.4,
+    g: 0.8,
+    b: 1.0,
+    a: 1.0,
+};
 
 #[derive(GodotClass)]
 #[class(base=Node2D)]
@@ -59,7 +68,10 @@ pub struct TrailDemo {
 #[godot_api]
 impl INode2D for TrailDemo {
     fn init(base: Base<Node2D>) -> Self {
-        Self { trail_points: Vec::new(), base }
+        Self {
+            trail_points: Vec::new(),
+            base,
+        }
     }
 
     fn ready(&mut self) {
@@ -83,10 +95,18 @@ impl INode2D for TrailDemo {
         let input = Input::singleton();
 
         let mut dir = Vector2::ZERO;
-        if input.is_action_pressed("ui_right") { dir.x += 1.0; }
-        if input.is_action_pressed("ui_left")  { dir.x -= 1.0; }
-        if input.is_action_pressed("ui_down")  { dir.y += 1.0; }
-        if input.is_action_pressed("ui_up")    { dir.y -= 1.0; }
+        if input.is_action_pressed("ui_right") {
+            dir.x += 1.0;
+        }
+        if input.is_action_pressed("ui_left") {
+            dir.x -= 1.0;
+        }
+        if input.is_action_pressed("ui_down") {
+            dir.y += 1.0;
+        }
+        if input.is_action_pressed("ui_up") {
+            dir.y -= 1.0;
+        }
 
         if dir != Vector2::ZERO {
             let pos = self.base().get_position();
@@ -108,7 +128,9 @@ impl INode2D for TrailDemo {
 
     fn draw(&mut self) {
         let total = self.trail_points.len();
-        if total < 2 { return; }
+        if total < 2 {
+            return;
+        }
         let pts = self.trail_points.clone();
         for i in 1..total {
             let alpha = trail_alpha(i, total);
@@ -120,7 +142,9 @@ impl INode2D for TrailDemo {
 
 #[godot_api]
 impl TrailDemo {
-    pub fn trail_len(&self) -> usize { self.trail_points.len() }
+    pub fn trail_len(&self) -> usize {
+        self.trail_points.len()
+    }
 }
 
 // ── Tests ─────────────────────────────────────────────────────────────────────
@@ -156,7 +180,10 @@ mod tests {
         let mut pts: Vec<Vector2> = (0..10).map(|i| Vector2::new(i as f32, 0.0)).collect();
         trim_trail(&mut pts, 5);
         assert_eq!(pts.len(), 5);
-        assert!((pts[0].x - 5.0).abs() < 1e-5, "oldest kept should be index 5");
+        assert!(
+            (pts[0].x - 5.0).abs() < 1e-5,
+            "oldest kept should be index 5"
+        );
     }
 
     #[test]

@@ -74,7 +74,12 @@ pub struct ParticleSystemConfig {
 
 impl Default for ParticleSystemConfig {
     fn default() -> Self {
-        Self { rng_seed: 12345, emitter_interval: 0.04, burst_count: 60, drag: 2.5 }
+        Self {
+            rng_seed: 12345,
+            emitter_interval: 0.04,
+            burst_count: 60,
+            drag: 2.5,
+        }
     }
 }
 
@@ -106,7 +111,8 @@ impl Rng {
     /// Advances the generator and returns the next pseudo-random `f32` in
     /// `[0.0, 1.0)`.
     pub fn next_f32(&mut self) -> f32 {
-        self.0 = self.0
+        self.0 = self
+            .0
             .wrapping_mul(6_364_136_223_846_793_005)
             .wrapping_add(1_442_695_040_888_963_407);
         (self.0 >> 33) as f32 / u32::MAX as f32
@@ -138,7 +144,10 @@ fn setup(mut commands: Commands) {
 
     commands.spawn((
         Text::new("SPACE — burst at center   continuous emitter at bottom"),
-        TextFont { font_size: 14.0, ..default() },
+        TextFont {
+            font_size: 14.0,
+            ..default()
+        },
         TextColor(Color::srgb(0.65, 0.65, 0.65)),
         Node {
             position_type: PositionType::Absolute,
@@ -163,16 +172,25 @@ fn spawn_particle(
     lifetime_min: f32,
     lifetime_max: f32,
 ) {
-    let angle    = rng.range(0.0, std::f32::consts::TAU);
-    let speed    = rng.range(speed_min, speed_max);
+    let angle = rng.range(0.0, std::f32::consts::TAU);
+    let speed = rng.range(speed_min, speed_max);
     let velocity = Vec2::new(angle.cos(), angle.sin()) * speed;
     let lifetime = rng.range(lifetime_min, lifetime_max);
-    let size     = rng.range(4.0, 10.0);
+    let size = rng.range(4.0, 10.0);
 
     commands.spawn((
-        Sprite { color, custom_size: Some(Vec2::splat(size)), ..default() },
+        Sprite {
+            color,
+            custom_size: Some(Vec2::splat(size)),
+            ..default()
+        },
         Transform::from_xyz(origin.x, origin.y, 1.0),
-        Particle { lifetime, max_lifetime: lifetime, velocity, base_color: color },
+        Particle {
+            lifetime,
+            max_lifetime: lifetime,
+            velocity,
+            base_color: color,
+        },
     ));
 }
 
@@ -185,7 +203,9 @@ fn handle_burst_input(
     mut commands: Commands,
     mut rng: ResMut<Rng>,
 ) {
-    if !input.just_pressed(KeyCode::Space) { return; }
+    if !input.just_pressed(KeyCode::Space) {
+        return;
+    }
 
     for _ in 0..config.burst_count {
         let color = Color::srgb(
@@ -193,7 +213,16 @@ fn handle_burst_input(
             rng.range(0.2, 0.6),
             rng.range(0.0, 0.2),
         );
-        spawn_particle(&mut commands, &mut rng, Vec2::ZERO, color, 60.0, 280.0, 0.4, 1.2);
+        spawn_particle(
+            &mut commands,
+            &mut rng,
+            Vec2::ZERO,
+            color,
+            60.0,
+            280.0,
+            0.4,
+            1.2,
+        );
     }
 }
 
@@ -204,20 +233,34 @@ fn tick_continuous_emitter(
     mut commands: Commands,
     mut rng: ResMut<Rng>,
 ) {
-    if !timer.0.tick(time.delta()).just_finished() { return; }
+    if !timer.0.tick(time.delta()).just_finished() {
+        return;
+    }
 
     let origin = Vec2::new(rng.range(-8.0, 8.0), -220.0);
-    let angle  = rng.range(std::f32::consts::FRAC_PI_4, 3.0 * std::f32::consts::FRAC_PI_4);
-    let speed  = rng.range(40.0, 120.0);
+    let angle = rng.range(
+        std::f32::consts::FRAC_PI_4,
+        3.0 * std::f32::consts::FRAC_PI_4,
+    );
+    let speed = rng.range(40.0, 120.0);
     let velocity = Vec2::new(angle.cos() * speed, angle.sin() * speed);
     let lifetime = rng.range(0.5, 1.4);
 
     let color = Color::srgb(rng.range(0.9, 1.0), rng.range(0.3, 0.7), 0.05);
 
     commands.spawn((
-        Sprite { color, custom_size: Some(Vec2::splat(rng.range(5.0, 12.0))), ..default() },
+        Sprite {
+            color,
+            custom_size: Some(Vec2::splat(rng.range(5.0, 12.0))),
+            ..default()
+        },
         Transform::from_xyz(origin.x, origin.y, 1.0),
-        Particle { lifetime, max_lifetime: lifetime, velocity, base_color: color },
+        Particle {
+            lifetime,
+            max_lifetime: lifetime,
+            velocity,
+            base_color: color,
+        },
     ));
 }
 
@@ -243,7 +286,9 @@ fn age_particles(
         particle.velocity *= 1.0 - config.drag * dt;
 
         let frac = (particle.lifetime / particle.max_lifetime).clamp(0.0, 1.0);
-        let Color::Srgba(s) = particle.base_color else { continue };
+        let Color::Srgba(s) = particle.base_color else {
+            continue;
+        };
         sprite.color = Color::srgba(s.red, s.green, s.blue, frac);
     }
 }
@@ -259,7 +304,7 @@ mod tests {
         let mut rng = Rng(99_999);
         for _ in 0..1_000 {
             let v = rng.next_f32();
-            assert!(v >= 0.0 && v < 1.0, "value out of [0, 1): {v}");
+            assert!((0.0..1.0).contains(&v), "value out of [0, 1): {v}");
         }
     }
 
@@ -268,7 +313,7 @@ mod tests {
         let mut rng = Rng(42);
         for _ in 0..500 {
             let v = rng.range(-10.0, 10.0);
-            assert!(v >= -10.0 && v < 10.0, "value out of range: {v}");
+            assert!((-10.0..10.0).contains(&v), "value out of range: {v}");
         }
     }
 
@@ -295,7 +340,10 @@ mod tests {
         let values: Vec<f32> = (0..100).map(|_| rng.next_f32()).collect();
         let min = values.iter().cloned().fold(f32::INFINITY, f32::min);
         let max = values.iter().cloned().fold(f32::NEG_INFINITY, f32::max);
-        assert!(max - min > 0.1, "sequence should have spread, got min={min} max={max}");
+        assert!(
+            max - min > 0.1,
+            "sequence should have spread, got min={min} max={max}"
+        );
     }
 
     #[test]
@@ -322,8 +370,7 @@ mod tests {
     #[test]
     fn setup_spawns_camera_and_emitter_sprite() {
         let mut app = App::new();
-        app.add_plugins(MinimalPlugins)
-            .add_systems(Startup, setup);
+        app.add_plugins(MinimalPlugins).add_systems(Startup, setup);
         app.update();
 
         // Camera2d + the emitter sprite both carry a Transform.

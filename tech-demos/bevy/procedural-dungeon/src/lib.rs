@@ -66,7 +66,12 @@ pub struct DungeonConfig {
 
 impl Default for DungeonConfig {
     fn default() -> Self {
-        Self { cols: 48, rows: 28, tile_px: 18.0, min_room: 5 }
+        Self {
+            cols: 48,
+            rows: 28,
+            tile_px: 18.0,
+            min_room: 5,
+        }
     }
 }
 
@@ -102,16 +107,36 @@ pub fn split_room(room: Rect, vertical: bool, pos: usize, min_size: usize) -> Op
             return None;
         }
         Some((
-            Rect { x: room.x, y: room.y, w: pos, h: room.h },
-            Rect { x: room.x + pos, y: room.y, w: room.w - pos, h: room.h },
+            Rect {
+                x: room.x,
+                y: room.y,
+                w: pos,
+                h: room.h,
+            },
+            Rect {
+                x: room.x + pos,
+                y: room.y,
+                w: room.w - pos,
+                h: room.h,
+            },
         ))
     } else {
         if pos < min_size || room.h.saturating_sub(pos) < min_size {
             return None;
         }
         Some((
-            Rect { x: room.x, y: room.y, w: room.w, h: pos },
-            Rect { x: room.x, y: room.y + pos, w: room.w, h: room.h - pos },
+            Rect {
+                x: room.x,
+                y: room.y,
+                w: room.w,
+                h: pos,
+            },
+            Rect {
+                x: room.x,
+                y: room.y + pos,
+                w: room.w,
+                h: room.h - pos,
+            },
         ))
     }
 }
@@ -143,7 +168,12 @@ pub fn lcg_next(seed: u64) -> u64 {
 /// rooms and connecting them with L-shaped corridors.
 pub fn build_dungeon(seed: u64, cols: usize, rows: usize, min_room: usize) -> Vec<Vec<Tile>> {
     let mut grid = vec![vec![Tile::Wall; cols]; rows];
-    let root = Rect { x: 1, y: 1, w: cols - 2, h: rows - 2 };
+    let root = Rect {
+        x: 1,
+        y: 1,
+        w: cols - 2,
+        h: rows - 2,
+    };
     let mut regions = vec![root];
     let mut rng = seed;
 
@@ -164,7 +194,11 @@ pub fn build_dungeon(seed: u64, cols: usize, rows: usize, min_room: usize) -> Ve
             rng = lcg_next(rng);
             let lo = min_room;
             let hi = span.saturating_sub(min_room);
-            let pos = if hi > lo { lo + (rng as usize % (hi - lo)) } else { lo };
+            let pos = if hi > lo {
+                lo + (rng as usize % (hi - lo))
+            } else {
+                lo
+            };
             if let Some((a, b)) = split_room(*region, vertical, pos, min_room) {
                 next.push(a);
                 next.push(b);
@@ -249,7 +283,11 @@ fn render_grid(commands: &mut Commands, grid: &[Vec<Tile>], config: &DungeonConf
                 0.0,
             );
             commands.spawn((
-                Sprite { color, custom_size: Some(Vec2::splat(tile_px - 1.0)), ..default() },
+                Sprite {
+                    color,
+                    custom_size: Some(Vec2::splat(tile_px - 1.0)),
+                    ..default()
+                },
                 Transform::from_translation(pos),
                 TileSprite,
             ));
@@ -264,7 +302,10 @@ fn spawn_dungeon(mut commands: Commands, seed: Res<DungeonSeed>, config: Res<Dun
 
     commands.spawn((
         Text::new(format!("Seed: {}  |  SPACE to regenerate", seed.0)),
-        TextFont { font_size: 16.0, ..default() },
+        TextFont {
+            font_size: 16.0,
+            ..default()
+        },
         TextColor(Color::WHITE),
         Node {
             position_type: PositionType::Absolute,
@@ -309,7 +350,12 @@ mod tests {
 
     #[test]
     fn split_vertical_produces_correct_widths() {
-        let r = Rect { x: 0, y: 0, w: 20, h: 10 };
+        let r = Rect {
+            x: 0,
+            y: 0,
+            w: 20,
+            h: 10,
+        };
         let (a, b) = split_room(r, true, 8, 4).unwrap();
         assert_eq!(a.w, 8);
         assert_eq!(b.w, 12);
@@ -319,7 +365,12 @@ mod tests {
 
     #[test]
     fn split_horizontal_produces_correct_heights() {
-        let r = Rect { x: 0, y: 0, w: 10, h: 20 };
+        let r = Rect {
+            x: 0,
+            y: 0,
+            w: 10,
+            h: 20,
+        };
         let (a, b) = split_room(r, false, 7, 4).unwrap();
         assert_eq!(a.h, 7);
         assert_eq!(b.h, 13);
@@ -327,14 +378,24 @@ mod tests {
 
     #[test]
     fn split_returns_none_when_child_too_small() {
-        let r = Rect { x: 0, y: 0, w: 10, h: 10 };
+        let r = Rect {
+            x: 0,
+            y: 0,
+            w: 10,
+            h: 10,
+        };
         assert!(split_room(r, true, 2, 5).is_none());
         assert!(split_room(r, true, 9, 5).is_none());
     }
 
     #[test]
     fn room_interior_shrinks_correctly() {
-        let r = Rect { x: 2, y: 3, w: 10, h: 8 };
+        let r = Rect {
+            x: 2,
+            y: 3,
+            w: 10,
+            h: 8,
+        };
         let inner = room_interior(r, 1).unwrap();
         assert_eq!(inner.x, 3);
         assert_eq!(inner.y, 4);
@@ -344,7 +405,12 @@ mod tests {
 
     #[test]
     fn room_interior_collapses_returns_none() {
-        let r = Rect { x: 0, y: 0, w: 2, h: 2 };
+        let r = Rect {
+            x: 0,
+            y: 0,
+            w: 2,
+            h: 2,
+        };
         assert!(room_interior(r, 1).is_none());
     }
 
@@ -360,7 +426,11 @@ mod tests {
     fn build_dungeon_produces_some_floor_tiles() {
         let c = DungeonConfig::default();
         let grid = build_dungeon(99, c.cols, c.rows, c.min_room);
-        let floors = grid.iter().flat_map(|r| r.iter()).filter(|&&t| t == Tile::Floor).count();
+        let floors = grid
+            .iter()
+            .flat_map(|r| r.iter())
+            .filter(|&&t| t == Tile::Floor)
+            .count();
         assert!(floors > 20, "expected some floor tiles, got {}", floors);
     }
 

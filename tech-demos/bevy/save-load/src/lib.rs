@@ -58,7 +58,10 @@ pub struct SaveLoadConfig {
 
 impl Default for SaveLoadConfig {
     fn default() -> Self {
-        Self { score_increment: 10, save_path: "savegame.json".to_string() }
+        Self {
+            score_increment: 10,
+            save_path: "savegame.json".to_string(),
+        }
     }
 }
 
@@ -91,10 +94,10 @@ pub struct StatusText;
 ///
 /// Silently ignores missing or malformed files so the game always starts.
 fn load_on_startup(config: Res<SaveLoadConfig>, mut save: ResMut<SaveData>) {
-    if let Ok(json) = fs::read_to_string(&config.save_path) {
-        if let Ok(loaded) = serde_json::from_str::<SaveData>(&json) {
-            *save = loaded;
-        }
+    if let Ok(json) = fs::read_to_string(&config.save_path)
+        && let Ok(loaded) = serde_json::from_str::<SaveData>(&json)
+    {
+        *save = loaded;
     }
 }
 
@@ -113,7 +116,10 @@ fn setup(mut commands: Commands, save: Res<SaveData>) {
 
     commands.spawn((
         Text::new(score_text(&save)),
-        TextFont { font_size: 22.0, ..default() },
+        TextFont {
+            font_size: 22.0,
+            ..default()
+        },
         TextColor(Color::WHITE),
         Node {
             position_type: PositionType::Absolute,
@@ -126,7 +132,10 @@ fn setup(mut commands: Commands, save: Res<SaveData>) {
 
     commands.spawn((
         Text::new("Ready"),
-        TextFont { font_size: 15.0, ..default() },
+        TextFont {
+            font_size: 15.0,
+            ..default()
+        },
         TextColor(Color::srgb(0.6, 0.85, 0.6)),
         Node {
             position_type: PositionType::Absolute,
@@ -139,7 +148,10 @@ fn setup(mut commands: Commands, save: Res<SaveData>) {
 
     commands.spawn((
         Text::new("SPACE = +score   S = save   L = load   R = reset"),
-        TextFont { font_size: 14.0, ..default() },
+        TextFont {
+            font_size: 14.0,
+            ..default()
+        },
         TextColor(Color::srgb(0.55, 0.55, 0.55)),
         Node {
             position_type: PositionType::Absolute,
@@ -170,12 +182,10 @@ fn handle_input(
 
     if input.just_pressed(KeyCode::KeyS) {
         match serde_json::to_string_pretty(save.as_ref()) {
-            Ok(json) => {
-                match fs::write(&config.save_path, &json) {
-                    Ok(_) => status = Some(format!("Saved to {}", config.save_path)),
-                    Err(e) => status = Some(format!("Save failed: {}", e)),
-                }
-            }
+            Ok(json) => match fs::write(&config.save_path, &json) {
+                Ok(_) => status = Some(format!("Saved to {}", config.save_path)),
+                Err(e) => status = Some(format!("Save failed: {}", e)),
+            },
             Err(e) => status = Some(format!("Serialize failed: {}", e)),
         }
     }
@@ -208,7 +218,9 @@ fn handle_input(
 
 /// Rewrites the score display whenever [`SaveData`] changes.
 fn update_hud(save: Res<SaveData>, mut query: Query<&mut Text, With<ScoreText>>) {
-    if !save.is_changed() { return; }
+    if !save.is_changed() {
+        return;
+    }
     for mut text in &mut query {
         *text = Text::new(score_text(&save));
     }
@@ -230,11 +242,15 @@ mod tests {
 
     #[test]
     fn score_text_contains_all_fields() {
-        let save = SaveData { score: 42, high_score: 100, level: 3 };
+        let save = SaveData {
+            score: 42,
+            high_score: 100,
+            level: 3,
+        };
         let text = score_text(&save);
-        assert!(text.contains("42"),  "score missing from text");
+        assert!(text.contains("42"), "score missing from text");
         assert!(text.contains("100"), "high score missing from text");
-        assert!(text.contains("3"),   "level missing from text");
+        assert!(text.contains("3"), "level missing from text");
     }
 
     #[test]
@@ -248,26 +264,35 @@ mod tests {
     #[test]
     fn save_data_default_zeroes_all_fields() {
         let s = SaveData::default();
-        assert_eq!(s.score,      0);
+        assert_eq!(s.score, 0);
         assert_eq!(s.high_score, 0);
-        assert_eq!(s.level,      0);
+        assert_eq!(s.level, 0);
     }
 
     #[test]
     fn save_data_json_roundtrip() {
-        let original = SaveData { score: 99, high_score: 200, level: 7 };
+        let original = SaveData {
+            score: 99,
+            high_score: 200,
+            level: 7,
+        };
         let json = serde_json::to_string(&original).expect("serialize failed");
         let loaded: SaveData = serde_json::from_str(&json).expect("deserialize failed");
-        assert_eq!(loaded.score,      original.score);
+        assert_eq!(loaded.score, original.score);
         assert_eq!(loaded.high_score, original.high_score);
-        assert_eq!(loaded.level,      original.level);
+        assert_eq!(loaded.level, original.level);
     }
 
     #[test]
     fn save_data_clone_is_independent() {
-        let mut a = SaveData { score: 10, high_score: 20, level: 1 };
+        let mut a = SaveData {
+            score: 10,
+            high_score: 20,
+            level: 1,
+        };
         let b = a.clone();
         a.score = 999;
+        assert_eq!(a.score, 999, "the original should see its own mutation");
         assert_eq!(b.score, 10, "clone should not share state");
     }
 

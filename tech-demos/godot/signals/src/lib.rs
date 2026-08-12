@@ -134,7 +134,9 @@ impl INode2D for SignalDemo {
 
         // Connect the HealthComponent's signal to our handler method.
         let callable = self.base().callable("on_health_changed");
-        let mut health = self.base().get_node_as::<HealthComponent>("HealthComponent");
+        let mut health = self
+            .base()
+            .get_node_as::<HealthComponent>("HealthComponent");
         health.connect("health_changed", &callable);
     }
 
@@ -155,11 +157,7 @@ impl SignalDemo {
     /// Called when the `HealthComponent` emits `health_changed`.
     #[func]
     pub fn on_health_changed(&mut self, new_health: i64, delta: i64) {
-        godot_print!(
-            "Health changed: new_health={}, delta={}",
-            new_health,
-            delta
-        );
+        godot_print!("Health changed: new_health={}, delta={}", new_health, delta);
     }
 }
 

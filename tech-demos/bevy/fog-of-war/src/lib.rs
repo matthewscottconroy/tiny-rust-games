@@ -155,7 +155,11 @@ pub struct PlayerMarker;
 fn cell_to_world(cell: IVec2) -> Vec3 {
     let ox = -(COLS as f32 * TILE_PX) / 2.0 + TILE_PX / 2.0;
     let oy = (ROWS as f32 * TILE_PX) / 2.0 - TILE_PX / 2.0;
-    Vec3::new(ox + cell.x as f32 * TILE_PX, oy - cell.y as f32 * TILE_PX, 0.0)
+    Vec3::new(
+        ox + cell.x as f32 * TILE_PX,
+        oy - cell.y as f32 * TILE_PX,
+        0.0,
+    )
 }
 
 fn setup(mut commands: Commands, mut revealed: ResMut<Revealed>) {
@@ -166,7 +170,11 @@ fn setup(mut commands: Commands, mut revealed: ResMut<Revealed>) {
         for c in 0..COLS {
             let cell = IVec2::new(c as i32, r as i32);
             commands.spawn((
-                Sprite { color: Color::BLACK, custom_size: Some(Vec2::splat(TILE_PX - 1.0)), ..default() },
+                Sprite {
+                    color: Color::BLACK,
+                    custom_size: Some(Vec2::splat(TILE_PX - 1.0)),
+                    ..default()
+                },
                 Transform::from_translation(cell_to_world(cell)),
                 TileCell(cell),
             ));
@@ -177,7 +185,11 @@ fn setup(mut commands: Commands, mut revealed: ResMut<Revealed>) {
     revealed.0.insert(start);
 
     commands.spawn((
-        Sprite { color: Color::srgb(0.3, 0.9, 1.0), custom_size: Some(Vec2::splat(TILE_PX * 0.6)), ..default() },
+        Sprite {
+            color: Color::srgb(0.3, 0.9, 1.0),
+            custom_size: Some(Vec2::splat(TILE_PX * 0.6)),
+            ..default()
+        },
         Transform::from_translation(cell_to_world(start).with_z(1.0)),
         PlayerMarker,
     ));
@@ -187,7 +199,10 @@ fn setup(mut commands: Commands, mut revealed: ResMut<Revealed>) {
 
     commands.spawn((
         Text::new("WASD / Arrow keys — move"),
-        TextFont { font_size: 16.0, ..default() },
+        TextFont {
+            font_size: 16.0,
+            ..default()
+        },
         TextColor(Color::WHITE),
         Node {
             position_type: PositionType::Absolute,
@@ -220,7 +235,10 @@ fn handle_input(
     for (key, delta) in dirs {
         if input.just_pressed(key) {
             let next = player.0 + delta;
-            if next.x >= 0 && next.y >= 0 && next.x < cols && next.y < rows
+            if next.x >= 0
+                && next.y >= 0
+                && next.x < cols
+                && next.y < rows
                 && grid.0[next.y as usize][next.x as usize]
             {
                 player.0 = next;

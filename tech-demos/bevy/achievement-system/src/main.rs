@@ -5,8 +5,8 @@
 //! the engine and adds the plugin — copy `lib.rs` into your own project (or
 //! depend on this crate) and add the one plugin to reuse the feature.
 
-use bevy::prelude::*;
 use achievement_system::AchievementSystemPlugin;
+use bevy::prelude::*;
 
 fn main() {
     App::new()

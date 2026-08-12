@@ -63,17 +63,14 @@ impl IControl for DragAndDropUi {
                     self.dragging = false;
                 }
             }
-        } else if let Ok(motion) = event.try_cast::<InputEventMouseMotion>() {
-            if self.dragging {
-                let pos = motion.get_position();
-                let (nx, ny) = apply_offset(
-                    (pos.x, pos.y),
-                    (self.drag_offset_x, self.drag_offset_y),
-                );
-                self.drag_pos_x = nx;
-                self.drag_pos_y = ny;
-                self.base_mut().queue_redraw();
-            }
+        } else if let Ok(motion) = event.try_cast::<InputEventMouseMotion>()
+            && self.dragging
+        {
+            let pos = motion.get_position();
+            let (nx, ny) = apply_offset((pos.x, pos.y), (self.drag_offset_x, self.drag_offset_y));
+            self.drag_pos_x = nx;
+            self.drag_pos_y = ny;
+            self.base_mut().queue_redraw();
         }
     }
 

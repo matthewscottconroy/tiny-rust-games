@@ -62,7 +62,10 @@ impl TilemapProcedural {
     /// Re-run the cave generator with a new seed and update the TileMap.
     #[func]
     pub fn regenerate(&mut self) {
-        self.seed = self.seed.wrapping_mul(6364136223846793005).wrapping_add(1442695040888963407);
+        self.seed = self
+            .seed
+            .wrapping_mul(6364136223846793005)
+            .wrapping_add(1442695040888963407);
         self.generate_and_apply();
     }
 }
@@ -91,13 +94,15 @@ impl TilemapProcedural {
                     let coords = Vector2i::new(x, y);
                     if cells_snapshot[idx] {
                         // Wall tile: source 0, atlas cell (0,0)
-                        tilemap.set_cell_ex(0, coords)
+                        tilemap
+                            .set_cell_ex(0, coords)
                             .source_id(0)
                             .atlas_coords(Vector2i::new(0, 0))
                             .done();
                     } else {
                         // Floor: erase by using source_id -1
-                        tilemap.set_cell_ex(0, coords)
+                        tilemap
+                            .set_cell_ex(0, coords)
                             .source_id(-1)
                             .atlas_coords(Vector2i::new(0, 0))
                             .done();
@@ -207,19 +212,14 @@ mod tests {
         let w = 10;
         let h = 8;
         let cells = random_fill(w, h, 0.0, 99); // prob=0 so interior would be floor
+        let idx = |y, x| (y * w + x) as usize;
         for x in 0..w {
-            assert!(cells[(0 * w + x) as usize], "top row x={x} should be wall");
-            assert!(
-                cells[((h - 1) * w + x) as usize],
-                "bottom row x={x} should be wall"
-            );
+            assert!(cells[idx(0, x)], "top row x={x} should be wall");
+            assert!(cells[idx(h - 1, x)], "bottom row x={x} should be wall");
         }
         for y in 0..h {
-            assert!(cells[(y * w + 0) as usize], "left col y={y} should be wall");
-            assert!(
-                cells[(y * w + (w - 1)) as usize],
-                "right col y={y} should be wall"
-            );
+            assert!(cells[idx(y, 0)], "left col y={y} should be wall");
+            assert!(cells[idx(y, w - 1)], "right col y={y} should be wall");
         }
     }
 
@@ -235,7 +235,10 @@ mod tests {
         // Interior cells (1..3) x (1..3) should be floor
         for y in 1..4 {
             for x in 1..4 {
-                assert!(!cells[(y * 5 + x) as usize], "interior ({x},{y}) should be floor");
+                assert!(
+                    !cells[(y * 5 + x) as usize],
+                    "interior ({x},{y}) should be floor"
+                );
             }
         }
     }

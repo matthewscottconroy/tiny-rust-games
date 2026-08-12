@@ -46,7 +46,13 @@ impl Plugin for PickupAndInventoryPlugin {
             .add_systems(Startup, setup)
             .add_systems(
                 Update,
-                (move_player, collect_pickups, drop_item, tick_respawn, update_hud),
+                (
+                    move_player,
+                    collect_pickups,
+                    drop_item,
+                    tick_respawn,
+                    update_hud,
+                ),
             );
     }
 }
@@ -69,7 +75,12 @@ pub struct PickupConfig {
 
 impl Default for PickupConfig {
     fn default() -> Self {
-        Self { capacity: 5, player_speed: 180.0, pickup_radius: 28.0, respawn_seconds: 2.0 }
+        Self {
+            capacity: 5,
+            player_speed: 180.0,
+            pickup_radius: 28.0,
+            respawn_seconds: 2.0,
+        }
     }
 }
 
@@ -100,7 +111,10 @@ pub struct Inventory {
 
 impl Default for Inventory {
     fn default() -> Self {
-        Self { count: 0, max: PickupConfig::default().capacity }
+        Self {
+            count: 0,
+            max: PickupConfig::default().capacity,
+        }
     }
 }
 
@@ -130,7 +144,10 @@ fn setup(mut commands: Commands, config: Res<PickupConfig>, mut inventory: ResMu
 
     commands.spawn((
         Text::new(format!("Items: 0 / {}", config.capacity)),
-        TextFont { font_size: 24.0, ..default() },
+        TextFont {
+            font_size: 24.0,
+            ..default()
+        },
         TextColor(Color::WHITE),
         Node {
             position_type: PositionType::Absolute,
@@ -143,7 +160,10 @@ fn setup(mut commands: Commands, config: Res<PickupConfig>, mut inventory: ResMu
 
     commands.spawn((
         Text::new("WASD — move   Q — drop item"),
-        TextFont { font_size: 14.0, ..default() },
+        TextFont {
+            font_size: 14.0,
+            ..default()
+        },
         TextColor(Color::srgb(0.6, 0.6, 0.6)),
         Node {
             position_type: PositionType::Absolute,
@@ -157,14 +177,14 @@ fn setup(mut commands: Commands, config: Res<PickupConfig>, mut inventory: ResMu
 /// Spawns the fixed set of field pickups.
 fn spawn_pickups(commands: &mut Commands) {
     let positions: &[Vec3] = &[
-        Vec3::new(-180.0,  120.0, 0.0),
-        Vec3::new( 200.0,   80.0, 0.0),
-        Vec3::new(  60.0, -150.0, 0.0),
-        Vec3::new(-220.0,  -90.0, 0.0),
-        Vec3::new( 140.0,  170.0, 0.0),
-        Vec3::new(-100.0,  200.0, 0.0),
-        Vec3::new( 250.0, -130.0, 0.0),
-        Vec3::new( -60.0, -200.0, 0.0),
+        Vec3::new(-180.0, 120.0, 0.0),
+        Vec3::new(200.0, 80.0, 0.0),
+        Vec3::new(60.0, -150.0, 0.0),
+        Vec3::new(-220.0, -90.0, 0.0),
+        Vec3::new(140.0, 170.0, 0.0),
+        Vec3::new(-100.0, 200.0, 0.0),
+        Vec3::new(250.0, -130.0, 0.0),
+        Vec3::new(-60.0, -200.0, 0.0),
     ];
 
     for &pos in positions {
@@ -189,12 +209,22 @@ fn move_player(
     config: Res<PickupConfig>,
     mut query: Query<&mut Transform, With<Player>>,
 ) {
-    let Ok(mut transform) = query.single_mut() else { return; };
+    let Ok(mut transform) = query.single_mut() else {
+        return;
+    };
     let mut dir = Vec2::ZERO;
-    if input.pressed(KeyCode::KeyW) { dir.y += 1.0; }
-    if input.pressed(KeyCode::KeyS) { dir.y -= 1.0; }
-    if input.pressed(KeyCode::KeyA) { dir.x -= 1.0; }
-    if input.pressed(KeyCode::KeyD) { dir.x += 1.0; }
+    if input.pressed(KeyCode::KeyW) {
+        dir.y += 1.0;
+    }
+    if input.pressed(KeyCode::KeyS) {
+        dir.y -= 1.0;
+    }
+    if input.pressed(KeyCode::KeyA) {
+        dir.x -= 1.0;
+    }
+    if input.pressed(KeyCode::KeyD) {
+        dir.x += 1.0;
+    }
     if dir != Vec2::ZERO {
         let delta = dir.normalize() * config.player_speed * time.delta_secs();
         transform.translation.x += delta.x;
@@ -212,7 +242,9 @@ fn collect_pickups(
     mut inventory: ResMut<Inventory>,
     mut respawn: ResMut<RespawnTimer>,
 ) {
-    let Ok(player) = player_query.single() else { return; };
+    let Ok(player) = player_query.single() else {
+        return;
+    };
     let player_pos = player.translation.truncate();
 
     for (entity, pickup_transform) in &pickup_query {
@@ -239,7 +271,9 @@ fn drop_item(
     if !input.just_pressed(KeyCode::KeyQ) || inventory.count == 0 {
         return;
     }
-    let Ok(player) = player_query.single() else { return; };
+    let Ok(player) = player_query.single() else {
+        return;
+    };
     inventory.count -= 1;
 
     let pos = player.translation + Vec3::new(0.0, -30.0, 0.0);
@@ -261,7 +295,9 @@ fn tick_respawn(
     mut respawn: ResMut<RespawnTimer>,
     mut inventory: ResMut<Inventory>,
 ) {
-    let Some(timer) = respawn.0.as_mut() else { return; };
+    let Some(timer) = respawn.0.as_mut() else {
+        return;
+    };
     if timer.tick(time.delta()).just_finished() {
         respawn.0 = None;
         inventory.count = 0;
@@ -271,13 +307,19 @@ fn tick_respawn(
 
 /// Rewrites the HUD label whenever [`Inventory`] changes.
 fn update_hud(inventory: Res<Inventory>, mut query: Query<&mut Text, With<HudText>>) {
-    if !inventory.is_changed() { return; }
+    if !inventory.is_changed() {
+        return;
+    }
     for mut text in &mut query {
         *text = Text::new(format!(
             "Items: {} / {}{}",
             inventory.count,
             inventory.max,
-            if inventory.count == inventory.max { "  (FULL)" } else { "" }
+            if inventory.count == inventory.max {
+                "  (FULL)"
+            } else {
+                ""
+            }
         ));
     }
 }

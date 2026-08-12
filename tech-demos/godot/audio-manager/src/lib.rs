@@ -92,10 +92,7 @@ impl INode for AudioManager {
     }
 
     fn ready(&mut self) {
-        godot_print!(
-            "[AudioManager] Ready — pool size: {}.",
-            self.pool_size
-        );
+        godot_print!("[AudioManager] Ready — pool size: {}.", self.pool_size);
     }
 }
 
@@ -115,19 +112,19 @@ impl AudioManager {
                 }
                 // Load the stream resource.
                 let mut loader = ResourceLoader::singleton();
-                if let Some(res) = loader.load(&stream_path) {
-                    if let Ok(stream) = res.try_cast::<godot::classes::AudioStream>() {
-                        player.set_stream(&stream);
-                        player.play();
-                        self.play_count += 1;
-                        godot_print!(
-                            "[AudioManager] Playing '{}' on Player{}. Count: {}",
-                            stream_path,
-                            i,
-                            self.play_count
-                        );
-                        return;
-                    }
+                if let Some(res) = loader.load(&stream_path)
+                    && let Ok(stream) = res.try_cast::<godot::classes::AudioStream>()
+                {
+                    player.set_stream(&stream);
+                    player.play();
+                    self.play_count += 1;
+                    godot_print!(
+                        "[AudioManager] Playing '{}' on Player{}. Count: {}",
+                        stream_path,
+                        i,
+                        self.play_count
+                    );
+                    return;
                 }
                 // Stream could not be loaded — skip.
                 godot_print!("[AudioManager] Failed to load stream: {}", stream_path);

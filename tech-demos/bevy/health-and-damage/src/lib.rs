@@ -72,7 +72,11 @@ pub struct HealthConfig {
 
 impl Default for HealthConfig {
     fn default() -> Self {
-        Self { max_hp: 100.0, damage_per_hit: 10.0, respawn_seconds: 1.2 }
+        Self {
+            max_hp: 100.0,
+            damage_per_hit: 10.0,
+            respawn_seconds: 1.2,
+        }
     }
 }
 
@@ -178,7 +182,10 @@ fn spawn_enemy(commands: &mut Commands, config: &HealthConfig) {
 fn spawn_hud(commands: &mut Commands, config: &HealthConfig) {
     commands.spawn((
         Text::new(format!("HP: {0} / {0}", config.max_hp as u32)),
-        TextFont { font_size: 14.0, ..default() },
+        TextFont {
+            font_size: 14.0,
+            ..default()
+        },
         TextColor(Color::WHITE),
         Node {
             position_type: PositionType::Absolute,
@@ -191,7 +198,10 @@ fn spawn_hud(commands: &mut Commands, config: &HealthConfig) {
 
     commands.spawn((
         Text::new("SPACE = deal damage   R = reset health"),
-        TextFont { font_size: 14.0, ..default() },
+        TextFont {
+            font_size: 14.0,
+            ..default()
+        },
         TextColor(Color::srgb(0.6, 0.6, 0.6)),
         Node {
             position_type: PositionType::Absolute,
@@ -221,7 +231,10 @@ fn handle_input(
 
     if input.just_pressed(KeyCode::Space) {
         for entity in &enemy_query {
-            writer.write(DamageMessage { target: entity, amount: config.damage_per_hit });
+            writer.write(DamageMessage {
+                target: entity,
+                amount: config.damage_per_hit,
+            });
         }
     }
 }
@@ -235,7 +248,9 @@ fn apply_damage(
     mut respawn: ResMut<RespawnTimer>,
 ) {
     for msg in reader.read() {
-        let Ok(mut enemy) = query.get_mut(msg.target) else { continue; };
+        let Ok(mut enemy) = query.get_mut(msg.target) else {
+            continue;
+        };
         enemy.hp = (enemy.hp - msg.amount).max(0.0);
         if enemy.hp <= 0.0 {
             commands.entity(msg.target).despawn();
@@ -271,10 +286,7 @@ fn update_health_bar(
 }
 
 /// Updates the HP text label.
-fn update_hud(
-    enemy_query: Query<&Enemy>,
-    mut hud_query: Query<&mut Text, With<HudText>>,
-) {
+fn update_hud(enemy_query: Query<&Enemy>, mut hud_query: Query<&mut Text, With<HudText>>) {
     let (hp, max) = enemy_query
         .iter()
         .next()
@@ -295,7 +307,9 @@ fn tick_respawn(
     mut respawn: ResMut<RespawnTimer>,
     bar_query: Query<Entity, With<HealthBarRoot>>,
 ) {
-    let Some(timer) = respawn.0.as_mut() else { return; };
+    let Some(timer) = respawn.0.as_mut() else {
+        return;
+    };
     if timer.tick(time.delta()).just_finished() {
         respawn.0 = None;
         // Despawn the old health bar before spawning a new one.

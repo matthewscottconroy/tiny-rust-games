@@ -387,7 +387,11 @@ mod tests {
 
     #[test]
     fn point_in_rect_center() {
-        assert!(point_in_rect(Vec2::ZERO, Vec2::new(-50.0, -50.0), Vec2::new(50.0, 50.0)));
+        assert!(point_in_rect(
+            Vec2::ZERO,
+            Vec2::new(-50.0, -50.0),
+            Vec2::new(50.0, 50.0)
+        ));
     }
 
     #[test]
@@ -404,9 +408,9 @@ mod tests {
         let a = Vec2::new(-100.0, -100.0);
         let b = Vec2::new(100.0, 100.0);
         assert!(point_in_rect(Vec2::new(-100.0, 0.0), a, b)); // left edge
-        assert!(point_in_rect(Vec2::new(100.0, 0.0), a, b));  // right edge
+        assert!(point_in_rect(Vec2::new(100.0, 0.0), a, b)); // right edge
         assert!(point_in_rect(Vec2::new(0.0, -100.0), a, b)); // bottom edge
-        assert!(point_in_rect(Vec2::new(0.0, 100.0), a, b));  // top edge
+        assert!(point_in_rect(Vec2::new(0.0, 100.0), a, b)); // top edge
     }
 
     #[test]
@@ -477,7 +481,8 @@ mod tests {
         let mut app = App::new();
         app.add_plugins(MinimalPlugins);
         for pos in UNIT_POSITIONS {
-            app.world_mut().spawn((Unit, Transform::from_translation(pos.extend(0.0))));
+            app.world_mut()
+                .spawn((Unit, Transform::from_translation(pos.extend(0.0))));
         }
         let selected_count = app
             .world_mut()
@@ -485,11 +490,7 @@ mod tests {
             .iter(app.world())
             .count();
         assert_eq!(selected_count, 0);
-        let unit_count = app
-            .world_mut()
-            .query::<&Unit>()
-            .iter(app.world())
-            .count();
+        let unit_count = app.world_mut().query::<&Unit>().iter(app.world()).count();
         assert_eq!(unit_count, 20);
     }
 

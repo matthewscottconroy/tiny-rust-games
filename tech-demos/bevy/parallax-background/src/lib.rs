@@ -38,7 +38,10 @@ impl Plugin for ParallaxBackgroundPlugin {
         app.init_resource::<ParallaxBackgroundConfig>()
             .add_systems(Startup, setup)
             // Chain ensures camera position is updated before parallax reads it.
-            .add_systems(Update, (move_player, follow_camera, update_parallax).chain());
+            .add_systems(
+                Update,
+                (move_player, follow_camera, update_parallax).chain(),
+            );
     }
 }
 
@@ -56,7 +59,10 @@ pub struct ParallaxBackgroundConfig {
 
 impl Default for ParallaxBackgroundConfig {
     fn default() -> Self {
-        Self { player_speed: 220.0, cam_lerp: 8.0 }
+        Self {
+            player_speed: 220.0,
+            cam_lerp: 8.0,
+        }
     }
 }
 
@@ -89,10 +95,10 @@ fn setup(mut commands: Commands) {
 
     let layers: &[(f32, Color, f32, f32)] = &[
         (0.05, Color::srgb(0.10, 0.10, 0.22), 600.0, -10.0), // distant sky
-        (0.15, Color::srgb(0.15, 0.12, 0.30), 200.0,  -9.0), // far mountains
-        (0.35, Color::srgb(0.18, 0.22, 0.18), 120.0,  -8.0), // mid hills
-        (0.60, Color::srgb(0.13, 0.25, 0.13),  70.0,  -7.0), // near treeline
-        (0.85, Color::srgb(0.25, 0.18, 0.08),  40.0,  -6.0), // ground strip
+        (0.15, Color::srgb(0.15, 0.12, 0.30), 200.0, -9.0),  // far mountains
+        (0.35, Color::srgb(0.18, 0.22, 0.18), 120.0, -8.0),  // mid hills
+        (0.60, Color::srgb(0.13, 0.25, 0.13), 70.0, -7.0),   // near treeline
+        (0.85, Color::srgb(0.25, 0.18, 0.08), 40.0, -6.0),   // ground strip
     ];
 
     for &(scroll_factor, color, height, z) in layers {
@@ -119,7 +125,10 @@ fn setup(mut commands: Commands) {
 
     commands.spawn((
         Text::new("WASD — move   notice layers scroll at different speeds"),
-        TextFont { font_size: 15.0, ..default() },
+        TextFont {
+            font_size: 15.0,
+            ..default()
+        },
         TextColor(Color::srgb(0.8, 0.8, 0.8)),
         Node {
             position_type: PositionType::Absolute,
@@ -141,11 +150,17 @@ fn move_player(
     config: Res<ParallaxBackgroundConfig>,
     mut query: Query<&mut Transform, With<Player>>,
 ) {
-    let Ok(mut transform) = query.single_mut() else { return; };
+    let Ok(mut transform) = query.single_mut() else {
+        return;
+    };
 
     let mut dir = Vec2::ZERO;
-    if input.pressed(KeyCode::KeyA) || input.pressed(KeyCode::ArrowLeft)  { dir.x -= 1.0; }
-    if input.pressed(KeyCode::KeyD) || input.pressed(KeyCode::ArrowRight) { dir.x += 1.0; }
+    if input.pressed(KeyCode::KeyA) || input.pressed(KeyCode::ArrowLeft) {
+        dir.x -= 1.0;
+    }
+    if input.pressed(KeyCode::KeyD) || input.pressed(KeyCode::ArrowRight) {
+        dir.x += 1.0;
+    }
 
     if dir != Vec2::ZERO {
         transform.translation.x += dir.normalize().x * config.player_speed * time.delta_secs();
@@ -159,8 +174,12 @@ fn follow_camera(
     player_query: Query<&Transform, (With<Player>, Without<Camera2d>)>,
     mut cam_query: Query<&mut Transform, (With<Camera2d>, Without<Player>, Without<ParallaxLayer>)>,
 ) {
-    let Ok(player) = player_query.single() else { return; };
-    let Ok(mut cam) = cam_query.single_mut() else { return; };
+    let Ok(player) = player_query.single() else {
+        return;
+    };
+    let Ok(mut cam) = cam_query.single_mut() else {
+        return;
+    };
 
     let target_x = player.translation.x;
     cam.translation.x += (target_x - cam.translation.x) * config.cam_lerp * time.delta_secs();
@@ -171,7 +190,9 @@ fn update_parallax(
     cam_query: Query<&Transform, (With<Camera2d>, Without<ParallaxLayer>)>,
     mut layer_query: Query<(&mut Transform, &ParallaxLayer)>,
 ) {
-    let Ok(cam) = cam_query.single() else { return; };
+    let Ok(cam) = cam_query.single() else {
+        return;
+    };
 
     for (mut transform, layer) in &mut layer_query {
         transform.translation.x = parallax_offset(cam.translation.x, layer.scroll_factor);
@@ -185,8 +206,7 @@ mod tests {
     #[test]
     fn setup_spawns_five_parallax_layers() {
         let mut app = App::new();
-        app.add_plugins(MinimalPlugins)
-            .add_systems(Startup, setup);
+        app.add_plugins(MinimalPlugins).add_systems(Startup, setup);
         app.update();
 
         let mut q = app.world_mut().query::<&ParallaxLayer>();
@@ -196,8 +216,7 @@ mod tests {
     #[test]
     fn setup_spawns_one_player() {
         let mut app = App::new();
-        app.add_plugins(MinimalPlugins)
-            .add_systems(Startup, setup);
+        app.add_plugins(MinimalPlugins).add_systems(Startup, setup);
         app.update();
 
         let mut q = app.world_mut().query::<&Player>();
@@ -220,8 +239,10 @@ mod tests {
             (0.60, (), (), ()),
             (0.85, (), (), ()),
         ] {
-            assert!(scroll_factor >= 0.0 && scroll_factor <= 1.0,
-                "scroll_factor {scroll_factor} out of [0, 1]");
+            assert!(
+                (0.0..=1.0).contains(&scroll_factor),
+                "scroll_factor {scroll_factor} out of [0, 1]"
+            );
         }
     }
 

@@ -51,7 +51,10 @@ pub struct CameraFollowConfig {
 
 impl Default for CameraFollowConfig {
     fn default() -> Self {
-        Self { speed: 220.0, lerp_speed: 6.0 }
+        Self {
+            speed: 220.0,
+            lerp_speed: 6.0,
+        }
     }
 }
 
@@ -80,7 +83,11 @@ fn setup(mut commands: Commands) {
                 Color::srgb(0.22, 0.22, 0.22)
             };
             commands.spawn((
-                Sprite { color, custom_size: Some(Vec2::splat(64.0)), ..default() },
+                Sprite {
+                    color,
+                    custom_size: Some(Vec2::splat(64.0)),
+                    ..default()
+                },
                 Transform::from_xyz(col as f32 * 64.0, row as f32 * 64.0, -1.0),
             ));
         }
@@ -98,7 +105,10 @@ fn setup(mut commands: Commands) {
 
     commands.spawn((
         Text::new("WASD — move   (camera lerp-follows)"),
-        TextFont { font_size: 16.0, ..default() },
+        TextFont {
+            font_size: 16.0,
+            ..default()
+        },
         TextColor(Color::srgb(0.85, 0.85, 0.85)),
         Node {
             position_type: PositionType::Absolute,
@@ -116,13 +126,23 @@ fn move_player(
     config: Res<CameraFollowConfig>,
     mut query: Query<&mut Transform, With<Player>>,
 ) {
-    let Ok(mut transform) = query.single_mut() else { return; };
+    let Ok(mut transform) = query.single_mut() else {
+        return;
+    };
 
     let mut dir = Vec2::ZERO;
-    if input.pressed(KeyCode::KeyW) { dir.y += 1.0; }
-    if input.pressed(KeyCode::KeyS) { dir.y -= 1.0; }
-    if input.pressed(KeyCode::KeyA) { dir.x -= 1.0; }
-    if input.pressed(KeyCode::KeyD) { dir.x += 1.0; }
+    if input.pressed(KeyCode::KeyW) {
+        dir.y += 1.0;
+    }
+    if input.pressed(KeyCode::KeyS) {
+        dir.y -= 1.0;
+    }
+    if input.pressed(KeyCode::KeyA) {
+        dir.x -= 1.0;
+    }
+    if input.pressed(KeyCode::KeyD) {
+        dir.x += 1.0;
+    }
 
     if dir != Vec2::ZERO {
         let delta = dir.normalize() * config.speed * time.delta_secs();
@@ -141,11 +161,17 @@ fn follow_camera(
     player_query: Query<&Transform, (With<Player>, Without<Camera2d>)>,
     mut cam_query: Query<&mut Transform, (With<Camera2d>, Without<Player>)>,
 ) {
-    let Ok(player) = player_query.single() else { return; };
-    let Ok(mut cam) = cam_query.single_mut() else { return; };
+    let Ok(player) = player_query.single() else {
+        return;
+    };
+    let Ok(mut cam) = cam_query.single_mut() else {
+        return;
+    };
 
     let target = player.translation;
-    cam.translation = cam.translation.lerp(target, lerp_factor(config.lerp_speed, time.delta_secs()));
+    cam.translation = cam
+        .translation
+        .lerp(target, lerp_factor(config.lerp_speed, time.delta_secs()));
 }
 
 #[cfg(test)]
@@ -155,8 +181,7 @@ mod tests {
     #[test]
     fn setup_spawns_one_player() {
         let mut app = App::new();
-        app.add_plugins(MinimalPlugins)
-            .add_systems(Startup, setup);
+        app.add_plugins(MinimalPlugins).add_systems(Startup, setup);
         app.update();
 
         let mut q = app.world_mut().query::<&Player>();
@@ -166,8 +191,7 @@ mod tests {
     #[test]
     fn setup_spawns_one_camera() {
         let mut app = App::new();
-        app.add_plugins(MinimalPlugins)
-            .add_systems(Startup, setup);
+        app.add_plugins(MinimalPlugins).add_systems(Startup, setup);
         app.update();
 
         let mut q = app.world_mut().query::<&Camera2d>();
@@ -177,8 +201,7 @@ mod tests {
     #[test]
     fn player_starts_at_origin() {
         let mut app = App::new();
-        app.add_plugins(MinimalPlugins)
-            .add_systems(Startup, setup);
+        app.add_plugins(MinimalPlugins).add_systems(Startup, setup);
         app.update();
 
         let mut q = app.world_mut().query::<(&Player, &Transform)>();

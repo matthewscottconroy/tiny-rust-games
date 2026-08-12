@@ -3,6 +3,12 @@
 Each demo is a standalone Godot 4.3+ project with its game logic written in Rust
 via the [gdext](https://github.com/godot-rust/gdext) GDExtension binding (`godot = "0.5"`).
 
+Every demo follows the same layout and conventions — see
+[`DEMO_ANATOMY.md`](DEMO_ANATOMY.md) before adding or modifying one. In
+particular, all demos pin the **same** `godot` version; because each demo is its
+own crate with its own `Cargo.lock`, running `cargo update` in a single demo is
+how they drift apart.
+
 ## How it works
 
 Godot loads compiled Rust code as a native extension (`.so`/`.dll`/`.dylib`).

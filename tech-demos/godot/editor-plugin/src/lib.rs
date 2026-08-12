@@ -15,9 +15,7 @@
 //! plugin enabled (see `addons/rust-panel/plugin.cfg`), the "Rust Panel" dock
 //! should appear on the right side of the editor showing a click counter.
 
-use godot::classes::{
-    Button, Control, EditorPlugin, IEditorPlugin, Label, VBoxContainer,
-};
+use godot::classes::{Button, Control, EditorPlugin, IEditorPlugin, Label, VBoxContainer};
 use godot::prelude::*;
 
 // ─── Extension entry point ────────────────────────────────────────────────────
@@ -133,10 +131,8 @@ impl IEditorPlugin for RustPanel {
         // Cast to Control for add_control_to_dock.
         let panel: Gd<Control> = vbox.upcast::<Control>();
 
-        self.base_mut().add_control_to_dock(
-            godot::classes::editor_plugin::DockSlot::RIGHT_UL,
-            &panel,
-        );
+        self.base_mut()
+            .add_control_to_dock(godot::classes::editor_plugin::DockSlot::RIGHT_UL, &panel);
 
         self.panel = Some(panel);
 
@@ -163,14 +159,14 @@ impl RustPanel {
         let count = self.click_count;
         let label_text = click_label(count);
 
-        if let Some(panel) = &self.panel {
-            if let Some(mut label) =
-                panel.clone().try_cast::<VBoxContainer>().ok().and_then(|vb| {
-                    vb.try_get_node_as::<Label>("CountLabel")
-                })
-            {
-                label.set_text(label_text.as_str());
-            }
+        if let Some(panel) = &self.panel
+            && let Some(mut label) = panel
+                .clone()
+                .try_cast::<VBoxContainer>()
+                .ok()
+                .and_then(|vb| vb.try_get_node_as::<Label>("CountLabel"))
+        {
+            label.set_text(label_text.as_str());
         }
 
         godot_print!("[RustPanel] Click #{}", count);

@@ -58,7 +58,9 @@ pub struct RequiredComponentsConfig {
 
 impl Default for RequiredComponentsConfig {
     fn default() -> Self {
-        Self { drain_per_second: 5.0 }
+        Self {
+            drain_per_second: 5.0,
+        }
     }
 }
 
@@ -99,14 +101,8 @@ impl Default for Health {
 }
 
 /// Team identifier for an entity (0 = red, 1 = blue, etc.).
-#[derive(Component)]
+#[derive(Component, Default)]
 pub struct Team(pub u8);
-
-impl Default for Team {
-    fn default() -> Self {
-        Self(0)
-    }
-}
 
 /// Movement speed of an entity in units per second.
 #[derive(Component)]
@@ -199,10 +195,7 @@ fn setup(mut commands: Commands) {
     }
 
     // --- Turrets (gray) ---
-    let turret_positions = [
-        Vec3::new(200.0, 100.0, 0.0),
-        Vec3::new(270.0, 100.0, 0.0),
-    ];
+    let turret_positions = [Vec3::new(200.0, 100.0, 0.0), Vec3::new(270.0, 100.0, 0.0)];
     for pos in turret_positions {
         commands.spawn((
             Turret,

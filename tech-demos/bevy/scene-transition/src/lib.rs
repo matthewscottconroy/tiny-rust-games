@@ -54,7 +54,10 @@ impl Plugin for SceneTransitionPlugin {
             .add_systems(Update, tick_loading.run_if(in_state(AppState::Loading)))
             // --- Playing ---
             .add_systems(OnEnter(AppState::Playing), setup_playing)
-            .add_systems(OnExit(AppState::Playing), (cleanup::<PlayingEntity>, reset_score))
+            .add_systems(
+                OnExit(AppState::Playing),
+                (cleanup::<PlayingEntity>, reset_score),
+            )
             .add_systems(
                 Update,
                 (playing_input, move_balls, bounce_walls, update_score_hud)
@@ -176,12 +179,18 @@ fn setup_menu(mut commands: Commands) {
         .with_children(|p| {
             p.spawn((
                 Text::new("DEMO GAME"),
-                TextFont { font_size: 56.0, ..default() },
+                TextFont {
+                    font_size: 56.0,
+                    ..default()
+                },
                 TextColor(Color::WHITE),
             ));
             p.spawn((
                 Text::new("SPACE — start"),
-                TextFont { font_size: 22.0, ..default() },
+                TextFont {
+                    font_size: 22.0,
+                    ..default()
+                },
                 TextColor(Color::srgb(0.7, 0.7, 0.7)),
             ));
         });
@@ -212,12 +221,19 @@ fn setup_loading(mut commands: Commands, config: Res<SceneTransitionConfig>) {
         .with_children(|p| {
             p.spawn((
                 Text::new("Loading…"),
-                TextFont { font_size: 32.0, ..default() },
+                TextFont {
+                    font_size: 32.0,
+                    ..default()
+                },
                 TextColor(Color::srgb(0.8, 0.8, 0.8)),
             ));
 
             p.spawn((
-                Node { width: Val::Px(300.0), height: Val::Px(20.0), ..default() },
+                Node {
+                    width: Val::Px(300.0),
+                    height: Val::Px(20.0),
+                    ..default()
+                },
                 BackgroundColor(Color::srgb(0.15, 0.15, 0.15)),
             ))
             .with_children(|bar| {
@@ -261,14 +277,30 @@ fn tick_loading(
 
 fn setup_playing(mut commands: Commands) {
     let balls: &[(Vec3, Vec2, Color)] = &[
-        (Vec3::new(-100.0,  60.0, 0.0), Vec2::new( 160.0,  90.0), Color::srgb(0.9, 0.4, 0.2)),
-        (Vec3::new( 120.0, -60.0, 0.0), Vec2::new(-140.0, 110.0), Color::srgb(0.3, 0.7, 0.9)),
-        (Vec3::new(   0.0,  80.0, 0.0), Vec2::new( 100.0,-160.0), Color::srgb(0.7, 0.9, 0.2)),
+        (
+            Vec3::new(-100.0, 60.0, 0.0),
+            Vec2::new(160.0, 90.0),
+            Color::srgb(0.9, 0.4, 0.2),
+        ),
+        (
+            Vec3::new(120.0, -60.0, 0.0),
+            Vec2::new(-140.0, 110.0),
+            Color::srgb(0.3, 0.7, 0.9),
+        ),
+        (
+            Vec3::new(0.0, 80.0, 0.0),
+            Vec2::new(100.0, -160.0),
+            Color::srgb(0.7, 0.9, 0.2),
+        ),
     ];
 
     for &(pos, vel, color) in balls {
         commands.spawn((
-            Sprite { color, custom_size: Some(Vec2::splat(26.0)), ..default() },
+            Sprite {
+                color,
+                custom_size: Some(Vec2::splat(26.0)),
+                ..default()
+            },
             Transform::from_translation(pos),
             Ball,
             Velocity(vel),
@@ -278,7 +310,10 @@ fn setup_playing(mut commands: Commands) {
 
     commands.spawn((
         Text::new("Score: 0"),
-        TextFont { font_size: 24.0, ..default() },
+        TextFont {
+            font_size: 24.0,
+            ..default()
+        },
         TextColor(Color::WHITE),
         Node {
             position_type: PositionType::Absolute,
@@ -292,7 +327,10 @@ fn setup_playing(mut commands: Commands) {
 
     commands.spawn((
         Text::new("SPACE = score   ESC = main menu"),
-        TextFont { font_size: 14.0, ..default() },
+        TextFont {
+            font_size: 14.0,
+            ..default()
+        },
         TextColor(Color::srgb(0.55, 0.55, 0.55)),
         Node {
             position_type: PositionType::Absolute,
@@ -330,13 +368,19 @@ fn bounce_walls(
     mut query: Query<(&Transform, &mut Velocity), With<Ball>>,
 ) {
     for (t, mut v) in &mut query {
-        if t.translation.x.abs() > config.half_width { v.0.x *= -1.0; }
-        if t.translation.y.abs() > config.half_height { v.0.y *= -1.0; }
+        if t.translation.x.abs() > config.half_width {
+            v.0.x *= -1.0;
+        }
+        if t.translation.y.abs() > config.half_height {
+            v.0.y *= -1.0;
+        }
     }
 }
 
 fn update_score_hud(score: Res<Score>, mut q: Query<&mut Text, With<ScoreText>>) {
-    if !score.is_changed() { return; }
+    if !score.is_changed() {
+        return;
+    }
     for mut text in &mut q {
         *text = Text::new(format!("Score: {}", score.0));
     }
@@ -384,7 +428,11 @@ mod tests {
         app.update();
 
         let mut cam_q = app.world_mut().query::<&Camera2d>();
-        assert_eq!(cam_q.iter(app.world()).count(), 1, "camera should exist in MainMenu");
+        assert_eq!(
+            cam_q.iter(app.world()).count(),
+            1,
+            "camera should exist in MainMenu"
+        );
 
         // Simulate leaving MainMenu — cleanup despawns MenuEntity but not the camera.
         app.world_mut()
@@ -393,7 +441,11 @@ mod tests {
         app.update();
 
         let mut cam_q2 = app.world_mut().query::<&Camera2d>();
-        assert_eq!(cam_q2.iter(app.world()).count(), 1, "camera should still exist after leaving MainMenu");
+        assert_eq!(
+            cam_q2.iter(app.world()).count(),
+            1,
+            "camera should still exist after leaving MainMenu"
+        );
     }
 
     #[test]

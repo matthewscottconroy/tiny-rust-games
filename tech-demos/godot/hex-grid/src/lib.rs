@@ -38,25 +38,38 @@ pub fn pixel_to_axial(p: Vector2, size: f32) -> (i32, i32) {
     cube_round(q, -q - r, r)
 }
 
+/// Rounds fractional cube coordinates to the nearest hex.
+///
+/// Cube coordinates satisfy `q + s + r == 0`, and rounding each axis
+/// independently can break that. The fix is to keep the two axes that rounded
+/// most accurately and re-derive the third from them. Only `(q, r)` is
+/// returned, since `s` is always `-q - r`.
 pub fn cube_round(q: f32, s: f32, r: f32) -> (i32, i32) {
     let (rq, rs, rr) = (q.round(), s.round(), r.round());
     let (dq, ds, dr) = ((rq - q).abs(), (rs - s).abs(), (rr - r).abs());
-    let rq = if dq > ds && dq > dr { -rs - rr } else { rq };
-    let rr = if !(dq > ds && dq > dr) && ds <= dr { rr } else { rr };
-    let _ = rr;
-    // recompute properly
-    let (mut fq, mut fs, mut fr) = (q.round(), s.round(), r.round());
-    let (dq, ds, dr) = ((fq - q).abs(), (fs - s).abs(), (fr - r).abs());
-    if dq > ds && dq > dr { fq = -fs - fr; }
-    else if ds > dr       { fs = -fq - fr; }
-    else                  { fr = -fq - fs; }
-    let _ = (rq, rs, fs, fr);
-    (fq as i32, fr as i32)
+
+    if dq > ds && dq > dr {
+        // `q` drifted most — rebuild it from the other two.
+        ((-rs - rr) as i32, rr as i32)
+    } else if ds > dr {
+        // `s` drifted most, and it is the axis we discard anyway.
+        (rq as i32, rr as i32)
+    } else {
+        // `r` drifted most — rebuild it from the other two.
+        (rq as i32, (-rq - rs) as i32)
+    }
 }
 
 /// The 6 axial neighbours of `(q, r)`.
 pub fn hex_neighbors(q: i32, r: i32) -> [(i32, i32); 6] {
-    [(q+1,r),(q+1,r-1),(q,r-1),(q-1,r),(q-1,r+1),(q,r+1)]
+    [
+        (q + 1, r),
+        (q + 1, r - 1),
+        (q, r - 1),
+        (q - 1, r),
+        (q - 1, r + 1),
+        (q, r + 1),
+    ]
 }
 
 /// Axial hex distance.
@@ -98,7 +111,11 @@ impl INode2D for HexGridDemo {
                 }
             }
         }
-        Self { selected: None, cells, base }
+        Self {
+            selected: None,
+            cells,
+            base,
+        }
     }
 
     fn ready(&mut self) {
@@ -109,17 +126,18 @@ impl INode2D for HexGridDemo {
     }
 
     fn input(&mut self, event: Gd<InputEvent>) {
-        if let Ok(mb) = event.try_cast::<InputEventMouseButton>() {
-            if mb.get_button_index() == MouseButton::LEFT && mb.is_pressed() {
-                let local = mb.get_position() - Vector2::new(400.0, 300.0);
-                let (q, r) = pixel_to_axial(local, HEX_SIZE);
-                if self.cells.contains(&(q, r)) {
-                    self.selected = Some((q, r));
-                } else {
-                    self.selected = None;
-                }
-                self.base_mut().queue_redraw();
+        if let Ok(mb) = event.try_cast::<InputEventMouseButton>()
+            && mb.get_button_index() == MouseButton::LEFT
+            && mb.is_pressed()
+        {
+            let local = mb.get_position() - Vector2::new(400.0, 300.0);
+            let (q, r) = pixel_to_axial(local, HEX_SIZE);
+            if self.cells.contains(&(q, r)) {
+                self.selected = Some((q, r));
+            } else {
+                self.selected = None;
             }
+            self.base_mut().queue_redraw();
         }
 
         let input = Input::singleton();
@@ -130,7 +148,8 @@ impl INode2D for HexGridDemo {
     }
 
     fn draw(&mut self) {
-        let neighbors: std::collections::HashSet<(i32, i32)> = self.selected
+        let neighbors: std::collections::HashSet<(i32, i32)> = self
+            .selected
             .map(|(q, r)| hex_neighbors(q, r).into_iter().collect())
             .unwrap_or_default();
 
@@ -148,7 +167,8 @@ impl INode2D for HexGridDemo {
             };
             self.base_mut().draw_colored_polygon(&packed, color);
             // thin outline
-            self.base_mut().draw_polyline(&packed, Color::from_rgb(0.4, 0.4, 0.5));
+            self.base_mut()
+                .draw_polyline(&packed, Color::from_rgb(0.4, 0.4, 0.5));
         }
     }
 }
@@ -203,7 +223,11 @@ mod tests {
     #[test]
     fn hex_polygon_vertices_are_at_radius() {
         for v in hex_polygon(Vector2::ZERO, 32.0) {
-            assert!((v.length() - 32.0).abs() < 1e-3, "radius mismatch: {}", v.length());
+            assert!(
+                (v.length() - 32.0).abs() < 1e-3,
+                "radius mismatch: {}",
+                v.length()
+            );
         }
     }
 }

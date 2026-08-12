@@ -43,7 +43,14 @@ impl Plugin for WeatherSystemPlugin {
             .add_systems(Startup, setup)
             .add_systems(
                 Update,
-                (advance_weather, update_sky, move_rain, move_player, update_hud).chain(),
+                (
+                    advance_weather,
+                    update_sky,
+                    move_rain,
+                    move_player,
+                    update_hud,
+                )
+                    .chain(),
             );
     }
 }
@@ -82,21 +89,31 @@ impl Default for WeatherConfig {
 
 /// The four cyclic weather states.
 #[derive(Clone, Copy, Debug, PartialEq)]
-pub enum Weather { Clear, Cloudy, Rainy, Stormy }
+pub enum Weather {
+    Clear,
+    Cloudy,
+    Rainy,
+    Stormy,
+}
 
 impl Weather {
     /// Human-readable label for the HUD.
     pub fn label(self) -> &'static str {
-        match self { Weather::Clear => "Clear", Weather::Cloudy => "Cloudy", Weather::Rainy => "Rainy", Weather::Stormy => "Stormy" }
+        match self {
+            Weather::Clear => "Clear",
+            Weather::Cloudy => "Cloudy",
+            Weather::Rainy => "Rainy",
+            Weather::Stormy => "Stormy",
+        }
     }
 }
 
 /// Next weather in the cycle.
 pub fn next_weather(w: Weather) -> Weather {
     match w {
-        Weather::Clear  => Weather::Cloudy,
+        Weather::Clear => Weather::Cloudy,
         Weather::Cloudy => Weather::Rainy,
-        Weather::Rainy  => Weather::Stormy,
+        Weather::Rainy => Weather::Stormy,
         Weather::Stormy => Weather::Clear,
     }
 }
@@ -104,9 +121,9 @@ pub fn next_weather(w: Weather) -> Weather {
 /// Background sky colour for each weather state.
 pub fn sky_color(w: Weather) -> (f32, f32, f32) {
     match w {
-        Weather::Clear  => (0.42, 0.68, 1.00),
+        Weather::Clear => (0.42, 0.68, 1.00),
         Weather::Cloudy => (0.52, 0.55, 0.62),
-        Weather::Rainy  => (0.24, 0.28, 0.36),
+        Weather::Rainy => (0.24, 0.28, 0.36),
         Weather::Stormy => (0.10, 0.10, 0.14),
     }
 }
@@ -114,9 +131,9 @@ pub fn sky_color(w: Weather) -> (f32, f32, f32) {
 /// Fraction of the rain pool that should be active (0.0 – 1.0).
 pub fn rain_intensity(w: Weather) -> f32 {
     match w {
-        Weather::Clear  => 0.00,
+        Weather::Clear => 0.00,
         Weather::Cloudy => 0.05,
-        Weather::Rainy  => 0.55,
+        Weather::Rainy => 0.55,
         Weather::Stormy => 1.00,
     }
 }
@@ -124,9 +141,9 @@ pub fn rain_intensity(w: Weather) -> f32 {
 /// Horizontal wind force applied to the player each second (positive = rightward).
 pub fn wind_force(w: Weather) -> f32 {
     match w {
-        Weather::Clear  =>   0.0,
-        Weather::Cloudy =>  20.0,
-        Weather::Rainy  =>  80.0,
+        Weather::Clear => 0.0,
+        Weather::Cloudy => 20.0,
+        Weather::Rainy => 80.0,
         Weather::Stormy => 180.0,
     }
 }
@@ -134,9 +151,9 @@ pub fn wind_force(w: Weather) -> f32 {
 /// Rain fall speed (pixels per second, downward).
 pub fn rain_speed(w: Weather) -> f32 {
     match w {
-        Weather::Clear  => 200.0,
+        Weather::Clear => 200.0,
         Weather::Cloudy => 220.0,
-        Weather::Rainy  => 320.0,
+        Weather::Rainy => 320.0,
         Weather::Stormy => 480.0,
     }
 }
@@ -145,11 +162,17 @@ pub fn rain_speed(w: Weather) -> f32 {
 
 /// Tracks the active weather and the countdown to the next transition.
 #[derive(Resource)]
-pub struct WeatherState { pub current: Weather, pub timer: f32 }
+pub struct WeatherState {
+    pub current: Weather,
+    pub timer: f32,
+}
 
 impl Default for WeatherState {
     fn default() -> Self {
-        Self { current: Weather::Clear, timer: WeatherConfig::default().transition_secs }
+        Self {
+            current: Weather::Clear,
+            timer: WeatherConfig::default().transition_secs,
+        }
     }
 }
 
@@ -159,7 +182,11 @@ pub struct RainPool(pub Vec<Entity>);
 
 /// A single pooled rain drop with its logical position and per-drop speed scale.
 #[derive(Component)]
-pub struct RainDrop { pub x: f32, pub y: f32, pub speed_scale: f32 }
+pub struct RainDrop {
+    pub x: f32,
+    pub y: f32,
+    pub speed_scale: f32,
+}
 
 /// Marks the player entity.
 #[derive(Component)]
@@ -174,33 +201,53 @@ fn setup(mut commands: Commands, config: Res<WeatherConfig>, mut pool: ResMut<Ra
 
     // Ground.
     commands.spawn((
-        Sprite { color: Color::srgb(0.18, 0.22, 0.16), custom_size: Some(Vec2::new(config.window_w, 80.0)), ..default() },
+        Sprite {
+            color: Color::srgb(0.18, 0.22, 0.16),
+            custom_size: Some(Vec2::new(config.window_w, 80.0)),
+            ..default()
+        },
         Transform::from_translation(Vec3::new(0.0, -config.window_h / 2.0 + 40.0, 0.1)),
     ));
 
     // Player.
     commands.spawn((
         Player,
-        Sprite { color: Color::srgb(0.7, 0.6, 0.4), custom_size: Some(Vec2::splat(22.0)), ..default() },
+        Sprite {
+            color: Color::srgb(0.7, 0.6, 0.4),
+            custom_size: Some(Vec2::splat(22.0)),
+            ..default()
+        },
         Transform::from_translation(Vec3::new(0.0, -config.window_h / 2.0 + 90.0, 1.0)),
     ));
 
     // Rain pool.
     let mut rng = 0xABCD_1234u64;
     let mut lcg = move || -> f32 {
-        rng ^= rng << 13; rng ^= rng >> 7; rng ^= rng << 17;
+        rng ^= rng << 13;
+        rng ^= rng >> 7;
+        rng ^= rng << 17;
         (rng & 0xFFFF) as f32 / 65535.0
     };
     let mut entities = Vec::with_capacity(config.pool_size);
     for _ in 0..config.pool_size {
         let x = lcg() * config.window_w - config.window_w / 2.0;
         let y = lcg() * config.window_h - config.window_h / 2.0;
-        let e = commands.spawn((
-            RainDrop { x, y, speed_scale: 0.7 + lcg() * 0.6 },
-            Sprite { color: Color::srgba(0.7, 0.8, 1.0, 0.55), custom_size: Some(Vec2::new(1.5, 12.0)), ..default() },
-            Transform::from_translation(Vec3::new(x, y, 2.0)),
-            Visibility::Hidden,
-        )).id();
+        let e = commands
+            .spawn((
+                RainDrop {
+                    x,
+                    y,
+                    speed_scale: 0.7 + lcg() * 0.6,
+                },
+                Sprite {
+                    color: Color::srgba(0.7, 0.8, 1.0, 0.55),
+                    custom_size: Some(Vec2::new(1.5, 12.0)),
+                    ..default()
+                },
+                Transform::from_translation(Vec3::new(x, y, 2.0)),
+                Visibility::Hidden,
+            ))
+            .id();
         entities.push(e);
     }
     pool.0 = entities;
@@ -208,16 +255,32 @@ fn setup(mut commands: Commands, config: Res<WeatherConfig>, mut pool: ResMut<Ra
     commands.spawn((
         HudText,
         Text::new(""),
-        TextFont { font_size: 18.0, ..default() },
+        TextFont {
+            font_size: 18.0,
+            ..default()
+        },
         TextColor(Color::WHITE),
-        Node { position_type: PositionType::Absolute, top: Val::Px(10.0), left: Val::Px(10.0), ..default() },
+        Node {
+            position_type: PositionType::Absolute,
+            top: Val::Px(10.0),
+            left: Val::Px(10.0),
+            ..default()
+        },
     ));
 
     commands.spawn((
         Text::new("WASD / Arrows — move   R — advance weather"),
-        TextFont { font_size: 13.0, ..default() },
+        TextFont {
+            font_size: 13.0,
+            ..default()
+        },
         TextColor(Color::srgba(1.0, 1.0, 1.0, 0.55)),
-        Node { position_type: PositionType::Absolute, bottom: Val::Px(10.0), left: Val::Px(10.0), ..default() },
+        Node {
+            position_type: PositionType::Absolute,
+            bottom: Val::Px(10.0),
+            left: Val::Px(10.0),
+            ..default()
+        },
     ));
 }
 
@@ -258,7 +321,9 @@ fn move_rain(
     let dt = time.delta_secs();
 
     for (idx, &entity) in pool.0.iter().enumerate() {
-        let Ok((mut drop, mut tf, mut vis)) = drop_q.get_mut(entity) else { continue };
+        let Ok((mut drop, mut tf, mut vis)) = drop_q.get_mut(entity) else {
+            continue;
+        };
         if idx >= active_count {
             *vis = Visibility::Hidden;
             continue;
@@ -270,8 +335,12 @@ fn move_rain(
             drop.y = config.window_h / 2.0;
             drop.x = drop.x.rem_euclid(config.window_w) - config.window_w / 2.0;
         }
-        if drop.x > config.window_w / 2.0 { drop.x -= config.window_w; }
-        if drop.x < -config.window_w / 2.0 { drop.x += config.window_w; }
+        if drop.x > config.window_w / 2.0 {
+            drop.x -= config.window_w;
+        }
+        if drop.x < -config.window_w / 2.0 {
+            drop.x += config.window_w;
+        }
         tf.translation.x = drop.x;
         tf.translation.y = drop.y;
     }
@@ -287,15 +356,33 @@ fn move_player(
     let Ok(mut tf) = q.single_mut() else { return };
     let dt = time.delta_secs();
     let mut dir = Vec2::ZERO;
-    if keys.pressed(KeyCode::KeyW) || keys.pressed(KeyCode::ArrowUp)    { dir.y += 1.0; }
-    if keys.pressed(KeyCode::KeyS) || keys.pressed(KeyCode::ArrowDown)  { dir.y -= 1.0; }
-    if keys.pressed(KeyCode::KeyA) || keys.pressed(KeyCode::ArrowLeft)  { dir.x -= 1.0; }
-    if keys.pressed(KeyCode::KeyD) || keys.pressed(KeyCode::ArrowRight) { dir.x += 1.0; }
-    let input_vel = if dir != Vec2::ZERO { dir.normalize() * config.player_speed } else { Vec2::ZERO };
+    if keys.pressed(KeyCode::KeyW) || keys.pressed(KeyCode::ArrowUp) {
+        dir.y += 1.0;
+    }
+    if keys.pressed(KeyCode::KeyS) || keys.pressed(KeyCode::ArrowDown) {
+        dir.y -= 1.0;
+    }
+    if keys.pressed(KeyCode::KeyA) || keys.pressed(KeyCode::ArrowLeft) {
+        dir.x -= 1.0;
+    }
+    if keys.pressed(KeyCode::KeyD) || keys.pressed(KeyCode::ArrowRight) {
+        dir.x += 1.0;
+    }
+    let input_vel = if dir != Vec2::ZERO {
+        dir.normalize() * config.player_speed
+    } else {
+        Vec2::ZERO
+    };
     let wind = Vec2::new(wind_force(state.current), 0.0);
     tf.translation += ((input_vel + wind) * dt).extend(0.0);
-    tf.translation.x = tf.translation.x.clamp(-config.window_w / 2.0 + 14.0, config.window_w / 2.0 - 14.0);
-    tf.translation.y = tf.translation.y.clamp(-config.window_h / 2.0 + 50.0, config.window_h / 2.0 - 14.0);
+    tf.translation.x = tf
+        .translation
+        .x
+        .clamp(-config.window_w / 2.0 + 14.0, config.window_w / 2.0 - 14.0);
+    tf.translation.y = tf
+        .translation
+        .y
+        .clamp(-config.window_h / 2.0 + 50.0, config.window_h / 2.0 - 14.0);
 }
 
 fn update_hud(state: Res<WeatherState>, mut q: Query<&mut Text, With<HudText>>) {
@@ -304,7 +391,10 @@ fn update_hud(state: Res<WeatherState>, mut q: Query<&mut Text, With<HudText>>) 
     let next = next_weather(state.current);
     text.0 = format!(
         "Weather: {}  |  Wind: {:.0} px/s  |  Next: {} in {:.0}s",
-        state.current.label(), wind, next.label(), state.timer.max(0.0)
+        state.current.label(),
+        wind,
+        next.label(),
+        state.timer.max(0.0)
     );
 }
 
@@ -317,7 +407,9 @@ mod tests {
     #[test]
     fn weather_cycles_back_to_clear() {
         let mut w = Weather::Clear;
-        for _ in 0..4 { w = next_weather(w); }
+        for _ in 0..4 {
+            w = next_weather(w);
+        }
         assert_eq!(w, Weather::Clear);
     }
 
@@ -330,9 +422,14 @@ mod tests {
 
     #[test]
     fn rain_intensity_ranges_zero_to_one() {
-        for w in [Weather::Clear, Weather::Cloudy, Weather::Rainy, Weather::Stormy] {
+        for w in [
+            Weather::Clear,
+            Weather::Cloudy,
+            Weather::Rainy,
+            Weather::Stormy,
+        ] {
             let i = rain_intensity(w);
-            assert!(i >= 0.0 && i <= 1.0);
+            assert!((0.0..=1.0).contains(&i));
         }
     }
 

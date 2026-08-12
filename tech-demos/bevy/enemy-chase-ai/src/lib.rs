@@ -103,7 +103,10 @@ pub struct SpawnTimer {
 impl Default for SpawnTimer {
     fn default() -> Self {
         Self {
-            timer: Timer::from_seconds(EnemyChaseAiConfig::default().spawn_interval, TimerMode::Repeating),
+            timer: Timer::from_seconds(
+                EnemyChaseAiConfig::default().spawn_interval,
+                TimerMode::Repeating,
+            ),
             angle: 0.0,
         }
     }
@@ -140,7 +143,10 @@ fn setup(mut commands: Commands) {
 
     commands.spawn((
         Text::new("WASD — move   survive the horde"),
-        TextFont { font_size: 16.0, ..default() },
+        TextFont {
+            font_size: 16.0,
+            ..default()
+        },
         TextColor(Color::srgb(0.8, 0.8, 0.8)),
         Node {
             position_type: PositionType::Absolute,
@@ -159,15 +165,29 @@ fn move_player(
     config: Res<EnemyChaseAiConfig>,
     mut query: Query<&mut Velocity, With<Player>>,
 ) {
-    let Ok(mut vel) = query.single_mut() else { return; };
+    let Ok(mut vel) = query.single_mut() else {
+        return;
+    };
 
     let mut dir = Vec2::ZERO;
-    if input.pressed(KeyCode::KeyW) { dir.y += 1.0; }
-    if input.pressed(KeyCode::KeyS) { dir.y -= 1.0; }
-    if input.pressed(KeyCode::KeyA) { dir.x -= 1.0; }
-    if input.pressed(KeyCode::KeyD) { dir.x += 1.0; }
+    if input.pressed(KeyCode::KeyW) {
+        dir.y += 1.0;
+    }
+    if input.pressed(KeyCode::KeyS) {
+        dir.y -= 1.0;
+    }
+    if input.pressed(KeyCode::KeyA) {
+        dir.x -= 1.0;
+    }
+    if input.pressed(KeyCode::KeyD) {
+        dir.x += 1.0;
+    }
 
-    vel.0 = if dir != Vec2::ZERO { dir.normalize() * config.player_speed } else { Vec2::ZERO };
+    vel.0 = if dir != Vec2::ZERO {
+        dir.normalize() * config.player_speed
+    } else {
+        Vec2::ZERO
+    };
 }
 
 /// Ticks the spawn timer and spawns a new enemy on each interval.
@@ -205,7 +225,9 @@ fn chase_player(
     player_query: Query<&Transform, (With<Player>, Without<Enemy>)>,
     mut enemy_query: Query<(&Transform, &mut Velocity), (With<Enemy>, Without<Player>)>,
 ) {
-    let Ok(player_transform) = player_query.single() else { return; };
+    let Ok(player_transform) = player_query.single() else {
+        return;
+    };
 
     for (enemy_transform, mut vel) in &mut enemy_query {
         let diff = player_transform.translation - enemy_transform.translation;
@@ -246,7 +268,7 @@ mod tests {
         let mut angle = 0.0f32;
         for _ in 0..100 {
             angle = next_spawn_angle(angle);
-            assert!(angle >= 0.0 && angle < 2.0 * std::f32::consts::PI);
+            assert!((0.0..2.0 * std::f32::consts::PI).contains(&angle));
         }
     }
 

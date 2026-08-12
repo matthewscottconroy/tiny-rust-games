@@ -27,7 +27,10 @@ impl INode2D for InputActions {
     }
 
     fn ready(&mut self) {
-        godot_print!("InputActions ready — monitoring action: {}", self.action_name);
+        godot_print!(
+            "InputActions ready — monitoring action: {}",
+            self.action_name
+        );
     }
 
     fn process(&mut self, _delta: f64) {

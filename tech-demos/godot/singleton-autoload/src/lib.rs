@@ -102,13 +102,13 @@ impl ILabel for ScoreDisplay {
 
     fn process(&mut self, _delta: f64) {
         let engine = Engine::singleton();
-        if let Some(gd) = engine.get_singleton("GameManager") {
-            if let Ok(manager) = gd.try_cast::<GameManager>() {
-                let score = manager.bind().get_score();
-                let level = manager.bind().get_level();
-                let text = format_score(score, level);
-                self.base_mut().set_text(text.as_str());
-            }
+        if let Some(gd) = engine.get_singleton("GameManager")
+            && let Ok(manager) = gd.try_cast::<GameManager>()
+        {
+            let score = manager.bind().get_score();
+            let level = manager.bind().get_level();
+            let text = format_score(score, level);
+            self.base_mut().set_text(text.as_str());
         }
     }
 }

@@ -43,17 +43,30 @@ fn read_sim_config() -> (EcsAsciiSimConfig, Duration) {
     println!("╚══════════════════════════════════════╝\n");
     println!("Press Enter to accept defaults.\n");
     let defaults = EcsAsciiSimConfig::default();
-    let width = prompt("Grid width       (X)", "100").parse().unwrap_or(defaults.width);
-    let height = prompt("Grid height      (Y)", "100").parse().unwrap_or(defaults.height);
-    let npc_count = prompt("Number of NPCs   (N)", "1000").parse().unwrap_or(defaults.npc_count);
-    let turn_secs = prompt("Turn duration (secs)", "1.0").parse::<f64>().unwrap_or(1.0);
+    let width = prompt("Grid width       (X)", "100")
+        .parse()
+        .unwrap_or(defaults.width);
+    let height = prompt("Grid height      (Y)", "100")
+        .parse()
+        .unwrap_or(defaults.height);
+    let npc_count = prompt("Number of NPCs   (N)", "1000")
+        .parse()
+        .unwrap_or(defaults.npc_count);
+    let turn_secs = prompt("Turn duration (secs)", "1.0")
+        .parse::<f64>()
+        .unwrap_or(1.0);
     println!();
 
     // Clear terminal before the simulation starts.
     print!("\x1b[2J\x1b[H");
     let _ = io::stdout().flush();
 
-    let config = EcsAsciiSimConfig { width, height, npc_count, ..defaults };
+    let config = EcsAsciiSimConfig {
+        width,
+        height,
+        npc_count,
+        ..defaults
+    };
     (config, Duration::from_secs_f64(turn_secs))
 }
 

@@ -153,9 +153,9 @@ impl CutsceneStep {
     /// Returns the duration of this step in seconds.
     pub fn duration(&self) -> f32 {
         match self {
-            Self::FadeIn { duration }
-            | Self::FadeOut { duration }
-            | Self::Wait { duration } => *duration,
+            Self::FadeIn { duration } | Self::FadeOut { duration } | Self::Wait { duration } => {
+                *duration
+            }
             Self::PanCamera { duration, .. } => *duration,
             Self::ShowText { duration, .. } => *duration,
         }
@@ -176,7 +176,9 @@ impl Cutscene {
     pub fn default_sequence(config: &CutsceneSequencerConfig) -> Self {
         Self {
             steps: vec![
-                CutsceneStep::FadeIn { duration: config.fade_seconds },
+                CutsceneStep::FadeIn {
+                    duration: config.fade_seconds,
+                },
                 CutsceneStep::PanCamera {
                     from: config.pan_left,
                     to: config.pan_center,
@@ -195,7 +197,9 @@ impl Cutscene {
                     text: "Something stirs in the darkness...".into(),
                     duration: config.text_seconds,
                 },
-                CutsceneStep::FadeOut { duration: config.fade_seconds },
+                CutsceneStep::FadeOut {
+                    duration: config.fade_seconds,
+                },
             ],
             current: 0,
             elapsed: 0.0,
@@ -292,7 +296,10 @@ fn setup(mut commands: Commands) {
     commands.spawn((
         SubtitleText,
         Text::new(""),
-        TextFont { font_size: 28.0, ..default() },
+        TextFont {
+            font_size: 28.0,
+            ..default()
+        },
         TextColor(Color::WHITE),
         Node {
             position_type: PositionType::Absolute,
@@ -309,7 +316,10 @@ fn setup(mut commands: Commands) {
     commands.spawn((
         ReplayPrompt,
         Text::new("Press SPACE to replay"),
-        TextFont { font_size: 22.0, ..default() },
+        TextFont {
+            font_size: 22.0,
+            ..default()
+        },
         TextColor(Color::srgb(0.8, 0.8, 0.8)),
         Node {
             position_type: PositionType::Absolute,
@@ -326,7 +336,10 @@ fn setup(mut commands: Commands) {
     commands.spawn((
         DebugHud,
         Text::new(""),
-        TextFont { font_size: 13.0, ..default() },
+        TextFont {
+            font_size: 13.0,
+            ..default()
+        },
         TextColor(Color::srgb(0.6, 0.6, 0.6)),
         Node {
             position_type: PositionType::Absolute,
@@ -361,15 +374,16 @@ fn advance_cutscene(mut cutscene: ResMut<Cutscene>, time: Res<Time>) {
 }
 
 /// Lerps the camera position when the current step is `PanCamera`.
-fn apply_camera_step(
-    cutscene: Res<Cutscene>,
-    mut camera_q: Query<&mut Transform, With<Camera2d>>,
-) {
-    let Ok(mut cam_tf) = camera_q.single_mut() else { return };
+fn apply_camera_step(cutscene: Res<Cutscene>, mut camera_q: Query<&mut Transform, With<Camera2d>>) {
+    let Ok(mut cam_tf) = camera_q.single_mut() else {
+        return;
+    };
     if cutscene.finished {
         return;
     }
-    let Some(step) = cutscene.steps.get(cutscene.current) else { return };
+    let Some(step) = cutscene.steps.get(cutscene.current) else {
+        return;
+    };
     if let CutsceneStep::PanCamera { from, to, duration } = step {
         let progress = step_progress(cutscene.elapsed, *duration);
         let target = pan_position(*from, *to, progress);
@@ -379,11 +393,10 @@ fn apply_camera_step(
 }
 
 /// Adjusts the fade overlay alpha for `FadeIn` and `FadeOut` steps.
-fn apply_fade_step(
-    cutscene: Res<Cutscene>,
-    mut overlay_q: Query<&mut Sprite, With<FadeOverlay>>,
-) {
-    let Ok(mut sprite) = overlay_q.single_mut() else { return };
+fn apply_fade_step(cutscene: Res<Cutscene>, mut overlay_q: Query<&mut Sprite, With<FadeOverlay>>) {
+    let Ok(mut sprite) = overlay_q.single_mut() else {
+        return;
+    };
     let alpha = if cutscene.finished {
         // Keep fully opaque after FadeOut (last step)
         1.0_f32
@@ -392,9 +405,7 @@ fn apply_fade_step(
             Some(CutsceneStep::FadeIn { duration }) => {
                 1.0 - step_progress(cutscene.elapsed, *duration)
             }
-            Some(CutsceneStep::FadeOut { duration }) => {
-                step_progress(cutscene.elapsed, *duration)
-            }
+            Some(CutsceneStep::FadeOut { duration }) => step_progress(cutscene.elapsed, *duration),
             _ => 0.0, // Fully transparent during all other steps
         }
     };
@@ -407,8 +418,12 @@ fn apply_text_step(
     mut subtitle_q: Query<(&mut Text, &mut Visibility), With<SubtitleText>>,
     mut replay_q: Query<&mut Visibility, (With<ReplayPrompt>, Without<SubtitleText>)>,
 ) {
-    let Ok((mut text, mut vis)) = subtitle_q.single_mut() else { return };
-    let Ok(mut replay_vis) = replay_q.single_mut() else { return };
+    let Ok((mut text, mut vis)) = subtitle_q.single_mut() else {
+        return;
+    };
+    let Ok(mut replay_vis) = replay_q.single_mut() else {
+        return;
+    };
 
     if cutscene.finished {
         *vis = Visibility::Hidden;
@@ -439,11 +454,10 @@ fn handle_replay(keys: Res<ButtonInput<KeyCode>>, mut cutscene: ResMut<Cutscene>
 }
 
 /// Updates the corner debug text with step index and elapsed time.
-fn update_debug_hud(
-    cutscene: Res<Cutscene>,
-    mut hud_q: Query<&mut Text, With<DebugHud>>,
-) {
-    let Ok(mut text) = hud_q.single_mut() else { return };
+fn update_debug_hud(cutscene: Res<Cutscene>, mut hud_q: Query<&mut Text, With<DebugHud>>) {
+    let Ok(mut text) = hud_q.single_mut() else {
+        return;
+    };
     if cutscene.finished {
         **text = "Cutscene finished".into();
     } else {
@@ -566,7 +580,10 @@ mod tests {
 
     #[test]
     fn config_threads_into_sequence_durations() {
-        let cfg = CutsceneSequencerConfig { fade_seconds: 3.0, ..Default::default() };
+        let cfg = CutsceneSequencerConfig {
+            fade_seconds: 3.0,
+            ..Default::default()
+        };
         let cutscene = Cutscene::default_sequence(&cfg);
         // First step is FadeIn using fade_seconds.
         assert!((cutscene.steps[0].duration() - 3.0).abs() < 1e-6);

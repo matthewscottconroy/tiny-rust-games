@@ -27,11 +27,7 @@
 //!     .run();
 //! ```
 
-use bevy::{
-    camera::Viewport,
-    math::UVec2,
-    prelude::*,
-};
+use bevy::{camera::Viewport, math::UVec2, prelude::*};
 
 /// Bundles every system and resource for the minimap feature.
 ///
@@ -170,18 +166,18 @@ fn setup(mut commands: Commands, config: Res<MinimapConfig>) {
 
     // --- Landmark sprites (bright, scattered) ---
     let landmarks: &[(f32, f32, Color)] = &[
-        (-800.0,  600.0, Color::srgb(0.9, 0.2, 0.2)),
-        ( 500.0,  900.0, Color::srgb(0.2, 0.8, 0.3)),
-        ( 1200.0, -400.0, Color::srgb(0.2, 0.4, 0.9)),
+        (-800.0, 600.0, Color::srgb(0.9, 0.2, 0.2)),
+        (500.0, 900.0, Color::srgb(0.2, 0.8, 0.3)),
+        (1200.0, -400.0, Color::srgb(0.2, 0.4, 0.9)),
         (-1400.0, -700.0, Color::srgb(0.9, 0.7, 0.1)),
-        ( 300.0, -1100.0, Color::srgb(0.8, 0.2, 0.8)),
-        (-600.0,  1300.0, Color::srgb(0.1, 0.8, 0.8)),
-        ( 1600.0,  800.0, Color::srgb(0.95, 0.5, 0.1)),
-        (-1700.0,  200.0, Color::srgb(0.5, 0.9, 0.2)),
-        ( 900.0, -1500.0, Color::srgb(0.2, 0.6, 0.95)),
-        (-300.0, -800.0,  Color::srgb(0.9, 0.3, 0.6)),
-        ( 1800.0, -1600.0, Color::srgb(0.7, 0.9, 0.2)),
-        (-1900.0,  1600.0, Color::srgb(0.95, 0.85, 0.3)),
+        (300.0, -1100.0, Color::srgb(0.8, 0.2, 0.8)),
+        (-600.0, 1300.0, Color::srgb(0.1, 0.8, 0.8)),
+        (1600.0, 800.0, Color::srgb(0.95, 0.5, 0.1)),
+        (-1700.0, 200.0, Color::srgb(0.5, 0.9, 0.2)),
+        (900.0, -1500.0, Color::srgb(0.2, 0.6, 0.95)),
+        (-300.0, -800.0, Color::srgb(0.9, 0.3, 0.6)),
+        (1800.0, -1600.0, Color::srgb(0.7, 0.9, 0.2)),
+        (-1900.0, 1600.0, Color::srgb(0.95, 0.85, 0.3)),
     ];
 
     for &(x, y, color) in landmarks {
@@ -220,7 +216,10 @@ fn setup(mut commands: Commands, config: Res<MinimapConfig>) {
     // --- HUD label ---
     commands.spawn((
         Text::new("WASD to move  |  Minimap: top-right"),
-        TextFont { font_size: 18.0, ..default() },
+        TextFont {
+            font_size: 18.0,
+            ..default()
+        },
         TextColor(Color::WHITE),
         Node {
             position_type: PositionType::Absolute,
@@ -242,13 +241,23 @@ fn move_player(
     config: Res<MinimapConfig>,
     mut query: Query<&mut Transform, With<Player>>,
 ) {
-    let Ok(mut transform) = query.single_mut() else { return; };
+    let Ok(mut transform) = query.single_mut() else {
+        return;
+    };
 
     let mut dir = Vec2::ZERO;
-    if input.pressed(KeyCode::KeyW) { dir.y += 1.0; }
-    if input.pressed(KeyCode::KeyS) { dir.y -= 1.0; }
-    if input.pressed(KeyCode::KeyA) { dir.x -= 1.0; }
-    if input.pressed(KeyCode::KeyD) { dir.x += 1.0; }
+    if input.pressed(KeyCode::KeyW) {
+        dir.y += 1.0;
+    }
+    if input.pressed(KeyCode::KeyS) {
+        dir.y -= 1.0;
+    }
+    if input.pressed(KeyCode::KeyA) {
+        dir.x -= 1.0;
+    }
+    if input.pressed(KeyCode::KeyD) {
+        dir.x += 1.0;
+    }
 
     if dir != Vec2::ZERO {
         let delta = dir.normalize() * config.player_speed * time.delta_secs();
@@ -273,8 +282,12 @@ fn follow_main_camera(
     player_q: Query<&Transform, (With<Player>, Without<MainCamera>)>,
     mut cam_q: Query<&mut Transform, (With<MainCamera>, Without<Player>)>,
 ) {
-    let Ok(player) = player_q.single() else { return; };
-    let Ok(mut cam) = cam_q.single_mut() else { return; };
+    let Ok(player) = player_q.single() else {
+        return;
+    };
+    let Ok(mut cam) = cam_q.single_mut() else {
+        return;
+    };
 
     let current = cam.translation.truncate();
     let target = player.translation.truncate();
@@ -398,7 +411,11 @@ mod tests {
 
     #[test]
     fn clamp_camera_origin_within_large_map() {
-        let result = clamp_camera_to_map(Vec2::ZERO, Vec2::new(100.0, 100.0), Vec2::new(2000.0, 2000.0));
+        let result = clamp_camera_to_map(
+            Vec2::ZERO,
+            Vec2::new(100.0, 100.0),
+            Vec2::new(2000.0, 2000.0),
+        );
         assert!((result - Vec2::ZERO).length() < 1e-5);
     }
 

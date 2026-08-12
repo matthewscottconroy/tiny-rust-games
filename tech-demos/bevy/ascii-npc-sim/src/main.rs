@@ -23,11 +23,12 @@ fn main() {
     App::new()
         // Headless: no window, no renderer.  Poll at 50 ms to keep CPU idle
         // between turns while still waking up promptly when the timer fires.
-        .add_plugins(
-            MinimalPlugins.set(ScheduleRunnerPlugin::run_loop(Duration::from_millis(50))),
-        )
+        .add_plugins(MinimalPlugins.set(ScheduleRunnerPlugin::run_loop(Duration::from_millis(50))))
         .insert_resource(config)
-        .insert_resource(TurnTimer(Timer::from_seconds(turn_secs, TimerMode::Repeating)))
+        .insert_resource(TurnTimer(Timer::from_seconds(
+            turn_secs,
+            TimerMode::Repeating,
+        )))
         .insert_resource(RngState(StdRng::from_entropy()))
         .insert_resource(TurnCount::default())
         .add_plugins(AsciiNpcSimPlugin)
@@ -65,5 +66,10 @@ fn prompt_config() -> GridConfig {
     io::stdout().flush().ok();
     let turn_secs = parse_or(&read_line(), 1.0f32).max(0.01);
 
-    GridConfig { width, height, npc_count, turn_secs }
+    GridConfig {
+        width,
+        height,
+        npc_count,
+        turn_secs,
+    }
 }

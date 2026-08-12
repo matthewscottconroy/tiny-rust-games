@@ -176,7 +176,10 @@ impl LifecycleRoot {
 
     // Internal: write the log to the EventLog label.
     fn refresh_label(&mut self) {
-        if let Some(mut label) = self.base().try_get_node_as::<godot::classes::Label>("EventLog") {
+        if let Some(mut label) = self
+            .base()
+            .try_get_node_as::<godot::classes::Label>("EventLog")
+        {
             let text = format_event_log(&self.event_log);
             label.set_text(text.as_str());
         }

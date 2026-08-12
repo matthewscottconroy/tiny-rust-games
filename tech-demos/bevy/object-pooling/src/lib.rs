@@ -45,7 +45,10 @@ impl Plugin for ObjectPoolingPlugin {
         app.init_resource::<PoolConfig>()
             .insert_resource(FireCooldown(0.0))
             .add_systems(Startup, setup)
-            .add_systems(Update, (tick_cooldown, handle_fire, move_bullets, update_hud));
+            .add_systems(
+                Update,
+                (tick_cooldown, handle_fire, move_bullets, update_hud),
+            );
     }
 }
 
@@ -136,7 +139,11 @@ fn setup(mut commands: Commands, config: Res<PoolConfig>) {
 
     // Player ship (triangle approximated as a rectangle for simplicity)
     commands.spawn((
-        Sprite { color: Color::srgb(0.3, 0.85, 1.0), custom_size: Some(Vec2::new(30.0, 18.0)), ..default() },
+        Sprite {
+            color: Color::srgb(0.3, 0.85, 1.0),
+            custom_size: Some(Vec2::new(30.0, 18.0)),
+            ..default()
+        },
         Transform::from_translation(Vec3::new(0.0, -180.0, 1.0)),
         PlayerShip,
     ));
@@ -144,16 +151,21 @@ fn setup(mut commands: Commands, config: Res<PoolConfig>) {
     // Pre-spawn bullet pool — all hidden, inactive.
     let mut pool = Vec::with_capacity(config.pool_size);
     for _ in 0..config.pool_size {
-        let e = commands.spawn((
-            Sprite {
-                color: Color::srgb(1.0, 0.95, 0.3),
-                custom_size: Some(Vec2::new(4.0, 12.0)),
-                ..default()
-            },
-            Transform::from_translation(Vec3::new(9999.0, 9999.0, 0.0)),
-            Visibility::Hidden,
-            PooledBullet { active: false, velocity: Vec2::ZERO },
-        )).id();
+        let e = commands
+            .spawn((
+                Sprite {
+                    color: Color::srgb(1.0, 0.95, 0.3),
+                    custom_size: Some(Vec2::new(4.0, 12.0)),
+                    ..default()
+                },
+                Transform::from_translation(Vec3::new(9999.0, 9999.0, 0.0)),
+                Visibility::Hidden,
+                PooledBullet {
+                    active: false,
+                    velocity: Vec2::ZERO,
+                },
+            ))
+            .id();
         pool.push(e);
     }
     commands.insert_resource(BulletPool(pool));
@@ -161,7 +173,10 @@ fn setup(mut commands: Commands, config: Res<PoolConfig>) {
     // HUD
     commands.spawn((
         Text::new(format!("Pool: 0 / {} active", config.pool_size)),
-        TextFont { font_size: 20.0, ..default() },
+        TextFont {
+            font_size: 20.0,
+            ..default()
+        },
         TextColor(Color::WHITE),
         Node {
             position_type: PositionType::Absolute,
@@ -173,7 +188,10 @@ fn setup(mut commands: Commands, config: Res<PoolConfig>) {
     ));
     commands.spawn((
         Text::new("SPACE / Left-click — fire"),
-        TextFont { font_size: 16.0, ..default() },
+        TextFont {
+            font_size: 16.0,
+            ..default()
+        },
         TextColor(Color::srgb(0.7, 0.7, 0.7)),
         Node {
             position_type: PositionType::Absolute,
@@ -186,13 +204,26 @@ fn setup(mut commands: Commands, config: Res<PoolConfig>) {
 
     // Starfield background
     let positions: &[(f32, f32)] = &[
-        (-350.0, 200.0), (120.0, 180.0), (270.0, -100.0), (-200.0, 130.0),
-        (50.0, 210.0), (-100.0, -190.0), (310.0, 90.0), (-280.0, -170.0),
-        (160.0, -240.0), (-55.0, 160.0), (240.0, -150.0), (-180.0, 250.0),
+        (-350.0, 200.0),
+        (120.0, 180.0),
+        (270.0, -100.0),
+        (-200.0, 130.0),
+        (50.0, 210.0),
+        (-100.0, -190.0),
+        (310.0, 90.0),
+        (-280.0, -170.0),
+        (160.0, -240.0),
+        (-55.0, 160.0),
+        (240.0, -150.0),
+        (-180.0, 250.0),
     ];
     for &(x, y) in positions {
         commands.spawn((
-            Sprite { color: Color::srgba(1.0, 1.0, 1.0, 0.4), custom_size: Some(Vec2::splat(2.0)), ..default() },
+            Sprite {
+                color: Color::srgba(1.0, 1.0, 1.0, 0.4),
+                custom_size: Some(Vec2::splat(2.0)),
+                ..default()
+            },
             Transform::from_translation(Vec3::new(x, y, 0.0)),
         ));
     }
@@ -219,11 +250,15 @@ fn handle_fire(
     let Ok(ship_t) = ship_q.single() else { return };
 
     // Collect active flags to find a free slot.
-    let active_flags: Vec<bool> = pool.0.iter().filter_map(|&e| {
-        bullets.get(e).ok().map(|(b, _, _)| b.active)
-    }).collect();
+    let active_flags: Vec<bool> = pool
+        .0
+        .iter()
+        .filter_map(|&e| bullets.get(e).ok().map(|(b, _, _)| b.active))
+        .collect();
 
-    let Some(slot) = find_inactive(&active_flags) else { return };
+    let Some(slot) = find_inactive(&active_flags) else {
+        return;
+    };
     let entity = pool.0[slot];
     if let Ok((mut bullet, mut t, mut vis)) = bullets.get_mut(entity) {
         bullet.active = true;

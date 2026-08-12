@@ -123,7 +123,10 @@ fn setup(mut commands: Commands, config: Res<BoidsFlockingConfig>) {
 
     commands.spawn((
         Text::new("Boids: separation + alignment + cohesion → emergent flocking"),
-        TextFont { font_size: 14.0, ..default() },
+        TextFont {
+            font_size: 14.0,
+            ..default()
+        },
         TextColor(Color::srgb(0.6, 0.6, 0.6)),
         Node {
             position_type: PositionType::Absolute,
@@ -144,12 +147,12 @@ pub fn hue_to_rgb(h: f32) -> Color {
     let h = h % 6.0;
     let x = 1.0 - (h % 2.0 - 1.0).abs();
     let (r, g, b) = match h as u32 {
-        0 => (1.0, x,   0.0),
-        1 => (x,   1.0, 0.0),
-        2 => (0.0, 1.0, x  ),
-        3 => (0.0, x,   1.0),
-        4 => (x,   0.0, 1.0),
-        _ => (1.0, 0.0, x  ),
+        0 => (1.0, x, 0.0),
+        1 => (x, 1.0, 0.0),
+        2 => (0.0, 1.0, x),
+        3 => (0.0, x, 1.0),
+        4 => (x, 0.0, 1.0),
+        _ => (1.0, 0.0, x),
     };
     Color::srgb(r * 0.7 + 0.3, g * 0.7 + 0.3, b * 0.7 + 0.3)
 }
@@ -175,17 +178,19 @@ fn flock(
         let pos = transform.translation.truncate();
 
         let mut separation = Vec2::ZERO;
-        let mut alignment  = Vec2::ZERO;
-        let mut cohesion   = Vec2::ZERO;
+        let mut alignment = Vec2::ZERO;
+        let mut cohesion = Vec2::ZERO;
         let mut count = 0usize;
 
         for &(other_e, other_pos, other_vel) in &snapshot {
-            if other_e == entity { continue; }
+            if other_e == entity {
+                continue;
+            }
             let dist = pos.distance(other_pos);
             if dist < config.neighbor_radius && dist > 0.0 {
                 separation += (pos - other_pos) / dist;
-                alignment  += other_vel;
-                cohesion   += other_pos;
+                alignment += other_vel;
+                cohesion += other_pos;
                 count += 1;
             }
         }
@@ -222,21 +227,28 @@ fn move_boids(time: Res<Time>, mut query: Query<(&mut Transform, &Velocity), Wit
 }
 
 /// Wraps boids toroidally when they cross the window boundary.
-fn wrap_boids(
-    mut query: Query<&mut Transform, With<Boid>>,
-    window_query: Query<&Window>,
-) {
-    let Ok(window) = window_query.single() else { return; };
+fn wrap_boids(mut query: Query<&mut Transform, With<Boid>>, window_query: Query<&Window>) {
+    let Ok(window) = window_query.single() else {
+        return;
+    };
     let hw = window.width() / 2.0;
     let hh = window.height() / 2.0;
 
     for mut transform in &mut query {
         let x = &mut transform.translation.x;
-        if *x >  hw { *x -= 2.0 * hw; }
-        if *x < -hw { *x += 2.0 * hw; }
+        if *x > hw {
+            *x -= 2.0 * hw;
+        }
+        if *x < -hw {
+            *x += 2.0 * hw;
+        }
         let y = &mut transform.translation.y;
-        if *y >  hh { *y -= 2.0 * hh; }
-        if *y < -hh { *y += 2.0 * hh; }
+        if *y > hh {
+            *y -= 2.0 * hh;
+        }
+        if *y < -hh {
+            *y += 2.0 * hh;
+        }
     }
 }
 
@@ -248,39 +260,60 @@ mod tests {
 
     #[test]
     fn hue_zero_is_red_dominant() {
-        let Color::Srgba(s) = hue_to_rgb(0.0) else { panic!("expected Srgba"); };
-        assert!(s.red > s.green && s.red > s.blue, "h=0 should be red-dominant");
+        let Color::Srgba(s) = hue_to_rgb(0.0) else {
+            panic!("expected Srgba");
+        };
+        assert!(
+            s.red > s.green && s.red > s.blue,
+            "h=0 should be red-dominant"
+        );
     }
 
     #[test]
     fn hue_two_is_green_dominant() {
-        let Color::Srgba(s) = hue_to_rgb(2.0) else { panic!("expected Srgba"); };
-        assert!(s.green > s.red && s.green > s.blue, "h=2 should be green-dominant");
+        let Color::Srgba(s) = hue_to_rgb(2.0) else {
+            panic!("expected Srgba");
+        };
+        assert!(
+            s.green > s.red && s.green > s.blue,
+            "h=2 should be green-dominant"
+        );
     }
 
     #[test]
     fn hue_four_is_blue_dominant() {
-        let Color::Srgba(s) = hue_to_rgb(4.0) else { panic!("expected Srgba"); };
-        assert!(s.blue > s.red && s.blue > s.green, "h=4 should be blue-dominant");
+        let Color::Srgba(s) = hue_to_rgb(4.0) else {
+            panic!("expected Srgba");
+        };
+        assert!(
+            s.blue > s.red && s.blue > s.green,
+            "h=4 should be blue-dominant"
+        );
     }
 
     #[test]
     fn hue_wraps_at_six() {
-        let Color::Srgba(a) = hue_to_rgb(0.0) else { panic!(); };
-        let Color::Srgba(b) = hue_to_rgb(6.0) else { panic!(); };
-        assert!((a.red   - b.red  ).abs() < 1e-5);
+        let Color::Srgba(a) = hue_to_rgb(0.0) else {
+            panic!();
+        };
+        let Color::Srgba(b) = hue_to_rgb(6.0) else {
+            panic!();
+        };
+        assert!((a.red - b.red).abs() < 1e-5);
         assert!((a.green - b.green).abs() < 1e-5);
-        assert!((a.blue  - b.blue ).abs() < 1e-5);
+        assert!((a.blue - b.blue).abs() < 1e-5);
     }
 
     #[test]
     fn hue_channels_desaturated_above_floor() {
         for i in 0..60 {
             let h = i as f32 * 0.1;
-            let Color::Srgba(s) = hue_to_rgb(h) else { panic!(); };
-            assert!(s.red   >= 0.29, "red too low at h={h}");
+            let Color::Srgba(s) = hue_to_rgb(h) else {
+                panic!();
+            };
+            assert!(s.red >= 0.29, "red too low at h={h}");
             assert!(s.green >= 0.29, "green too low at h={h}");
-            assert!(s.blue  >= 0.29, "blue too low at h={h}");
+            assert!(s.blue >= 0.29, "blue too low at h={h}");
         }
     }
 
@@ -288,10 +321,15 @@ mod tests {
     fn hue_channels_in_valid_range() {
         for i in 0..60 {
             let h = i as f32 * 0.1;
-            let Color::Srgba(s) = hue_to_rgb(h) else { panic!(); };
-            assert!(s.red   >= 0.0 && s.red   <= 1.0, "red out of range at h={h}");
-            assert!(s.green >= 0.0 && s.green <= 1.0, "green out of range at h={h}");
-            assert!(s.blue  >= 0.0 && s.blue  <= 1.0, "blue out of range at h={h}");
+            let Color::Srgba(s) = hue_to_rgb(h) else {
+                panic!();
+            };
+            assert!(s.red >= 0.0 && s.red <= 1.0, "red out of range at h={h}");
+            assert!(
+                s.green >= 0.0 && s.green <= 1.0,
+                "green out of range at h={h}"
+            );
+            assert!(s.blue >= 0.0 && s.blue <= 1.0, "blue out of range at h={h}");
         }
     }
 

@@ -80,7 +80,7 @@ pub fn threshold_terrain(value: f32) -> u8 {
 pub fn deterministic_noise(col: i32, row: i32, seed: i32, scale: f32) -> f32 {
     let x = col as f32 * scale + seed as f32 * 0.01;
     let y = row as f32 * scale;
-    let v = (x.sin() * 43758.5453 + y.cos() * 12345.6789).fract();
+    let v = (x.sin() * 43_758.547 + y.cos() * 12_345.679).fract();
     // fract can be negative; remap to [-1, 1]
     v * 2.0 - 1.0
 }
@@ -261,7 +261,7 @@ mod tests {
         for col in 0..5 {
             for row in 0..5 {
                 let v = deterministic_noise(col, row, 0, 0.1);
-                assert!(v >= -1.0 && v <= 1.0, "value out of range: {}", v);
+                assert!((-1.0..=1.0).contains(&v), "value out of range: {}", v);
             }
         }
     }
@@ -270,8 +270,8 @@ mod tests {
     fn deterministic_noise_seed_changes_result() {
         let a = deterministic_noise(3, 7, 0, 0.1);
         let b = deterministic_noise(3, 7, 1, 0.1);
-        // Different seeds should produce different values (not guaranteed to
-        // differ by a large amount, but the hash should shift).
-        assert!((a - b).abs() > 1e-6 || true); // always passes; documents intent
+        // The seed is mixed into the hash, so the same cell must not produce
+        // the same value under two different seeds.
+        assert_ne!(a, b, "seed 0 and seed 1 produced the same value at (3, 7)");
     }
 }

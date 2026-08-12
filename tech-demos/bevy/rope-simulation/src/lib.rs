@@ -44,7 +44,10 @@ impl Plugin for RopeSimulationPlugin {
     fn build(&self, app: &mut App) {
         app.init_resource::<RopeConfig>()
             .add_systems(Startup, setup)
-            .add_systems(Update, (pin_to_mouse, simulate_rope, sync_transforms).chain());
+            .add_systems(
+                Update,
+                (pin_to_mouse, simulate_rope, sync_transforms).chain(),
+            );
     }
 }
 
@@ -163,7 +166,10 @@ fn setup(mut commands: Commands, config: Res<RopeConfig>) {
 
     commands.spawn((
         Text::new("Move the mouse — the rope hangs from the cursor"),
-        TextFont { font_size: 15.0, ..default() },
+        TextFont {
+            font_size: 15.0,
+            ..default()
+        },
         TextColor(Color::srgb(0.7, 0.7, 0.7)),
         Node {
             position_type: PositionType::Absolute,
@@ -187,8 +193,12 @@ fn pin_to_mouse(
     cam_query: Query<(&Camera, &GlobalTransform), With<Camera2d>>,
     mut rope: ResMut<Rope>,
 ) {
-    let Ok(window) = window_query.single() else { return };
-    let Ok((cam, cam_tf)) = cam_query.single() else { return };
+    let Ok(window) = window_query.single() else {
+        return;
+    };
+    let Ok((cam, cam_tf)) = cam_query.single() else {
+        return;
+    };
     if let Some(cursor) = window
         .cursor_position()
         .and_then(|c| cam.viewport_to_world_2d(cam_tf, c).ok())
@@ -205,7 +215,12 @@ fn simulate_rope(time: Res<Time>, config: Res<RopeConfig>, mut rope: ResMut<Rope
 
     // Verlet integrate all non-pinned nodes.
     for i in 1..n {
-        let new_pos = verlet_step(rope.positions[i], rope.prev_positions[i], config.gravity, dt);
+        let new_pos = verlet_step(
+            rope.positions[i],
+            rope.prev_positions[i],
+            config.gravity,
+            dt,
+        );
         rope.prev_positions[i] = rope.positions[i];
         rope.positions[i] = new_pos;
     }
@@ -218,11 +233,8 @@ fn simulate_rope(time: Res<Time>, config: Res<RopeConfig>, mut rope: ResMut<Rope
                 let dir = segment_dir(rope.positions[0], rope.positions[1]);
                 rope.positions[1] = rope.positions[0] + dir * rope.rest_len;
             } else {
-                let (a, b) = constrain_segment(
-                    rope.positions[i],
-                    rope.positions[i + 1],
-                    rope.rest_len,
-                );
+                let (a, b) =
+                    constrain_segment(rope.positions[i], rope.positions[i + 1], rope.rest_len);
                 rope.positions[i] = a;
                 rope.positions[i + 1] = b;
             }

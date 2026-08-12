@@ -190,7 +190,8 @@ fn setup(mut commands: Commands, config: Res<SoftBodyConfig>, mut springs: ResMu
                 origin.x + col as f32 * spacing,
                 origin.y - row as f32 * spacing,
             );
-            let pinned = (col == 0 && row == 0) || (col == grid_n - 1 && row == 0);
+            // The cloth hangs from its two top corners.
+            let pinned = row == 0 && (col == 0 || col == grid_n - 1);
             let color = if pinned {
                 Color::srgb(0.9, 0.3, 0.3)
             } else {
@@ -222,12 +223,20 @@ fn setup(mut commands: Commands, config: Res<SoftBodyConfig>, mut springs: ResMu
             // Horizontal neighbor
             if col + 1 < grid_n {
                 let b = entities[row][col + 1];
-                defs.push(SpringDef { node_a: a, node_b: b, rest_length: spacing });
+                defs.push(SpringDef {
+                    node_a: a,
+                    node_b: b,
+                    rest_length: spacing,
+                });
             }
             // Vertical neighbor
             if row + 1 < grid_n {
                 let b = entities[row + 1][col];
-                defs.push(SpringDef { node_a: a, node_b: b, rest_length: spacing });
+                defs.push(SpringDef {
+                    node_a: a,
+                    node_b: b,
+                    rest_length: spacing,
+                });
             }
             // Diagonal ↘
             if col + 1 < grid_n && row + 1 < grid_n {
@@ -254,7 +263,10 @@ fn setup(mut commands: Commands, config: Res<SoftBodyConfig>, mut springs: ResMu
     // HUD
     commands.spawn((
         Text::new("Left-click drag: grab node"),
-        TextFont { font_size: 14.0, ..default() },
+        TextFont {
+            font_size: 14.0,
+            ..default()
+        },
         TextColor(Color::WHITE),
         Node {
             position_type: PositionType::Absolute,
@@ -281,8 +293,12 @@ fn physics_step(
     let mut force_map: HashMap<Entity, Vec2> = HashMap::new();
     for spring in &springs.0 {
         let (pos_a, pos_b) = {
-            let Ok((_, t_a, _, _)) = nodes.get(spring.node_a) else { continue };
-            let Ok((_, t_b, _, _)) = nodes.get(spring.node_b) else { continue };
+            let Ok((_, t_a, _, _)) = nodes.get(spring.node_a) else {
+                continue;
+            };
+            let Ok((_, t_b, _, _)) = nodes.get(spring.node_b) else {
+                continue;
+            };
             (t_a.translation.truncate(), t_b.translation.truncate())
         };
         let force = spring_force(pos_a, pos_b, spring.rest_length, config.stiffness);
@@ -323,19 +339,23 @@ fn handle_grab_input(
     nodes: Query<(Entity, &Transform), (With<NodeVelocity>, Without<Pinned>)>,
 ) {
     let Ok(window) = windows.single() else { return };
-    let Ok((camera, cam_tf)) = camera_q.single() else { return };
-    let Some(cursor) = window.cursor_position() else { return };
-    let Ok(world) = camera.viewport_to_world_2d(cam_tf, cursor) else { return };
+    let Ok((camera, cam_tf)) = camera_q.single() else {
+        return;
+    };
+    let Some(cursor) = window.cursor_position() else {
+        return;
+    };
+    let Ok(world) = camera.viewport_to_world_2d(cam_tf, cursor) else {
+        return;
+    };
 
     if buttons.just_pressed(MouseButton::Left) {
         // Find closest node within grab radius
         let mut best: Option<(Entity, f32)> = None;
         for (entity, tf) in &nodes {
             let d = tf.translation.truncate().distance(world);
-            if d < config.grab_radius {
-                if best.map_or(true, |(_, bd)| d < bd) {
-                    best = Some((entity, d));
-                }
+            if d < config.grab_radius && best.is_none_or(|(_, bd)| d < bd) {
+                best = Some((entity, d));
             }
         }
         if let Some((entity, _)) = best {
@@ -344,10 +364,10 @@ fn handle_grab_input(
         }
     }
 
-    if buttons.just_released(MouseButton::Left) {
-        if let Some(entity) = grab.entity.take() {
-            commands.entity(entity).remove::<Grabbed>();
-        }
+    if buttons.just_released(MouseButton::Left)
+        && let Some(entity) = grab.entity.take()
+    {
+        commands.entity(entity).remove::<Grabbed>();
     }
 }
 
@@ -357,11 +377,19 @@ fn apply_grab_drag(
     grab: Res<GrabState>,
     mut nodes: Query<(&mut Transform, &mut NodeVelocity), With<Grabbed>>,
 ) {
-    let Some(_grabbed_entity) = grab.entity else { return };
+    let Some(_grabbed_entity) = grab.entity else {
+        return;
+    };
     let Ok(window) = windows.single() else { return };
-    let Ok((camera, cam_tf)) = camera_q.single() else { return };
-    let Some(cursor) = window.cursor_position() else { return };
-    let Ok(world) = camera.viewport_to_world_2d(cam_tf, cursor) else { return };
+    let Ok((camera, cam_tf)) = camera_q.single() else {
+        return;
+    };
+    let Some(cursor) = window.cursor_position() else {
+        return;
+    };
+    let Ok(world) = camera.viewport_to_world_2d(cam_tf, cursor) else {
+        return;
+    };
 
     for (mut tf, mut vel) in &mut nodes {
         tf.translation = world.extend(tf.translation.z);
@@ -382,7 +410,10 @@ mod tests {
         let a = Vec2::new(0.0, 0.0);
         let b = Vec2::new(100.0, 0.0);
         let force = spring_force(a, b, 100.0, 400.0);
-        assert!(force.length() < 1e-4, "spring at rest should produce near-zero force");
+        assert!(
+            force.length() < 1e-4,
+            "spring at rest should produce near-zero force"
+        );
     }
 
     #[test]
@@ -431,8 +462,14 @@ mod tests {
     fn damping_reduces_magnitude() {
         let vel = Vec2::new(10.0, 0.0);
         let damped = damp_velocity(vel, 8.0, 0.016);
-        assert!(damped.length() < vel.length(), "damped velocity must be smaller");
-        assert!(damped.x > 0.0, "damped velocity should still point in same direction");
+        assert!(
+            damped.length() < vel.length(),
+            "damped velocity must be smaller"
+        );
+        assert!(
+            damped.x > 0.0,
+            "damped velocity should still point in same direction"
+        );
     }
 
     #[test]
@@ -448,7 +485,10 @@ mod tests {
         let vel = Vec2::new(10.0, 0.0);
         let result = damp_velocity(vel, 8.0, 10.0); // factor would be -79 without clamp
         assert!(result.length() >= 0.0);
-        assert!(result.x >= 0.0, "damped velocity should not reverse direction");
+        assert!(
+            result.x >= 0.0,
+            "damped velocity should not reverse direction"
+        );
     }
 
     #[test]

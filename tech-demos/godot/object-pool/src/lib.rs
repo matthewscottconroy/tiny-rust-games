@@ -105,8 +105,7 @@ impl INode2D for ObjectPool {
             if is_out_of_bounds(nx, ny, limit) {
                 // Return to pool.
                 self.pool[i].set_visible(false);
-                self.pool[i]
-                    .set_process_mode(godot::classes::node::ProcessMode::DISABLED);
+                self.pool[i].set_process_mode(godot::classes::node::ProcessMode::DISABLED);
                 self.velocities[i] = (0.0, 0.0);
             } else {
                 self.pool[i].set_position(Vector2::new(nx, ny));
@@ -137,8 +136,7 @@ impl ObjectPool {
 
             self.pool[idx].set_position(Vector2::ZERO);
             self.pool[idx].set_visible(true);
-            self.pool[idx]
-                .set_process_mode(godot::classes::node::ProcessMode::INHERIT);
+            self.pool[idx].set_process_mode(godot::classes::node::ProcessMode::INHERIT);
             self.velocities[idx] = (nx, ny);
             godot_print!("[ObjectPool] slot {} fired dir=({:.2},{:.2})", idx, nx, ny);
         } else {
@@ -158,8 +156,7 @@ impl ObjectPool {
     pub fn reset_pool(&mut self) {
         for i in 0..self.pool.len() {
             self.pool[i].set_visible(false);
-            self.pool[i]
-                .set_process_mode(godot::classes::node::ProcessMode::DISABLED);
+            self.pool[i].set_process_mode(godot::classes::node::ProcessMode::DISABLED);
             self.velocities[i] = (0.0, 0.0);
         }
         godot_print!("[ObjectPool] pool reset");

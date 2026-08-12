@@ -108,12 +108,12 @@ pub fn value_noise(x: f32, y: f32, seed: u64) -> f32 {
     let tx = smoothstep((x - xi as f32).clamp(0.0, 1.0));
     let ty = smoothstep((y - yi as f32).clamp(0.0, 1.0));
 
-    let v00 = hash2(xi,     yi,     seed);
-    let v10 = hash2(xi + 1, yi,     seed);
-    let v01 = hash2(xi,     yi + 1, seed);
+    let v00 = hash2(xi, yi, seed);
+    let v10 = hash2(xi + 1, yi, seed);
+    let v01 = hash2(xi, yi + 1, seed);
     let v11 = hash2(xi + 1, yi + 1, seed);
 
-    let top    = v00 + tx * (v10 - v00);
+    let top = v00 + tx * (v10 - v00);
     let bottom = v01 + tx * (v11 - v01);
     top + ty * (bottom - top)
 }
@@ -174,7 +174,7 @@ fn setup(mut commands: Commands, config: Res<NoiseMapConfig>, seed: Res<MapSeed>
     commands.spawn(Camera2d);
 
     let origin_x = -(config.grid_w as f32 * config.cell_w) / 2.0 + config.cell_w / 2.0;
-    let origin_y =  (config.grid_h as f32 * config.cell_h) / 2.0 - config.cell_h / 2.0;
+    let origin_y = (config.grid_h as f32 * config.cell_h) / 2.0 - config.cell_h / 2.0;
 
     for row in 0..config.grid_h {
         for col in 0..config.grid_w {
@@ -203,7 +203,10 @@ fn setup(mut commands: Commands, config: Res<NoiseMapConfig>, seed: Res<MapSeed>
 
     commands.spawn((
         Text::new("SPACE — regenerate with a new seed"),
-        TextFont { font_size: 15.0, ..default() },
+        TextFont {
+            font_size: 15.0,
+            ..default()
+        },
         TextColor(Color::WHITE),
         Node {
             position_type: PositionType::Absolute,
@@ -257,7 +260,10 @@ mod tests {
         for x in -4..=4 {
             for y in -4..=4 {
                 let v = hash2(x, y, 99);
-                assert!(v >= 0.0 && v <= 1.0, "hash2({x},{y}) = {v} out of [0,1]");
+                assert!(
+                    (0.0..=1.0).contains(&v),
+                    "hash2({x},{y}) = {v} out of [0,1]"
+                );
             }
         }
     }
@@ -295,7 +301,7 @@ mod tests {
     fn value_noise_in_unit_interval() {
         for i in 0..20 {
             let v = value_noise(i as f32 * 0.37, i as f32 * 0.13, 7);
-            assert!(v >= 0.0 && v <= 1.0, "value_noise out of [0,1]: {v}");
+            assert!((0.0..=1.0).contains(&v), "value_noise out of [0,1]: {v}");
         }
     }
 
@@ -304,13 +310,15 @@ mod tests {
         let octaves = NoiseMapConfig::default().octaves;
         for i in 0..20 {
             let v = fbm(i as f32 * 0.3, i as f32 * 0.7, 13, octaves);
-            assert!(v >= 0.0 && v <= 1.0, "fbm out of [0,1]: {v}");
+            assert!((0.0..=1.0).contains(&v), "fbm out of [0,1]: {v}");
         }
     }
 
     #[test]
     fn biome_color_deep_water_is_blue_dominant() {
-        let Color::Srgba(c) = biome_color(0.1) else { panic!("expected Srgba") };
+        let Color::Srgba(c) = biome_color(0.1) else {
+            panic!("expected Srgba")
+        };
         assert!(c.blue > c.red && c.blue > c.green);
     }
 
@@ -323,7 +331,9 @@ mod tests {
 
     #[test]
     fn biome_color_grass_is_green_dominant() {
-        let Color::Srgba(c) = biome_color(0.55) else { panic!("expected Srgba") };
+        let Color::Srgba(c) = biome_color(0.55) else {
+            panic!("expected Srgba")
+        };
         assert!(c.green > c.red && c.green > c.blue);
     }
 

@@ -43,7 +43,7 @@ impl DialogueNode {
 // ─── Pure tree helpers ────────────────────────────────────────────────────────
 
 /// Returns the text at `index` in `tree`, or `""` when out of bounds.
-pub fn node_text<'a>(tree: &'a [DialogueNode], index: usize) -> &'a str {
+pub fn node_text(tree: &[DialogueNode], index: usize) -> &str {
     tree.get(index).map(|n| n.text.as_str()).unwrap_or("")
 }
 
@@ -59,11 +59,7 @@ pub fn can_advance(tree: &[DialogueNode], index: usize) -> bool {
 
 /// Returns the target node index for choice `choice` at node `index`,
 /// or `None` when the choice or node is out of range.
-pub fn next_node_index(
-    tree: &[DialogueNode],
-    index: usize,
-    choice: usize,
-) -> Option<usize> {
+pub fn next_node_index(tree: &[DialogueNode], index: usize, choice: usize) -> Option<usize> {
     tree.get(index)
         .and_then(|n| n.choices.get(choice))
         .map(|(_, target)| *target)
@@ -76,7 +72,10 @@ pub fn build_tree() -> Vec<DialogueNode> {
         // 0 — opening
         DialogueNode::new(
             "A hooded stranger blocks your path.\n\"State your business.\"",
-            vec![("\"I seek the lost relic.\"", 1), ("\"Just passing through.\"", 2)],
+            vec![
+                ("\"I seek the lost relic.\"", 1),
+                ("\"Just passing through.\"", 2),
+            ],
         ),
         // 1 — relic path
         DialogueNode::new(
@@ -94,10 +93,7 @@ pub fn build_tree() -> Vec<DialogueNode> {
             vec![],
         ),
         // 4 — back down
-        DialogueNode::new(
-            "\"Wise choice.\"\nThe stranger moves on.",
-            vec![],
-        ),
+        DialogueNode::new("\"Wise choice.\"\nThe stranger moves on.", vec![]),
         // 5 — end of passing through
         DialogueNode::new(
             "You walk past without incident.\nThe road stretches ahead.",
@@ -165,12 +161,12 @@ impl INode2D for DialogueManager {
         let action_names = ["ui_text_indent", "ui_page_up", "ui_page_down", "ui_home"];
         // Map 1–4 keys via their action names; fall back to numeric check.
         for (i, &action) in action_names.iter().enumerate().take(n_choices) {
-            if input.is_action_just_pressed(action) {
-                if let Some(target) = next_node_index(&self.tree, self.current, i) {
-                    self.current = target;
-                    self.refresh_ui();
-                    return;
-                }
+            if input.is_action_just_pressed(action)
+                && let Some(target) = next_node_index(&self.tree, self.current, i)
+            {
+                self.current = target;
+                self.refresh_ui();
+                return;
             }
         }
     }
@@ -198,9 +194,7 @@ impl DialogueManager {
 
         for i in 0..4usize {
             let node_name = format!("Choice{}", i);
-            if let Some(mut cl) =
-                self.base().try_get_node_as::<Label>(node_name.as_str())
-            {
+            if let Some(mut cl) = self.base().try_get_node_as::<Label>(node_name.as_str()) {
                 if i < choices.len() {
                     cl.set_text(&GString::from(choices[i].as_str()));
                 } else {

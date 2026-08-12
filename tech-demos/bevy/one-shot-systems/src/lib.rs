@@ -205,9 +205,24 @@ fn setup(mut commands: Commands, config: Res<OneShotSystemsConfig>) {
 
     // Buttons
     let buttons = [
-        (ButtonAction::Heal, "Heal +20 HP", Color::srgb(0.2, 0.7, 0.3), -200.0_f32),
-        (ButtonAction::Damage, "Damage −15 HP", Color::srgb(0.8, 0.2, 0.2), 0.0_f32),
-        (ButtonAction::RestoreMana, "Mana +30 MP", Color::srgb(0.2, 0.3, 0.8), 200.0_f32),
+        (
+            ButtonAction::Heal,
+            "Heal +20 HP",
+            Color::srgb(0.2, 0.7, 0.3),
+            -200.0_f32,
+        ),
+        (
+            ButtonAction::Damage,
+            "Damage −15 HP",
+            Color::srgb(0.8, 0.2, 0.2),
+            0.0_f32,
+        ),
+        (
+            ButtonAction::RestoreMana,
+            "Mana +30 MP",
+            Color::srgb(0.2, 0.3, 0.8),
+            200.0_f32,
+        ),
     ];
 
     for (action, label, color, x) in buttons {

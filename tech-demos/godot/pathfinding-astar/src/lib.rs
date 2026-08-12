@@ -55,7 +55,10 @@ pub fn id_to_grid(id: i32, cols: i32) -> (i32, i32) {
 /// assert_eq!(pathfinding_astar::grid_to_world(0, 1, 50.0), (25.0, 75.0));
 /// ```
 pub fn grid_to_world(col: i32, row: i32, cell: f32) -> (f32, f32) {
-    (col as f32 * cell + cell * 0.5, row as f32 * cell + cell * 0.5)
+    (
+        col as f32 * cell + cell * 0.5,
+        row as f32 * cell + cell * 0.5,
+    )
 }
 
 /// Returns the Manhattan distance between two grid cells.
@@ -185,10 +188,7 @@ impl INode2D for AStarGrid {
 
         // Draw the path polyline.
         if path.len() >= 2 {
-            let pts: Vec<Vector2> = path
-                .iter()
-                .map(|&(x, y)| Vector2::new(x, y))
-                .collect();
+            let pts: Vec<Vector2> = path.iter().map(|&(x, y)| Vector2::new(x, y)).collect();
             let packed: PackedVector2Array = pts.iter().cloned().collect();
             self.base_mut()
                 .draw_polyline(&packed, Color::from_rgb(1.0, 1.0, 0.0));
@@ -236,7 +236,10 @@ impl AStarGrid {
         let raw = astar.get_point_path(start_id, goal_id);
 
         self.path = raw.to_vec().iter().map(|v| (v.x, v.y)).collect();
-        godot_print!("[AStarGrid] Path recomputed — {} waypoints.", self.path.len());
+        godot_print!(
+            "[AStarGrid] Path recomputed — {} waypoints.",
+            self.path.len()
+        );
     }
 }
 

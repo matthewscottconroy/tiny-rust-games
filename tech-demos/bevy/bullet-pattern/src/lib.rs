@@ -97,7 +97,11 @@ pub fn spiral_angle(current_angle: f32, rate: f32) -> f32 {
 /// Falls back to `Vec2::Y` when the points are coincident.
 pub fn aimed_direction(from: Vec2, to: Vec2) -> Vec2 {
     let d = to - from;
-    if d.length_squared() < 1e-6 { Vec2::Y } else { d.normalize() }
+    if d.length_squared() < 1e-6 {
+        Vec2::Y
+    } else {
+        d.normalize()
+    }
 }
 
 /// Maps bullet lifetime `[0, max]` to a colour: bright white → dim orange.
@@ -110,7 +114,11 @@ pub fn bullet_color(lifetime: f32, max_lifetime: f32) -> Color {
 
 /// Which firing pattern the emitter is currently using.
 #[derive(Clone, Copy, PartialEq, Eq, Debug)]
-pub enum Pattern { Radial, Spiral, Aimed }
+pub enum Pattern {
+    Radial,
+    Spiral,
+    Aimed,
+}
 
 /// The single bullet emitter: current pattern, fire cooldown, and spiral phase.
 #[derive(Resource)]
@@ -125,7 +133,11 @@ pub struct Emitter {
 
 impl Default for Emitter {
     fn default() -> Self {
-        Self { pattern: Pattern::Radial, fire_timer: 0.0, spiral_angle: 0.0 }
+        Self {
+            pattern: Pattern::Radial,
+            fire_timer: 0.0,
+            spiral_angle: 0.0,
+        }
     }
 }
 
@@ -148,7 +160,10 @@ fn setup(mut commands: Commands) {
 
     commands.spawn((
         Text::new("1: radial   2: spiral   3: aimed"),
-        TextFont { font_size: 15.0, ..default() },
+        TextFont {
+            font_size: 15.0,
+            ..default()
+        },
         TextColor(Color::srgb(0.55, 0.55, 0.55)),
         Node {
             position_type: PositionType::Absolute,
@@ -160,7 +175,10 @@ fn setup(mut commands: Commands) {
 
     commands.spawn((
         Text::new("Pattern: Radial"),
-        TextFont { font_size: 16.0, ..default() },
+        TextFont {
+            font_size: 16.0,
+            ..default()
+        },
         TextColor(Color::srgb(1.0, 0.75, 0.2)),
         PatternLabel,
         Node {
@@ -187,14 +205,20 @@ fn handle_input(
     mut emitter: ResMut<Emitter>,
     mut label: Query<&mut Text, With<PatternLabel>>,
 ) {
-    if keys.just_pressed(KeyCode::Digit1) { emitter.pattern = Pattern::Radial; }
-    if keys.just_pressed(KeyCode::Digit2) { emitter.pattern = Pattern::Spiral; }
-    if keys.just_pressed(KeyCode::Digit3) { emitter.pattern = Pattern::Aimed; }
+    if keys.just_pressed(KeyCode::Digit1) {
+        emitter.pattern = Pattern::Radial;
+    }
+    if keys.just_pressed(KeyCode::Digit2) {
+        emitter.pattern = Pattern::Spiral;
+    }
+    if keys.just_pressed(KeyCode::Digit3) {
+        emitter.pattern = Pattern::Aimed;
+    }
 
-    if emitter.is_changed() {
-        if let Ok(mut t) = label.single_mut() {
-            *t = Text::new(format!("Pattern: {:?}", emitter.pattern));
-        }
+    if emitter.is_changed()
+        && let Ok(mut t) = label.single_mut()
+    {
+        *t = Text::new(format!("Pattern: {:?}", emitter.pattern));
     }
 }
 
@@ -206,10 +230,13 @@ fn fire_bullets(
     mut commands: Commands,
 ) {
     emitter.fire_timer -= time.delta_secs();
-    if emitter.fire_timer > 0.0 { return; }
+    if emitter.fire_timer > 0.0 {
+        return;
+    }
     emitter.fire_timer = config.fire_rate;
 
-    let target: Vec2 = windows.single()
+    let target: Vec2 = windows
+        .single()
         .ok()
         .and_then(|w| w.cursor_position())
         .map(|c| Vec2::new(c.x - 400.0, -(c.y - 300.0)))
@@ -232,7 +259,9 @@ fn fire_bullets(
                 ..default()
             },
             Transform::from_xyz(0.0, 0.0, 0.0),
-            Bullet { lifetime: config.max_lifetime },
+            Bullet {
+                lifetime: config.max_lifetime,
+            },
             Velocity(dir * config.bullet_speed),
         ));
     }

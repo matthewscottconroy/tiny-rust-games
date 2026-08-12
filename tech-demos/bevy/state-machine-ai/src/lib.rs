@@ -45,7 +45,12 @@ impl Plugin for StateMachineAiPlugin {
             .add_systems(Startup, setup)
             .add_systems(
                 Update,
-                (move_player, update_enemy_state, run_enemy_behavior, update_hud),
+                (
+                    move_player,
+                    update_enemy_state,
+                    run_enemy_behavior,
+                    update_hud,
+                ),
             );
     }
 }
@@ -163,7 +168,10 @@ fn setup(mut commands: Commands, config: Res<StateMachineAiConfig>) {
 
     commands.spawn((
         Text::new("State: Patrol"),
-        TextFont { font_size: 22.0, ..default() },
+        TextFont {
+            font_size: 22.0,
+            ..default()
+        },
         TextColor(Color::WHITE),
         Node {
             position_type: PositionType::Absolute,
@@ -176,7 +184,10 @@ fn setup(mut commands: Commands, config: Res<StateMachineAiConfig>) {
 
     commands.spawn((
         Text::new("WASD — move player   approach the grey enemy"),
-        TextFont { font_size: 14.0, ..default() },
+        TextFont {
+            font_size: 14.0,
+            ..default()
+        },
         TextColor(Color::srgb(0.6, 0.6, 0.6)),
         Node {
             position_type: PositionType::Absolute,
@@ -213,12 +224,22 @@ fn move_player(
     config: Res<StateMachineAiConfig>,
     mut query: Query<&mut Transform, With<Player>>,
 ) {
-    let Ok(mut t) = query.single_mut() else { return; };
+    let Ok(mut t) = query.single_mut() else {
+        return;
+    };
     let mut dir = Vec2::ZERO;
-    if input.pressed(KeyCode::KeyW) { dir.y += 1.0; }
-    if input.pressed(KeyCode::KeyS) { dir.y -= 1.0; }
-    if input.pressed(KeyCode::KeyA) { dir.x -= 1.0; }
-    if input.pressed(KeyCode::KeyD) { dir.x += 1.0; }
+    if input.pressed(KeyCode::KeyW) {
+        dir.y += 1.0;
+    }
+    if input.pressed(KeyCode::KeyS) {
+        dir.y -= 1.0;
+    }
+    if input.pressed(KeyCode::KeyA) {
+        dir.x -= 1.0;
+    }
+    if input.pressed(KeyCode::KeyD) {
+        dir.x += 1.0;
+    }
     if dir != Vec2::ZERO {
         let d = dir.normalize() * config.player_speed * time.delta_secs();
         t.translation += d.extend(0.0);
@@ -231,7 +252,9 @@ fn update_enemy_state(
     player_query: Query<&Transform, (With<Player>, Without<Enemy>)>,
     mut enemy_query: Query<(&Transform, &mut EnemyState), With<Enemy>>,
 ) {
-    let Ok(player) = player_query.single() else { return; };
+    let Ok(player) = player_query.single() else {
+        return;
+    };
     let player_pos = player.translation.truncate();
 
     for (transform, mut state) in &mut enemy_query {
@@ -247,7 +270,9 @@ fn run_enemy_behavior(
     player_query: Query<&Transform, (With<Player>, Without<Enemy>)>,
     mut enemy_query: Query<(&mut Transform, &mut Sprite, &mut Enemy, &EnemyState)>,
 ) {
-    let Ok(player) = player_query.single() else { return; };
+    let Ok(player) = player_query.single() else {
+        return;
+    };
     let player_pos = player.translation.truncate();
 
     for (mut transform, mut sprite, mut enemy, state) in &mut enemy_query {
@@ -255,7 +280,11 @@ fn run_enemy_behavior(
 
         match state {
             EnemyState::Patrol => {
-                let target = if enemy.patrol_target == 0 { enemy.patrol_a } else { enemy.patrol_b };
+                let target = if enemy.patrol_target == 0 {
+                    enemy.patrol_a
+                } else {
+                    enemy.patrol_b
+                };
                 let dir = (target - pos).normalize_or_zero();
                 let move_delta = dir * config.enemy_patrol_speed * time.delta_secs();
                 transform.translation.x += move_delta.x;
@@ -289,11 +318,13 @@ fn update_hud(
     enemy_query: Query<&EnemyState, With<Enemy>>,
     mut hud_query: Query<&mut Text, With<HudText>>,
 ) {
-    let Ok(state) = enemy_query.single() else { return; };
+    let Ok(state) = enemy_query.single() else {
+        return;
+    };
     for mut text in &mut hud_query {
         let (label, color_desc) = match state {
             EnemyState::Patrol => ("Patrol", "grey — wandering waypoints"),
-            EnemyState::Chase  => ("Chase",  "orange — chasing player"),
+            EnemyState::Chase => ("Chase", "orange — chasing player"),
             EnemyState::Attack => ("Attack", "red pulse — in range"),
         };
         *text = Text::new(format!("State: {}  ({})", label, color_desc));

@@ -44,7 +44,12 @@ pub fn is_expired(age: f64, lifetime: f64) -> bool {
 /// assert!(!spawner::should_spawn(1.0, 0.5, 20, 20));
 /// assert!(spawner::should_spawn(1.0, 0.5, 19, 20));
 /// ```
-pub fn should_spawn(time_since_last: f64, interval: f64, current_count: i64, max_count: i64) -> bool {
+pub fn should_spawn(
+    time_since_last: f64,
+    interval: f64,
+    current_count: i64,
+    max_count: i64,
+) -> bool {
     time_since_last >= interval && current_count < max_count
 }
 
@@ -94,13 +99,7 @@ impl INode2D for Bullet {
 
     fn process(&mut self, delta: f64) {
         let pos = self.base().get_position();
-        let (nx, ny) = move_by(
-            pos.x,
-            pos.y,
-            self.velocity.x,
-            self.velocity.y,
-            delta as f32,
-        );
+        let (nx, ny) = move_by(pos.x, pos.y, self.velocity.x, self.velocity.y, delta as f32);
         self.base_mut().set_position(Vector2::new(nx, ny));
         self.age += delta;
         if is_expired(self.age, self.lifetime) {
@@ -164,7 +163,12 @@ impl INode2D for BulletSpawner {
     fn process(&mut self, delta: f64) {
         self.time_since_spawn += delta;
         let child_count = self.base().get_child_count() as i64;
-        if should_spawn(self.time_since_spawn, self.spawn_interval, child_count, self.max_bullets) {
+        if should_spawn(
+            self.time_since_spawn,
+            self.spawn_interval,
+            child_count,
+            self.max_bullets,
+        ) {
             self.time_since_spawn = 0.0;
             self.spawn_bullet();
         }

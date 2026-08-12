@@ -57,8 +57,15 @@ pub struct Player;
 ///
 /// Opposing keys cancel; when no key is pressed returns `Vec2::ZERO`.
 pub fn input_dir(up: bool, down: bool, left: bool, right: bool) -> Vec2 {
-    let raw = Vec2::new(right as i8 as f32 - left as i8 as f32, up as i8 as f32 - down as i8 as f32);
-    if raw != Vec2::ZERO { raw.normalize() } else { Vec2::ZERO }
+    let raw = Vec2::new(
+        right as i8 as f32 - left as i8 as f32,
+        up as i8 as f32 - down as i8 as f32,
+    );
+    if raw != Vec2::ZERO {
+        raw.normalize()
+    } else {
+        Vec2::ZERO
+    }
 }
 
 /// Returns the per-frame translation delta given a unit direction, speed, and timestep.

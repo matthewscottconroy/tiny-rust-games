@@ -50,7 +50,9 @@ pub fn lerp_color(from: Color, to: Color, t: f32) -> Color {
 
 /// A minimal LCG step — produces a pseudo-random angle in `[0, 2π)`.
 pub fn lcg_angle(state: u64) -> (f32, u64) {
-    let next = state.wrapping_mul(6364136223846793005).wrapping_add(1442695040888963407);
+    let next = state
+        .wrapping_mul(6364136223846793005)
+        .wrapping_add(1442695040888963407);
     let angle = (next >> 33) as f32 / (u32::MAX as f32) * std::f32::consts::TAU;
     (angle, next)
 }
@@ -215,7 +217,7 @@ mod tests {
     #[test]
     fn lcg_angle_stays_in_tau_range() {
         let (angle, _) = lcg_angle(99999);
-        assert!(angle >= 0.0 && angle < std::f32::consts::TAU);
+        assert!((0.0..std::f32::consts::TAU).contains(&angle));
     }
 
     #[test]

@@ -46,7 +46,10 @@ impl Plugin for MenuNavigationPlugin {
         let item_count = config.items.len();
         app.init_state::<AppState>()
             .insert_resource(config)
-            .insert_resource(MenuState { selected: 0, item_count })
+            .insert_resource(MenuState {
+                selected: 0,
+                item_count,
+            })
             .add_systems(OnEnter(AppState::MainMenu), setup_menu)
             .add_systems(OnExit(AppState::MainMenu), teardown_menu)
             .add_systems(OnEnter(AppState::InGame), setup_game)
@@ -143,7 +146,10 @@ fn setup_menu(mut commands: Commands, menu: Res<MenuState>, config: Res<MenuNavi
 
     commands.spawn((
         Text::new("DEMO GAME"),
-        TextFont { font_size: 48.0, ..default() },
+        TextFont {
+            font_size: 48.0,
+            ..default()
+        },
         TextColor(Color::WHITE),
         Node {
             position_type: PositionType::Absolute,
@@ -157,10 +163,17 @@ fn setup_menu(mut commands: Commands, menu: Res<MenuState>, config: Res<MenuNavi
     ));
 
     for (i, label) in config.items.iter().enumerate() {
-        let color = if i == menu.selected { config.highlight_color } else { config.normal_color };
+        let color = if i == menu.selected {
+            config.highlight_color
+        } else {
+            config.normal_color
+        };
         commands.spawn((
             Text::new(*label),
-            TextFont { font_size: 32.0, ..default() },
+            TextFont {
+                font_size: 32.0,
+                ..default()
+            },
             TextColor(color),
             Node {
                 position_type: PositionType::Absolute,
@@ -177,7 +190,10 @@ fn setup_menu(mut commands: Commands, menu: Res<MenuState>, config: Res<MenuNavi
 
     commands.spawn((
         Text::new("↑↓ navigate   ENTER select"),
-        TextFont { font_size: 18.0, ..default() },
+        TextFont {
+            font_size: 18.0,
+            ..default()
+        },
         TextColor(Color::srgba(0.7, 0.7, 0.7, 1.0)),
         Node {
             position_type: PositionType::Absolute,
@@ -215,7 +231,11 @@ fn navigate_menu(
 
     // Sync highlight colours.
     for (item, mut color) in &mut item_query {
-        color.0 = if item.index == menu.selected { config.highlight_color } else { config.normal_color };
+        color.0 = if item.index == menu.selected {
+            config.highlight_color
+        } else {
+            config.normal_color
+        };
     }
 
     if input.just_pressed(KeyCode::Enter) {
@@ -232,7 +252,10 @@ fn setup_game(mut commands: Commands) {
     commands.spawn((Camera2d, OnInGame));
     commands.spawn((
         Text::new("In Game!  Press ESC to return to menu."),
-        TextFont { font_size: 28.0, ..default() },
+        TextFont {
+            font_size: 28.0,
+            ..default()
+        },
         TextColor(Color::WHITE),
         Node {
             position_type: PositionType::Absolute,
@@ -254,10 +277,7 @@ fn teardown_game(mut commands: Commands, query: Query<Entity, With<OnInGame>>) {
 }
 
 /// Returns to the main menu on ESC.
-fn return_to_menu(
-    input: Res<ButtonInput<KeyCode>>,
-    mut next_state: ResMut<NextState<AppState>>,
-) {
+fn return_to_menu(input: Res<ButtonInput<KeyCode>>, mut next_state: ResMut<NextState<AppState>>) {
     if input.just_pressed(KeyCode::Escape) {
         next_state.set(AppState::MainMenu);
     }
@@ -268,7 +288,10 @@ mod tests {
     use super::*;
 
     fn make_menu(selected: usize, count: usize) -> MenuState {
-        MenuState { selected, item_count: count }
+        MenuState {
+            selected,
+            item_count: count,
+        }
     }
 
     #[test]

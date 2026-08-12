@@ -180,10 +180,7 @@ fn tick_turn(
     turn.0 += 1;
 
     // ── 1. Snapshot all positions (immutable borrow ends before we mutate) ───
-    let mut npcs: Vec<(Entity, usize, usize)> = query
-        .iter()
-        .map(|(e, p)| (e, p.x, p.y))
-        .collect();
+    let mut npcs: Vec<(Entity, usize, usize)> = query.iter().map(|(e, p)| (e, p.x, p.y)).collect();
 
     // top→bottom (y ascending), right→left (x descending)
     npcs.sort_unstable_by(|a, b| a.2.cmp(&b.2).then(b.1.cmp(&a.1)));
@@ -228,7 +225,11 @@ fn tick_turn(
     // ── 5. Render ─────────────────────────────────────────────────────────────
     let positions: Vec<(usize, usize)> = updates.iter().map(|&(_, x, y)| (x, y)).collect();
     let frame = render_grid(config.width, config.height, &positions);
-    print!("\x1B[2J\x1B[HTurn {}  NPCs: {}\n{frame}", turn.0, updates.len());
+    print!(
+        "\x1B[2J\x1B[HTurn {}  NPCs: {}\n{frame}",
+        turn.0,
+        updates.len()
+    );
     let _ = io::stdout().flush();
 }
 
@@ -344,8 +345,7 @@ mod tests {
             .iter(app.world())
             .copied()
             .collect();
-        let unique: HashSet<(usize, usize)> =
-            positions.iter().map(|p| (p.x, p.y)).collect();
+        let unique: HashSet<(usize, usize)> = positions.iter().map(|p| (p.x, p.y)).collect();
         assert_eq!(unique.len(), positions.len());
     }
 }

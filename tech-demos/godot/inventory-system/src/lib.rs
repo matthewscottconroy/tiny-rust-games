@@ -31,7 +31,7 @@ pub struct Item {
 // ---------------------------------------------------------------------------
 
 /// Find an item by id in the inventory slice.
-pub fn find_item<'a>(inv: &'a [Item], id: u32) -> Option<&'a Item> {
+pub fn find_item(inv: &[Item], id: u32) -> Option<&Item> {
     inv.iter().find(|i| i.id == id)
 }
 
@@ -135,10 +135,10 @@ impl InventoryManager {
         } else {
             lines.join("\n")
         };
-        if let Some(node) = self.base().get_node_or_null("Label") {
-            if let Ok(mut label) = node.try_cast::<Label>() {
-                label.set_text(text.as_str());
-            }
+        if let Some(node) = self.base().get_node_or_null("Label")
+            && let Ok(mut label) = node.try_cast::<Label>()
+        {
+            label.set_text(text.as_str());
         }
     }
 }
@@ -152,7 +152,11 @@ mod tests {
     use super::*;
 
     fn item(id: u32, name: &str, qty: u32) -> Item {
-        Item { id, name: name.to_string(), quantity: qty }
+        Item {
+            id,
+            name: name.to_string(),
+            quantity: qty,
+        }
     }
 
     #[test]

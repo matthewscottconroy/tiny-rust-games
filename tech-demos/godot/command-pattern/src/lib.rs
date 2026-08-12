@@ -185,10 +185,10 @@ impl CommandManager {
             "x={:.1}  y={:.1}  score={}",
             self.state.x, self.state.y, self.state.score
         );
-        if let Some(node) = self.base().get_node_or_null("Label") {
-            if let Ok(mut label) = node.try_cast::<Label>() {
-                label.set_text(text.as_str());
-            }
+        if let Some(node) = self.base().get_node_or_null("Label")
+            && let Ok(mut label) = node.try_cast::<Label>()
+        {
+            label.set_text(text.as_str());
         }
     }
 }
@@ -203,7 +203,11 @@ mod tests {
 
     #[test]
     fn apply_move_adds_offsets() {
-        let s = GameState { x: 1.0, y: 2.0, score: 0 };
+        let s = GameState {
+            x: 1.0,
+            y: 2.0,
+            score: 0,
+        };
         let next = apply_move(&s, 3.0, 4.0);
         assert!((next.x - 4.0).abs() < f32::EPSILON);
         assert!((next.y - 6.0).abs() < f32::EPSILON);
@@ -211,21 +215,33 @@ mod tests {
 
     #[test]
     fn apply_move_preserves_score() {
-        let s = GameState { x: 0.0, y: 0.0, score: 42 };
+        let s = GameState {
+            x: 0.0,
+            y: 0.0,
+            score: 42,
+        };
         let next = apply_move(&s, 1.0, 0.0);
         assert_eq!(next.score, 42);
     }
 
     #[test]
     fn apply_score_adds_delta() {
-        let s = GameState { x: 0.0, y: 0.0, score: 10 };
+        let s = GameState {
+            x: 0.0,
+            y: 0.0,
+            score: 10,
+        };
         let next = apply_score(&s, 5);
         assert_eq!(next.score, 15);
     }
 
     #[test]
     fn apply_score_preserves_position() {
-        let s = GameState { x: 3.0, y: 7.0, score: 0 };
+        let s = GameState {
+            x: 3.0,
+            y: 7.0,
+            score: 0,
+        };
         let next = apply_score(&s, 100);
         assert!((next.x - 3.0).abs() < f32::EPSILON);
         assert!((next.y - 7.0).abs() < f32::EPSILON);
@@ -243,7 +259,11 @@ mod tests {
 
     #[test]
     fn score_command_execute_undo_roundtrip() {
-        let mut s = GameState { x: 0.0, y: 0.0, score: 50 };
+        let mut s = GameState {
+            x: 0.0,
+            y: 0.0,
+            score: 50,
+        };
         let cmd = ScoreCommand { delta: 20 };
         let after_exec = cmd.execute(&mut s);
         assert_eq!(after_exec.score, 70);
@@ -261,7 +281,11 @@ mod tests {
 
     #[test]
     fn negative_score_delta() {
-        let mut s = GameState { x: 0.0, y: 0.0, score: 10 };
+        let mut s = GameState {
+            x: 0.0,
+            y: 0.0,
+            score: 10,
+        };
         let cmd = ScoreCommand { delta: -15 };
         let next = cmd.execute(&mut s);
         assert_eq!(next.score, -5);

@@ -82,17 +82,15 @@ impl ICharacterBody2D for GridMovement {
         }
 
         // If we've arrived at the target, pop next direction
-        let at_target = (self.pos_x - self.target_x).abs() < 0.5
-            && (self.pos_y - self.target_y).abs() < 0.5;
+        let at_target =
+            (self.pos_x - self.target_x).abs() < 0.5 && (self.pos_y - self.target_y).abs() < 0.5;
 
-        if at_target {
-            if let Some((dc, dr)) = self.direction_queue.pop_front() {
-                self.grid_col += dc;
-                self.grid_row += dr;
-                let (tx, ty) = grid_to_world(self.grid_col, self.grid_row, cell);
-                self.target_x = tx;
-                self.target_y = ty;
-            }
+        if at_target && let Some((dc, dr)) = self.direction_queue.pop_front() {
+            self.grid_col += dc;
+            self.grid_row += dr;
+            let (tx, ty) = grid_to_world(self.grid_col, self.grid_row, cell);
+            self.target_x = tx;
+            self.target_y = ty;
         }
 
         // Lerp toward target (use delta to scale speed)
@@ -112,7 +110,10 @@ impl ICharacterBody2D for GridMovement {
 
 /// Convert grid cell coordinates to world position (top-left of cell + half-cell offset).
 pub fn grid_to_world(col: i32, row: i32, cell: f32) -> (f32, f32) {
-    (col as f32 * cell + cell * 0.5, row as f32 * cell + cell * 0.5)
+    (
+        col as f32 * cell + cell * 0.5,
+        row as f32 * cell + cell * 0.5,
+    )
 }
 
 /// Convert world position to the nearest grid cell (floor division).

@@ -170,8 +170,7 @@ impl ICharacterBody2D for SteeringAgent {
         let current_vel = self.base().get_velocity();
         let new_vx = (current_vel.x + dvx * delta as f32).clamp(-speed, speed);
         let new_vy = (current_vel.y + dvy * delta as f32).clamp(-speed, speed);
-        self.base_mut()
-            .set_velocity(Vector2::new(new_vx, new_vy));
+        self.base_mut().set_velocity(Vector2::new(new_vx, new_vy));
         self.base_mut().move_and_slide();
 
         // Update label.

@@ -4,7 +4,7 @@
 //! `FileAccess` API.  Serialization is done by hand (no serde) using simple
 //! string formatting and splitting so the demo has no external crate deps.
 
-use godot::classes::{file_access, FileAccess, INode, Label, Node};
+use godot::classes::{FileAccess, INode, Label, Node, file_access};
 use godot::prelude::*;
 
 // ---------------------------------------------------------------------------
@@ -46,7 +46,11 @@ pub fn deserialize_save(json: &str) -> Option<SaveData> {
     let level = extract_i32(json, "level")?;
     let score = extract_i32(json, "score")?;
     let player_name = extract_string(json, "player_name")?;
-    Some(SaveData { level, score, player_name })
+    Some(SaveData {
+        level,
+        score,
+        player_name,
+    })
 }
 
 /// Extract an integer value for a given JSON key.
@@ -113,8 +117,7 @@ impl SaveManager {
     #[func]
     pub fn save_game(&mut self) {
         let json = serialize_save(&self.data);
-        if let Some(mut file) =
-            FileAccess::open("user://save.json", file_access::ModeFlags::WRITE)
+        if let Some(mut file) = FileAccess::open("user://save.json", file_access::ModeFlags::WRITE)
         {
             file.store_string(json.as_str());
         }
@@ -122,9 +125,7 @@ impl SaveManager {
 
     #[func]
     pub fn load_game(&mut self) -> bool {
-        if let Some(file) =
-            FileAccess::open("user://save.json", file_access::ModeFlags::READ)
-        {
+        if let Some(file) = FileAccess::open("user://save.json", file_access::ModeFlags::READ) {
             let json = file.get_as_text().to_string();
             if let Some(parsed) = deserialize_save(&json) {
                 self.data = parsed;
@@ -157,10 +158,10 @@ impl SaveManager {
             self.data.score,
             self.data.player_name
         );
-        if let Some(node) = self.base().get_node_or_null("Label") {
-            if let Ok(mut label) = node.try_cast::<Label>() {
-                label.set_text(text.as_str());
-            }
+        if let Some(node) = self.base().get_node_or_null("Label")
+            && let Ok(mut label) = node.try_cast::<Label>()
+        {
+            label.set_text(text.as_str());
         }
     }
 }

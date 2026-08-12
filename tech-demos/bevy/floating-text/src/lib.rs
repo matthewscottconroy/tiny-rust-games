@@ -62,7 +62,12 @@ pub struct FloatingTextConfig {
 
 impl Default for FloatingTextConfig {
     fn default() -> Self {
-        Self { lifetime: 1.2, rise_speed: 60.0, font_size: 32.0, crit_threshold: 80 }
+        Self {
+            lifetime: 1.2,
+            rise_speed: 60.0,
+            font_size: 32.0,
+            crit_threshold: 80,
+        }
     }
 }
 
@@ -91,7 +96,10 @@ fn setup(mut commands: Commands) {
 
     commands.spawn((
         Text::new("Left-click to spawn damage numbers"),
-        TextFont { font_size: 20.0, ..default() },
+        TextFont {
+            font_size: 20.0,
+            ..default()
+        },
         TextColor(Color::srgba(1.0, 1.0, 1.0, 0.6)),
         Node {
             position_type: PositionType::Absolute,
@@ -140,9 +148,15 @@ fn spawn_on_click(
     if !mouse.just_pressed(MouseButton::Left) {
         return;
     }
-    let Ok(window) = window_query.single() else { return };
-    let Ok(cam_transform) = camera_query.single() else { return };
-    let Some(cursor) = window.cursor_position() else { return };
+    let Ok(window) = window_query.single() else {
+        return;
+    };
+    let Ok(cam_transform) = camera_query.single() else {
+        return;
+    };
+    let Some(cursor) = window.cursor_position() else {
+        return;
+    };
 
     let world_pos = window_to_world(cursor, window, cam_transform);
     counter.0 += 1;
@@ -152,10 +166,16 @@ fn spawn_on_click(
 
     commands.spawn((
         Text2d::new(format!("{}", damage)),
-        TextFont { font_size: config.font_size, ..default() },
+        TextFont {
+            font_size: config.font_size,
+            ..default()
+        },
         TextColor(color),
         Transform::from_translation(world_pos.extend(1.0)),
-        FloatingText { remaining: config.lifetime, lifetime: config.lifetime },
+        FloatingText {
+            remaining: config.lifetime,
+            lifetime: config.lifetime,
+        },
     ));
 }
 

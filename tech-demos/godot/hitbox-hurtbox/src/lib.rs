@@ -136,17 +136,26 @@ impl INode2D for HitboxPlayer {
 
         // Movement
         let mut dir = Vector2::ZERO;
-        if input.is_action_pressed("ui_right") { dir.x += 1.0; }
-        if input.is_action_pressed("ui_left")  { dir.x -= 1.0; }
-        if input.is_action_pressed("ui_down")  { dir.y += 1.0; }
-        if input.is_action_pressed("ui_up")    { dir.y -= 1.0; }
+        if input.is_action_pressed("ui_right") {
+            dir.x += 1.0;
+        }
+        if input.is_action_pressed("ui_left") {
+            dir.x -= 1.0;
+        }
+        if input.is_action_pressed("ui_down") {
+            dir.y += 1.0;
+        }
+        if input.is_action_pressed("ui_up") {
+            dir.y -= 1.0;
+        }
         if dir != Vector2::ZERO {
             self.facing = dir.normalized();
         }
         // Copy the field first — `base_mut()` holds a mutable borrow of self.
         let speed = self.speed;
         let pos = self.base().get_position();
-        self.base_mut().set_position(pos + dir.normalized() * speed * dt);
+        self.base_mut()
+            .set_position(pos + dir.normalized() * speed * dt);
 
         // Attack cooldown
         if self.attack_timer > 0.0 {
@@ -161,20 +170,19 @@ impl INode2D for HitboxPlayer {
                 let offset = self.facing * 36.0;
                 area.set_position(offset);
                 // Enable the collision shape
-                if let Some(child) = area.get_child(0) {
-                    if let Ok(mut col) = child.try_cast::<CollisionShape2D>() {
-                        col.set_disabled(false);
-                    }
+                if let Some(child) = area.get_child(0)
+                    && let Ok(mut col) = child.try_cast::<CollisionShape2D>()
+                {
+                    col.set_disabled(false);
                 }
             }
         } else if self.attack_timer <= self.attack_cooldown - 0.05 {
             // Disable hitbox after first frame of attack
-            if let Some(area) = self.base().try_get_node_as::<Area2D>("Hitbox") {
-                if let Some(child) = area.get_child(0) {
-                    if let Ok(mut col) = child.try_cast::<CollisionShape2D>() {
-                        col.set_disabled(true);
-                    }
-                }
+            if let Some(area) = self.base().try_get_node_as::<Area2D>("Hitbox")
+                && let Some(child) = area.get_child(0)
+                && let Ok(mut col) = child.try_cast::<CollisionShape2D>()
+            {
+                col.set_disabled(true);
             }
         }
     }
@@ -186,8 +194,12 @@ use godot::classes::ColorRect;
 impl HitboxPlayer {
     // gdext auto-generates `get_health()` for the `#[export]` field, so this
     // accessor must use a different name.
-    pub fn current_health(&self) -> i32 { self.health }
-    pub fn get_facing(&self) -> Vector2 { self.facing }
+    pub fn current_health(&self) -> i32 {
+        self.health
+    }
+    pub fn get_facing(&self) -> Vector2 {
+        self.facing
+    }
 }
 
 // ─── HurtboxEnemy ─────────────────────────────────────────────────────────────
@@ -205,7 +217,11 @@ pub struct HurtboxEnemy {
 #[godot_api]
 impl INode2D for HurtboxEnemy {
     fn init(base: Base<Node2D>) -> Self {
-        Self { health: 50, knockback: Vector2::ZERO, base }
+        Self {
+            health: 50,
+            knockback: Vector2::ZERO,
+            base,
+        }
     }
 
     fn ready(&mut self) {
@@ -270,7 +286,9 @@ impl HurtboxEnemy {
 
     // gdext auto-generates `get_health()` for the `#[export]` field, so this
     // accessor must use a different name.
-    pub fn current_health(&self) -> i32 { self.health }
+    pub fn current_health(&self) -> i32 {
+        self.health
+    }
 }
 
 // ─── HurtboxArea — the Area2D that detects hitbox entry ───────────────────────
@@ -298,10 +316,10 @@ impl IArea2D for HurtboxArea {
 impl HurtboxArea {
     #[func]
     fn _on_area_entered(&mut self, _area: Gd<Area2D>) {
-        if let Some(parent) = self.base().get_parent() {
-            if let Ok(mut enemy) = parent.try_cast::<HurtboxEnemy>() {
-                enemy.bind_mut().take_damage(10, Vector2::LEFT);
-            }
+        if let Some(parent) = self.base().get_parent()
+            && let Ok(mut enemy) = parent.try_cast::<HurtboxEnemy>()
+        {
+            enemy.bind_mut().take_damage(10, Vector2::LEFT);
         }
     }
 }

@@ -53,8 +53,12 @@ impl ICharacterBody2D for Player {
     }
 
     fn ready(&mut self) {
-        godot_print!("Player ready — speed={}, gravity={}, jump_velocity={}",
-            self.speed, self.gravity, self.jump_velocity);
+        godot_print!(
+            "Player ready — speed={}, gravity={}, jump_velocity={}",
+            self.speed,
+            self.gravity,
+            self.jump_velocity
+        );
     }
 
     fn physics_process(&mut self, delta: f64) {

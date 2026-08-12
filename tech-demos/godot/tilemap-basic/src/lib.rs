@@ -165,7 +165,8 @@ impl TilemapDemo {
         }
         let source_id = if tile_type > 0 { tile_type - 1 } else { -1 };
         if let Some(mut tilemap) = self.base_mut().try_get_node_as::<TileMap>("TileMap") {
-            tilemap.set_cell_ex(0, Vector2i::new(x, y))
+            tilemap
+                .set_cell_ex(0, Vector2i::new(x, y))
                 .source_id(source_id)
                 .done();
         }
@@ -188,7 +189,8 @@ impl TilemapDemo {
                         2 => 1,
                         _ => -1,
                     };
-                    tilemap.set_cell_ex(0, Vector2i::new(x, y))
+                    tilemap
+                        .set_cell_ex(0, Vector2i::new(x, y))
                         .source_id(source_id)
                         .done();
                 }
@@ -215,7 +217,12 @@ mod tests {
     fn generate_room_top_edge_is_wall() {
         let data = generate_room(5, 4);
         for x in 0..5 {
-            assert_eq!(data[flat_idx(x, 0, 5)], 2, "top edge x={} should be wall", x);
+            assert_eq!(
+                data[flat_idx(x, 0, 5)],
+                2,
+                "top edge x={} should be wall",
+                x
+            );
         }
     }
 
@@ -223,7 +230,12 @@ mod tests {
     fn generate_room_bottom_edge_is_wall() {
         let data = generate_room(5, 4);
         for x in 0..5 {
-            assert_eq!(data[flat_idx(x, 3, 5)], 2, "bottom edge x={} should be wall", x);
+            assert_eq!(
+                data[flat_idx(x, 3, 5)],
+                2,
+                "bottom edge x={} should be wall",
+                x
+            );
         }
     }
 
@@ -231,7 +243,12 @@ mod tests {
     fn generate_room_left_edge_is_wall() {
         let data = generate_room(5, 4);
         for y in 0..4 {
-            assert_eq!(data[flat_idx(0, y, 5)], 2, "left edge y={} should be wall", y);
+            assert_eq!(
+                data[flat_idx(0, y, 5)],
+                2,
+                "left edge y={} should be wall",
+                y
+            );
         }
     }
 

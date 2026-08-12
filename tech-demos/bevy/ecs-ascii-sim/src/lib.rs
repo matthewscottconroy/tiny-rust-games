@@ -100,7 +100,12 @@ pub struct EcsAsciiSimConfig {
 
 impl Default for EcsAsciiSimConfig {
     fn default() -> Self {
-        Self { width: 100, height: 100, npc_count: 1_000, seed: 0xDEAD_BEEF }
+        Self {
+            width: 100,
+            height: 100,
+            npc_count: 1_000,
+            seed: 0xDEAD_BEEF,
+        }
     }
 }
 
@@ -153,7 +158,11 @@ pub struct OccupancyGrid {
 
 impl OccupancyGrid {
     pub fn new(width: usize, height: usize) -> Self {
-        Self { cells: vec![false; width * height], width, height }
+        Self {
+            cells: vec![false; width * height],
+            width,
+            height,
+        }
     }
 
     #[inline]
@@ -332,10 +341,7 @@ fn move_npcs(
     // Collect (entity, x, y) before touching any positions. We need to sort
     // by processing order, and sorting requires ownership of the data.
     // We cannot sort while iterating a live query borrow.
-    let mut order: Vec<(Entity, usize, usize)> = query
-        .iter()
-        .map(|(e, p)| (e, p.x, p.y))
-        .collect();
+    let mut order: Vec<(Entity, usize, usize)> = query.iter().map(|(e, p)| (e, p.x, p.y)).collect();
 
     // ── Step 2: sort ──────────────────────────────────────────────────────
     // Top-to-bottom, right-to-left within a row. This ordering means that
@@ -359,7 +365,10 @@ fn move_npcs(
         }
 
         // Take the first free neighbour. If none exist, the NPC stays.
-        if let Some(&(nx, ny)) = neighbors.iter().find(|&&(nx, ny)| !grid.is_occupied(nx, ny)) {
+        if let Some(&(nx, ny)) = neighbors
+            .iter()
+            .find(|&&(nx, ny)| !grid.is_occupied(nx, ny))
+        {
             // Update the occupancy map first, then the component.
             grid.set(old_x, old_y, false);
             grid.set(nx, ny, true);
@@ -394,8 +403,13 @@ fn render(
 
     // ANSI: move cursor to row 1 column 1 (home), then overwrite in-place.
     // This avoids clearing the terminal and prevents flicker.
-    print!("\x1b[H{frame}Turn {:>6}   NPCs {:>5}   Grid {}×{}\n",
-        turn.0, positions.len(), config.width, config.height);
+    println!(
+        "\x1b[H{frame}Turn {:>6}   NPCs {:>5}   Grid {}×{}",
+        turn.0,
+        positions.len(),
+        config.width,
+        config.height
+    );
     let _ = io::stdout().flush();
 }
 
@@ -501,16 +515,16 @@ mod tests {
 
     #[test]
     fn top_row_processed_before_bottom_row() {
-        let mut v = vec![(0usize, 5usize), (0, 2), (0, 9)];
-        v.sort_by(|a, b| process_order(a, b));
+        let mut v = [(0usize, 5usize), (0, 2), (0, 9)];
+        v.sort_by(process_order);
         let ys: Vec<usize> = v.iter().map(|p| p.1).collect();
         assert_eq!(ys, vec![2, 5, 9]);
     }
 
     #[test]
     fn within_same_row_right_to_left() {
-        let mut v = vec![(1usize, 0usize), (7, 0), (3, 0), (5, 0)];
-        v.sort_by(|a, b| process_order(a, b));
+        let mut v = [(1usize, 0usize), (7, 0), (3, 0), (5, 0)];
+        v.sort_by(process_order);
         let xs: Vec<usize> = v.iter().map(|p| p.0).collect();
         assert_eq!(xs, vec![7, 5, 3, 1]);
     }
@@ -569,7 +583,12 @@ mod tests {
         // Small grid so we can assert an exact count on a headless app.
         let mut app = App::new();
         app.add_plugins(MinimalPlugins)
-            .insert_resource(EcsAsciiSimConfig { width: 5, height: 5, npc_count: 4, seed: 1 })
+            .insert_resource(EcsAsciiSimConfig {
+                width: 5,
+                height: 5,
+                npc_count: 4,
+                seed: 1,
+            })
             .insert_resource(OccupancyGrid::new(5, 5))
             .insert_resource(Rng::new(1))
             .init_resource::<TurnCount>()
@@ -585,8 +604,13 @@ mod tests {
         // Demonstrates the building-block path: the plugin composes onto a
         // headless app and sizes its own resources from the config.
         let mut app = App::new();
-        app.insert_resource(EcsAsciiSimConfig { width: 8, height: 6, npc_count: 3, seed: 7 })
-            .add_plugins((MinimalPlugins, EcsAsciiSimPlugin));
+        app.insert_resource(EcsAsciiSimConfig {
+            width: 8,
+            height: 6,
+            npc_count: 3,
+            seed: 7,
+        })
+        .add_plugins((MinimalPlugins, EcsAsciiSimPlugin));
         app.update();
 
         let grid = app.world().resource::<OccupancyGrid>();

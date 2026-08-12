@@ -44,7 +44,10 @@ impl Plugin for DayNightCyclePlugin {
         app.init_resource::<DayNightCycleConfig>()
             .init_resource::<DayClock>()
             .add_systems(Startup, setup)
-            .add_systems(Update, (handle_input, advance_clock, update_sky, update_hud));
+            .add_systems(
+                Update,
+                (handle_input, advance_clock, update_sky, update_hud),
+            );
     }
 }
 
@@ -88,9 +91,9 @@ pub fn lerp_f32(a: f32, b: f32, t: f32) -> f32 {
 
 /// Key sky colours as (r, g, b) tuples (no Bevy dependency).
 const NIGHT: (f32, f32, f32) = (0.02, 0.02, 0.08);
-const DAWN:  (f32, f32, f32) = (0.72, 0.38, 0.18);
-const DAY:   (f32, f32, f32) = (0.42, 0.68, 1.00);
-const DUSK:  (f32, f32, f32) = (0.58, 0.18, 0.32);
+const DAWN: (f32, f32, f32) = (0.72, 0.38, 0.18);
+const DAY: (f32, f32, f32) = (0.42, 0.68, 1.00);
+const DUSK: (f32, f32, f32) = (0.58, 0.18, 0.32);
 
 /// Returns the sky colour (r, g, b) for a given hour in [0.0, 24.0).
 ///
@@ -117,11 +120,11 @@ pub fn time_of_day_to_rgb(hours: f32) -> (f32, f32, f32) {
 pub fn hours_to_label(hours: f32) -> &'static str {
     let h = hours.rem_euclid(24.0) as u32;
     match h {
-        0..=5   => "Night",
-        6..=8   => "Dawn",
-        9..=16  => "Day",
+        0..=5 => "Night",
+        6..=8 => "Dawn",
+        9..=16 => "Day",
         17..=19 => "Dusk",
-        _       => "Night",
+        _ => "Night",
     }
 }
 
@@ -138,7 +141,10 @@ pub struct DayClock {
 
 impl Default for DayClock {
     fn default() -> Self {
-        Self { hours: 0.0, speed: 1.0 }
+        Self {
+            hours: 0.0,
+            speed: 1.0,
+        }
     }
 }
 
@@ -161,28 +167,53 @@ fn setup(mut commands: Commands, config: Res<DayNightCycleConfig>) {
 
     // Sun / moon disc
     commands.spawn((
-        Sprite { color: Color::srgb(1.0, 1.0, 0.8), custom_size: Some(Vec2::splat(60.0)), ..default() },
+        Sprite {
+            color: Color::srgb(1.0, 1.0, 0.8),
+            custom_size: Some(Vec2::splat(60.0)),
+            ..default()
+        },
         Transform::from_translation(Vec3::new(0.0, 100.0, 0.5)),
         SunMoon,
     ));
 
     // Silhouette hills
-    for (x, w, h) in [(-300.0, 260.0, 120.0), (0.0, 320.0, 90.0), (300.0, 220.0, 140.0)] {
+    for (x, w, h) in [
+        (-300.0, 260.0, 120.0),
+        (0.0, 320.0, 90.0),
+        (300.0, 220.0, 140.0),
+    ] {
         commands.spawn((
-            Sprite { color: Color::srgb(0.05, 0.05, 0.08), custom_size: Some(Vec2::new(w, h)), ..default() },
+            Sprite {
+                color: Color::srgb(0.05, 0.05, 0.08),
+                custom_size: Some(Vec2::new(w, h)),
+                ..default()
+            },
             Transform::from_translation(Vec3::new(x, -250.0 + h / 2.0, 1.0)),
         ));
     }
 
     // Stars (random-ish scatter)
     let positions: &[(f32, f32)] = &[
-        (-350.0, 200.0), (100.0, 180.0), (280.0, 220.0), (-200.0, 230.0),
-        (50.0, 210.0), (-100.0, 190.0), (320.0, 200.0), (-280.0, 170.0),
-        (150.0, 240.0), (-50.0, 160.0), (240.0, 150.0), (-180.0, 250.0),
+        (-350.0, 200.0),
+        (100.0, 180.0),
+        (280.0, 220.0),
+        (-200.0, 230.0),
+        (50.0, 210.0),
+        (-100.0, 190.0),
+        (320.0, 200.0),
+        (-280.0, 170.0),
+        (150.0, 240.0),
+        (-50.0, 160.0),
+        (240.0, 150.0),
+        (-180.0, 250.0),
     ];
     for &(x, y) in positions {
         commands.spawn((
-            Sprite { color: Color::srgba(1.0, 1.0, 1.0, 0.0), custom_size: Some(Vec2::splat(4.0)), ..default() },
+            Sprite {
+                color: Color::srgba(1.0, 1.0, 1.0, 0.0),
+                custom_size: Some(Vec2::splat(4.0)),
+                ..default()
+            },
             Transform::from_translation(Vec3::new(x, y, 0.3)),
             StarSprite(1.0),
         ));
@@ -191,7 +222,10 @@ fn setup(mut commands: Commands, config: Res<DayNightCycleConfig>) {
     // HUD
     commands.spawn((
         Text::new(format!("00:00  Night  ×{:.1}", config.start_speed)),
-        TextFont { font_size: 22.0, ..default() },
+        TextFont {
+            font_size: 22.0,
+            ..default()
+        },
         TextColor(Color::WHITE),
         Node {
             position_type: PositionType::Absolute,
@@ -203,7 +237,10 @@ fn setup(mut commands: Commands, config: Res<DayNightCycleConfig>) {
     ));
     commands.spawn((
         Text::new("+/= — faster   - — slower   R — reset"),
-        TextFont { font_size: 16.0, ..default() },
+        TextFont {
+            font_size: 16.0,
+            ..default()
+        },
         TextColor(Color::srgb(0.7, 0.7, 0.7)),
         Node {
             position_type: PositionType::Absolute,
@@ -360,7 +397,10 @@ mod tests {
 
     #[test]
     fn advance_clock_wraps_within_day() {
-        let mut clock = DayClock { hours: 23.9, speed: 1.0 };
+        let mut clock = DayClock {
+            hours: 23.9,
+            speed: 1.0,
+        };
         // Simulate a 0.2h step past midnight.
         clock.hours = (clock.hours + 0.2).rem_euclid(24.0);
         assert!(clock.hours < 1.0 && clock.hours >= 0.0);

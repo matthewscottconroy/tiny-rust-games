@@ -10,8 +10,7 @@
 //! Each half of the screen shows one camera's view.
 
 use godot::classes::{
-    Camera2D, ColorRect, INode2D, Input, Label, Node2D,
-    SubViewport, SubViewportContainer,
+    Camera2D, ColorRect, INode2D, Input, Label, Node2D, SubViewport, SubViewportContainer,
 };
 use godot::prelude::*;
 
@@ -150,18 +149,34 @@ impl INode2D for SplitScreenDemo {
 
         // Player 1 — WASD (mapped to arrow actions)
         let mut d1 = Vector2::ZERO;
-        if input.is_action_pressed("ui_right") { d1.x += 1.0; }
-        if input.is_action_pressed("ui_left")  { d1.x -= 1.0; }
-        if input.is_action_pressed("ui_down")  { d1.y += 1.0; }
-        if input.is_action_pressed("ui_up")    { d1.y -= 1.0; }
+        if input.is_action_pressed("ui_right") {
+            d1.x += 1.0;
+        }
+        if input.is_action_pressed("ui_left") {
+            d1.x -= 1.0;
+        }
+        if input.is_action_pressed("ui_down") {
+            d1.y += 1.0;
+        }
+        if input.is_action_pressed("ui_up") {
+            d1.y -= 1.0;
+        }
         self.p1_pos += movement_delta(d1, PLAYER_SPEED, dt);
 
         // Player 2 — numeric pad simulation via page_up/page_down etc.
         let mut d2 = Vector2::ZERO;
-        if input.is_action_pressed("ui_page_up")   { d2.y -= 1.0; }
-        if input.is_action_pressed("ui_page_down") { d2.y += 1.0; }
-        if input.is_action_pressed("ui_home")      { d2.x -= 1.0; }
-        if input.is_action_pressed("ui_end")       { d2.x += 1.0; }
+        if input.is_action_pressed("ui_page_up") {
+            d2.y -= 1.0;
+        }
+        if input.is_action_pressed("ui_page_down") {
+            d2.y += 1.0;
+        }
+        if input.is_action_pressed("ui_home") {
+            d2.x -= 1.0;
+        }
+        if input.is_action_pressed("ui_end") {
+            d2.x += 1.0;
+        }
         self.p2_pos += movement_delta(d2, PLAYER_SPEED, dt);
 
         // Smooth cameras
@@ -169,28 +184,26 @@ impl INode2D for SplitScreenDemo {
         self.cam2_pos = smooth_follow(self.cam2_pos, self.p2_pos, CAM_FOLLOW_SPEED, dt);
 
         // Sync visuals — navigate through VC1/SV1/World1
-        if let Some(vc1) = self.base().try_get_node_as::<SubViewportContainer>("VC1") {
-            if let Some(sv1) = vc1.try_get_node_as::<SubViewport>("SV1") {
-                if let Some(w1) = sv1.try_get_node_as::<Node2D>("World1") {
-                    if let Some(mut r) = w1.try_get_node_as::<ColorRect>("P1Rect") {
-                        r.set_position(self.p1_pos - Vector2::new(10.0, 10.0));
-                    }
-                    if let Some(mut c) = w1.try_get_node_as::<Camera2D>("Cam1") {
-                        c.set_position(self.cam1_pos);
-                    }
-                }
+        if let Some(vc1) = self.base().try_get_node_as::<SubViewportContainer>("VC1")
+            && let Some(sv1) = vc1.try_get_node_as::<SubViewport>("SV1")
+            && let Some(w1) = sv1.try_get_node_as::<Node2D>("World1")
+        {
+            if let Some(mut r) = w1.try_get_node_as::<ColorRect>("P1Rect") {
+                r.set_position(self.p1_pos - Vector2::new(10.0, 10.0));
+            }
+            if let Some(mut c) = w1.try_get_node_as::<Camera2D>("Cam1") {
+                c.set_position(self.cam1_pos);
             }
         }
-        if let Some(vc2) = self.base().try_get_node_as::<SubViewportContainer>("VC2") {
-            if let Some(sv2) = vc2.try_get_node_as::<SubViewport>("SV2") {
-                if let Some(w2) = sv2.try_get_node_as::<Node2D>("World2") {
-                    if let Some(mut r) = w2.try_get_node_as::<ColorRect>("P2Rect") {
-                        r.set_position(self.p2_pos - Vector2::new(10.0, 10.0));
-                    }
-                    if let Some(mut c) = w2.try_get_node_as::<Camera2D>("Cam2") {
-                        c.set_position(self.cam2_pos);
-                    }
-                }
+        if let Some(vc2) = self.base().try_get_node_as::<SubViewportContainer>("VC2")
+            && let Some(sv2) = vc2.try_get_node_as::<SubViewport>("SV2")
+            && let Some(w2) = sv2.try_get_node_as::<Node2D>("World2")
+        {
+            if let Some(mut r) = w2.try_get_node_as::<ColorRect>("P2Rect") {
+                r.set_position(self.p2_pos - Vector2::new(10.0, 10.0));
+            }
+            if let Some(mut c) = w2.try_get_node_as::<Camera2D>("Cam2") {
+                c.set_position(self.cam2_pos);
             }
         }
     }

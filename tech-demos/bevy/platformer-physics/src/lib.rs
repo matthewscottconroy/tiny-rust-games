@@ -114,31 +114,55 @@ fn setup(mut commands: Commands) {
 
     // Ground platform.
     commands.spawn((
-        Sprite { color: Color::srgb(0.4, 0.7, 0.3), custom_size: Some(Vec2::new(800.0, 30.0)), ..default() },
+        Sprite {
+            color: Color::srgb(0.4, 0.7, 0.3),
+            custom_size: Some(Vec2::new(800.0, 30.0)),
+            ..default()
+        },
         Transform::from_translation(Vec3::new(0.0, -220.0, 0.0)),
-        Aabb { half: Vec2::new(400.0, 15.0) },
+        Aabb {
+            half: Vec2::new(400.0, 15.0),
+        },
         Platform,
     ));
     // Left ledge.
     commands.spawn((
-        Sprite { color: Color::srgb(0.4, 0.7, 0.3), custom_size: Some(Vec2::new(200.0, 20.0)), ..default() },
+        Sprite {
+            color: Color::srgb(0.4, 0.7, 0.3),
+            custom_size: Some(Vec2::new(200.0, 20.0)),
+            ..default()
+        },
         Transform::from_translation(Vec3::new(-250.0, -80.0, 0.0)),
-        Aabb { half: Vec2::new(100.0, 10.0) },
+        Aabb {
+            half: Vec2::new(100.0, 10.0),
+        },
         Platform,
     ));
     // Right ledge.
     commands.spawn((
-        Sprite { color: Color::srgb(0.4, 0.7, 0.3), custom_size: Some(Vec2::new(200.0, 20.0)), ..default() },
+        Sprite {
+            color: Color::srgb(0.4, 0.7, 0.3),
+            custom_size: Some(Vec2::new(200.0, 20.0)),
+            ..default()
+        },
         Transform::from_translation(Vec3::new(250.0, 60.0, 0.0)),
-        Aabb { half: Vec2::new(100.0, 10.0) },
+        Aabb {
+            half: Vec2::new(100.0, 10.0),
+        },
         Platform,
     ));
 
     // Player.
     commands.spawn((
-        Sprite { color: Color::srgb(0.9, 0.5, 0.2), custom_size: Some(Vec2::new(28.0, 40.0)), ..default() },
+        Sprite {
+            color: Color::srgb(0.9, 0.5, 0.2),
+            custom_size: Some(Vec2::new(28.0, 40.0)),
+            ..default()
+        },
         Transform::from_translation(Vec3::new(-200.0, 0.0, 1.0)),
-        Aabb { half: Vec2::new(14.0, 20.0) },
+        Aabb {
+            half: Vec2::new(14.0, 20.0),
+        },
         Player {
             velocity: Vec2::ZERO,
             grounded: false,
@@ -151,7 +175,10 @@ fn setup(mut commands: Commands) {
 
     commands.spawn((
         Text::new("A/D — move   SPACE — jump"),
-        TextFont { font_size: 20.0, ..default() },
+        TextFont {
+            font_size: 20.0,
+            ..default()
+        },
         TextColor(Color::WHITE),
         Node {
             position_type: PositionType::Absolute,
@@ -168,7 +195,9 @@ fn read_input(
     config: Res<PlatformerConfig>,
     mut query: Query<&mut Player>,
 ) {
-    let Ok(mut player) = query.single_mut() else { return };
+    let Ok(mut player) = query.single_mut() else {
+        return;
+    };
 
     let left = input.pressed(KeyCode::KeyA) || input.pressed(KeyCode::ArrowLeft);
     let right = input.pressed(KeyCode::KeyD) || input.pressed(KeyCode::ArrowRight);
@@ -183,12 +212,10 @@ fn read_input(
 }
 
 /// Applies gravity and decays the coyote / jump-buffer timers each fixed step.
-fn apply_gravity(
-    time: Res<Time>,
-    config: Res<PlatformerConfig>,
-    mut query: Query<&mut Player>,
-) {
-    let Ok(mut player) = query.single_mut() else { return };
+fn apply_gravity(time: Res<Time>, config: Res<PlatformerConfig>, mut query: Query<&mut Player>) {
+    let Ok(mut player) = query.single_mut() else {
+        return;
+    };
     let dt = time.delta_secs();
 
     if !player.grounded {
@@ -220,7 +247,9 @@ fn move_and_collide(
     mut player_query: Query<(&mut Transform, &mut Player, &Aabb)>,
     platform_query: Query<(&Transform, &Aabb), (With<Platform>, Without<Player>)>,
 ) {
-    let Ok((mut p_transform, mut player, &p_aabb)) = player_query.single_mut() else { return };
+    let Ok((mut p_transform, mut player, &p_aabb)) = player_query.single_mut() else {
+        return;
+    };
     let dt = time.delta_secs();
 
     player.velocity.x = player.move_axis * config.move_speed;
@@ -230,7 +259,10 @@ fn move_and_collide(
     p_transform.translation.y += player.velocity.y * dt;
 
     // Horizontal screen boundary.
-    p_transform.translation.x = p_transform.translation.x.clamp(-400.0 + p_aabb.half.x, 400.0 - p_aabb.half.x);
+    p_transform.translation.x = p_transform
+        .translation
+        .x
+        .clamp(-400.0 + p_aabb.half.x, 400.0 - p_aabb.half.x);
 
     let was_grounded = player.grounded;
     player.grounded = false;
@@ -279,7 +311,9 @@ mod tests {
     use super::*;
 
     fn aabb(half_x: f32, half_y: f32) -> Aabb {
-        Aabb { half: Vec2::new(half_x, half_y) }
+        Aabb {
+            half: Vec2::new(half_x, half_y),
+        }
     }
 
     #[test]

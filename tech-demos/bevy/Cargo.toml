@@ -105,3 +105,18 @@ opt-level = 1
 
 [profile.dev.package."*"]
 opt-level = 3
+
+# Lints shared by every demo (each member opts in with `[lints] workspace = true`).
+# CI runs `cargo clippy --all-targets -- -D warnings`, so anything not allowed
+# here is a hard failure.
+[workspace.lints.clippy]
+# Bevy system signatures are inherently wide: one `Query<(&A, &mut B, ...)>` per
+# concern, plus resources. Splitting them to satisfy these two lints would scatter
+# a demo's logic across helper types and hurt goal #1 (transparent, readable code).
+# Bevy itself allows both for the same reason.
+type_complexity = "allow"
+too_many_arguments = "allow"
+# The demos do a lot of 2D grid work where the loop index *is* the meaning
+# (`grid[y][x]`, neighbour offsets, spawn placement). Rewriting those as zipped
+# iterators reads worse for the audience these demos are written for.
+needless_range_loop = "allow"

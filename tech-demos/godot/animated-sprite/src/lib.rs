@@ -113,6 +113,7 @@ pub fn u8_to_anim_state(v: u8) -> AnimState {
 /// - attacking takes highest priority
 /// - moving comes next
 /// - otherwise idle
+///
 /// Returns 0=Idle, 1=Walk, 2=Attack
 pub fn next_anim_state(current: u8, moving: bool, attacking: bool) -> u8 {
     if attacking {
@@ -122,11 +123,7 @@ pub fn next_anim_state(current: u8, moving: bool, attacking: bool) -> u8 {
     if current == 2 {
         return if moving { 1 } else { 0 };
     }
-    if moving {
-        1
-    } else {
-        0
-    }
+    if moving { 1 } else { 0 }
 }
 
 /// Return the animation clip name for a given state byte.

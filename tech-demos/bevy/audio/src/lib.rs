@@ -55,7 +55,10 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
 
     commands.spawn((
         Text::new("SPACE — play click sound effect"),
-        TextFont { font_size: 24.0, ..default() },
+        TextFont {
+            font_size: 24.0,
+            ..default()
+        },
         TextColor(Color::WHITE),
         Node {
             position_type: PositionType::Absolute,
@@ -70,15 +73,8 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
 ///
 /// `PlaybackSettings::DESPAWN` automatically removes the entity when playback
 /// finishes, preventing entity accumulation.
-fn play_sfx(
-    mut commands: Commands,
-    input: Res<ButtonInput<KeyCode>>,
-    click: Res<ClickSound>,
-) {
+fn play_sfx(mut commands: Commands, input: Res<ButtonInput<KeyCode>>, click: Res<ClickSound>) {
     if input.just_pressed(KeyCode::Space) {
-        commands.spawn((
-            AudioPlayer::new(click.0.clone()),
-            PlaybackSettings::DESPAWN,
-        ));
+        commands.spawn((AudioPlayer::new(click.0.clone()), PlaybackSettings::DESPAWN));
     }
 }

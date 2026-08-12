@@ -60,10 +60,18 @@ pub struct Player;
 /// Kept as a `pub fn` so the movement rule is unit-testable without a World.
 pub fn input_direction(input: &ButtonInput<KeyCode>) -> Vec2 {
     let mut dir = Vec2::ZERO;
-    if input.pressed(KeyCode::KeyW) || input.pressed(KeyCode::ArrowUp) { dir.y += 1.0; }
-    if input.pressed(KeyCode::KeyS) || input.pressed(KeyCode::ArrowDown) { dir.y -= 1.0; }
-    if input.pressed(KeyCode::KeyA) || input.pressed(KeyCode::ArrowLeft) { dir.x -= 1.0; }
-    if input.pressed(KeyCode::KeyD) || input.pressed(KeyCode::ArrowRight) { dir.x += 1.0; }
+    if input.pressed(KeyCode::KeyW) || input.pressed(KeyCode::ArrowUp) {
+        dir.y += 1.0;
+    }
+    if input.pressed(KeyCode::KeyS) || input.pressed(KeyCode::ArrowDown) {
+        dir.y -= 1.0;
+    }
+    if input.pressed(KeyCode::KeyA) || input.pressed(KeyCode::ArrowLeft) {
+        dir.x -= 1.0;
+    }
+    if input.pressed(KeyCode::KeyD) || input.pressed(KeyCode::ArrowRight) {
+        dir.x += 1.0;
+    }
     dir.normalize_or_zero()
 }
 
@@ -93,7 +101,8 @@ fn move_player(
 ) {
     let dir = input_direction(&input);
     for mut transform in &mut query {
-        transform.translation = advance(transform.translation, dir, config.speed, time.delta_secs());
+        transform.translation =
+            advance(transform.translation, dir, config.speed, time.delta_secs());
     }
 }
 

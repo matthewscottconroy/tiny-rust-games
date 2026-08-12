@@ -5,8 +5,8 @@
 //! and adds the plugin — copy `lib.rs` into your own project (or depend on this
 //! crate) and add the one plugin to reuse the feature.
 
-use bevy::prelude::*;
 use audio::AudioPlugin;
+use bevy::prelude::*;
 
 fn main() {
     App::new()

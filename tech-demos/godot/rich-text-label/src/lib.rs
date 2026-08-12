@@ -37,12 +37,7 @@ impl INode for RichTextDemo {
 
     fn ready(&mut self) {
         // Demonstrate several styled segments on startup.
-        self.append_colored(
-            GString::from("Rich Text Demo"),
-            1.0,
-            0.8,
-            0.0,
-        );
+        self.append_colored(GString::from("Rich Text Demo"), 1.0, 0.8, 0.0);
         self.newline();
         self.append_bold(GString::from("Bold subtitle — gdext 0.5"));
         self.newline();

@@ -59,9 +59,7 @@ impl INode2D for ParticleController {
         let lifetime = self.particle_lifetime as f64;
         let emit = self.emit_on_start;
 
-        let mut particles = self
-            .base()
-            .get_node_as::<CpuParticles2D>("CPUParticles2D");
+        let mut particles = self.base().get_node_as::<CpuParticles2D>("CPUParticles2D");
 
         particles.set_amount(100);
         particles.set_lifetime(lifetime);
@@ -87,9 +85,7 @@ impl ParticleController {
     /// Starts particle emission.
     #[func]
     pub fn start_emission(&mut self) {
-        let mut particles = self
-            .base()
-            .get_node_as::<CpuParticles2D>("CPUParticles2D");
+        let mut particles = self.base().get_node_as::<CpuParticles2D>("CPUParticles2D");
         particles.set_emitting(true);
         self.refresh_label();
         godot_print!("[ParticleController] emission started");
@@ -98,9 +94,7 @@ impl ParticleController {
     /// Stops particle emission.
     #[func]
     pub fn stop_emission(&mut self) {
-        let mut particles = self
-            .base()
-            .get_node_as::<CpuParticles2D>("CPUParticles2D");
+        let mut particles = self.base().get_node_as::<CpuParticles2D>("CPUParticles2D");
         particles.set_emitting(false);
         self.refresh_label();
         godot_print!("[ParticleController] emission stopped");
@@ -110,9 +104,7 @@ impl ParticleController {
     #[func]
     pub fn burst(&mut self) {
         {
-            let mut particles = self
-                .base()
-                .get_node_as::<CpuParticles2D>("CPUParticles2D");
+            let mut particles = self.base().get_node_as::<CpuParticles2D>("CPUParticles2D");
             particles.set_emitting(true);
         }
 
@@ -137,9 +129,7 @@ impl ParticleController {
     /// Changes the particle colour to the given RGB values.
     #[func]
     pub fn set_color(&mut self, r: f32, g: f32, b: f32) {
-        let mut particles = self
-            .base()
-            .get_node_as::<CpuParticles2D>("CPUParticles2D");
+        let mut particles = self.base().get_node_as::<CpuParticles2D>("CPUParticles2D");
         particles.set_color(Color::from_rgb(r, g, b));
         godot_print!("[ParticleController] color set to ({r}, {g}, {b})");
     }

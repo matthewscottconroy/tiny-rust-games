@@ -86,25 +86,60 @@ fn setup(mut commands: Commands) {
     commands.spawn(Camera2d);
 
     let boxes: &[(Vec3, Vec2, Vec2, Color)] = &[
-        (Vec3::new(-180.0, 120.0, 0.0), Vec2::new(50.0, 32.0), Vec2::new( 130.0,  90.0), Color::srgb(0.3, 0.6, 0.9)),
-        (Vec3::new(  80.0,  80.0, 0.0), Vec2::new(64.0, 48.0), Vec2::new( -90.0, 110.0), Color::srgb(0.4, 0.85, 0.4)),
-        (Vec3::new(-100.0, -80.0, 0.0), Vec2::new(40.0, 40.0), Vec2::new( 160.0, -70.0), Color::srgb(0.85, 0.7, 0.2)),
-        (Vec3::new( 160.0, -60.0, 0.0), Vec2::new(72.0, 36.0), Vec2::new(-110.0, -80.0), Color::srgb(0.7, 0.3, 0.85)),
-        (Vec3::new(   0.0,   0.0, 0.0), Vec2::new(48.0, 64.0), Vec2::new(  80.0,-120.0), Color::srgb(0.9, 0.45, 0.2)),
+        (
+            Vec3::new(-180.0, 120.0, 0.0),
+            Vec2::new(50.0, 32.0),
+            Vec2::new(130.0, 90.0),
+            Color::srgb(0.3, 0.6, 0.9),
+        ),
+        (
+            Vec3::new(80.0, 80.0, 0.0),
+            Vec2::new(64.0, 48.0),
+            Vec2::new(-90.0, 110.0),
+            Color::srgb(0.4, 0.85, 0.4),
+        ),
+        (
+            Vec3::new(-100.0, -80.0, 0.0),
+            Vec2::new(40.0, 40.0),
+            Vec2::new(160.0, -70.0),
+            Color::srgb(0.85, 0.7, 0.2),
+        ),
+        (
+            Vec3::new(160.0, -60.0, 0.0),
+            Vec2::new(72.0, 36.0),
+            Vec2::new(-110.0, -80.0),
+            Color::srgb(0.7, 0.3, 0.85),
+        ),
+        (
+            Vec3::new(0.0, 0.0, 0.0),
+            Vec2::new(48.0, 64.0),
+            Vec2::new(80.0, -120.0),
+            Color::srgb(0.9, 0.45, 0.2),
+        ),
     ];
 
     for &(pos, size, vel, color) in boxes {
         commands.spawn((
-            Sprite { color, custom_size: Some(size), ..default() },
+            Sprite {
+                color,
+                custom_size: Some(size),
+                ..default()
+            },
             Transform::from_translation(pos),
-            Box { size, base_color: color },
+            Box {
+                size,
+                base_color: color,
+            },
             Velocity(vel),
         ));
     }
 
     commands.spawn((
         Text::new("Boxes resolve AABB overlaps each frame — orange = colliding"),
-        TextFont { font_size: 14.0, ..default() },
+        TextFont {
+            font_size: 14.0,
+            ..default()
+        },
         TextColor(Color::srgb(0.65, 0.65, 0.65)),
         Node {
             position_type: PositionType::Absolute,
@@ -144,12 +179,16 @@ pub fn aabb_overlap(a_pos: Vec2, a_half: Vec2, b_pos: Vec2, b_half: Vec2) -> boo
 /// * `b_pos` / `b_half` — Centre and half-extents of box B.
 pub fn mtv(a_pos: Vec2, a_half: Vec2, b_pos: Vec2, b_half: Vec2) -> Vec2 {
     let dx_right = (b_pos.x + b_half.x) - (a_pos.x - a_half.x);
-    let dx_left  = (a_pos.x + a_half.x) - (b_pos.x - b_half.x);
-    let dy_up    = (b_pos.y + b_half.y) - (a_pos.y - a_half.y);
-    let dy_down  = (a_pos.y + a_half.y) - (b_pos.y - b_half.y);
+    let dx_left = (a_pos.x + a_half.x) - (b_pos.x - b_half.x);
+    let dy_up = (b_pos.y + b_half.y) - (a_pos.y - a_half.y);
+    let dy_down = (a_pos.y + a_half.y) - (b_pos.y - b_half.y);
 
-    let push_x = if dx_right < dx_left { dx_right } else { -dx_left };
-    let push_y = if dy_up   < dy_down  { dy_up    } else { -dy_down };
+    let push_x = if dx_right < dx_left {
+        dx_right
+    } else {
+        -dx_left
+    };
+    let push_y = if dy_up < dy_down { dy_up } else { -dy_down };
 
     if push_x.abs() < push_y.abs() {
         Vec2::new(push_x, 0.0)
@@ -197,13 +236,21 @@ fn detect_and_resolve_collisions(
             if let Ok((_, mut ta, mut sa, _, mut va)) = query.get_mut(ea) {
                 ta.translation.x += push.x * 0.5;
                 ta.translation.y += push.y * 0.5;
-                if push.x.abs() > push.y.abs() { va.0.x *= -1.0; } else { va.0.y *= -1.0; }
+                if push.x.abs() > push.y.abs() {
+                    va.0.x *= -1.0;
+                } else {
+                    va.0.y *= -1.0;
+                }
                 sa.color = config.collision_color;
             }
             if let Ok((_, mut tb, mut sb, _, mut vb)) = query.get_mut(eb) {
                 tb.translation.x -= push.x * 0.5;
                 tb.translation.y -= push.y * 0.5;
-                if push.x.abs() > push.y.abs() { vb.0.x *= -1.0; } else { vb.0.y *= -1.0; }
+                if push.x.abs() > push.y.abs() {
+                    vb.0.x *= -1.0;
+                } else {
+                    vb.0.y *= -1.0;
+                }
                 sb.color = config.collision_color;
             }
         }
@@ -219,8 +266,12 @@ fn bounce_walls(
         let p = transform.translation;
         let hx = b.size.x / 2.0;
         let hy = b.size.y / 2.0;
-        if (p.x - hx) < -config.arena_half.x || (p.x + hx) > config.arena_half.x { vel.0.x *= -1.0; }
-        if (p.y - hy) < -config.arena_half.y || (p.y + hy) > config.arena_half.y { vel.0.y *= -1.0; }
+        if (p.x - hx) < -config.arena_half.x || (p.x + hx) > config.arena_half.x {
+            vel.0.x *= -1.0;
+        }
+        if (p.y - hy) < -config.arena_half.y || (p.y + hy) > config.arena_half.y {
+            vel.0.y *= -1.0;
+        }
     }
 }
 
@@ -257,12 +308,17 @@ mod tests {
 
     #[test]
     fn same_center_overlaps() {
-        assert!(aabb_overlap(Vec2::ZERO, Vec2::splat(5.0), Vec2::ZERO, Vec2::splat(5.0)));
+        assert!(aabb_overlap(
+            Vec2::ZERO,
+            Vec2::splat(5.0),
+            Vec2::ZERO,
+            Vec2::splat(5.0)
+        ));
     }
 
     #[test]
     fn no_y_overlap_returns_false() {
-        let a = Vec2::new(0.0,  20.0);
+        let a = Vec2::new(0.0, 20.0);
         let b = Vec2::new(0.0, -20.0);
         let half = Vec2::splat(5.0);
         assert!(!aabb_overlap(a, half, b, half));
@@ -273,9 +329,9 @@ mod tests {
     #[test]
     fn mtv_x_overlap_pushes_horizontally() {
         // A is slightly left of B with a small x overlap.
-        let a_pos  = Vec2::new(-3.0, 0.0);
-        let b_pos  = Vec2::new( 3.0, 0.0);
-        let half   = Vec2::new(5.0, 20.0); // big y overlap, small x overlap
+        let a_pos = Vec2::new(-3.0, 0.0);
+        let b_pos = Vec2::new(3.0, 0.0);
+        let half = Vec2::new(5.0, 20.0); // big y overlap, small x overlap
         let push = mtv(a_pos, half, b_pos, half);
         assert_ne!(push.x, 0.0, "should push along x (smaller overlap)");
         assert_eq!(push.y, 0.0);
@@ -284,9 +340,9 @@ mod tests {
     #[test]
     fn mtv_y_overlap_pushes_vertically() {
         // A is slightly above B with a small y overlap.
-        let a_pos  = Vec2::new(0.0,  3.0);
-        let b_pos  = Vec2::new(0.0, -3.0);
-        let half   = Vec2::new(20.0, 5.0); // big x overlap, small y overlap
+        let a_pos = Vec2::new(0.0, 3.0);
+        let b_pos = Vec2::new(0.0, -3.0);
+        let half = Vec2::new(20.0, 5.0); // big x overlap, small y overlap
         let push = mtv(a_pos, half, b_pos, half);
         assert_eq!(push.x, 0.0);
         assert_ne!(push.y, 0.0, "should push along y (smaller overlap)");
@@ -310,8 +366,7 @@ mod tests {
     #[test]
     fn setup_spawns_five_boxes() {
         let mut app = App::new();
-        app.add_plugins(MinimalPlugins)
-            .add_systems(Startup, setup);
+        app.add_plugins(MinimalPlugins).add_systems(Startup, setup);
         app.update();
 
         let mut q = app.world_mut().query::<&Box>();

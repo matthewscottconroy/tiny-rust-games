@@ -62,7 +62,9 @@ pub struct DialogSystemConfig {
 
 impl Default for DialogSystemConfig {
     fn default() -> Self {
-        Self { chars_per_sec: 40.0 }
+        Self {
+            chars_per_sec: 40.0,
+        }
     }
 }
 
@@ -147,7 +149,12 @@ pub struct DialogState {
 
 impl Default for DialogState {
     fn default() -> Self {
-        Self { node_id: 0, char_index: 0, typing_timer: 0.0, finished: false }
+        Self {
+            node_id: 0,
+            char_index: 0,
+            typing_timer: 0.0,
+            finished: false,
+        }
     }
 }
 
@@ -166,22 +173,37 @@ fn setup(mut commands: Commands) {
 
     // Dialog box background
     commands.spawn((
-        Sprite { color: Color::srgb(0.08, 0.08, 0.12), custom_size: Some(Vec2::new(680.0, 240.0)), ..default() },
+        Sprite {
+            color: Color::srgb(0.08, 0.08, 0.12),
+            custom_size: Some(Vec2::new(680.0, 240.0)),
+            ..default()
+        },
         Transform::from_translation(Vec3::new(0.0, -90.0, 0.0)),
     ));
     commands.spawn((
-        Sprite { color: Color::srgb(0.2, 0.2, 0.3), custom_size: Some(Vec2::new(684.0, 244.0)), ..default() },
+        Sprite {
+            color: Color::srgb(0.2, 0.2, 0.3),
+            custom_size: Some(Vec2::new(684.0, 244.0)),
+            ..default()
+        },
         Transform::from_translation(Vec3::new(0.0, -90.0, -0.1)),
     ));
 
     // Scene image placeholder
     commands.spawn((
-        Sprite { color: Color::srgb(0.1, 0.12, 0.18), custom_size: Some(Vec2::new(720.0, 200.0)), ..default() },
+        Sprite {
+            color: Color::srgb(0.1, 0.12, 0.18),
+            custom_size: Some(Vec2::new(720.0, 200.0)),
+            ..default()
+        },
         Transform::from_translation(Vec3::new(0.0, 150.0, 0.0)),
     ));
     commands.spawn((
         Text::new("[ Scene ]"),
-        TextFont { font_size: 20.0, ..default() },
+        TextFont {
+            font_size: 20.0,
+            ..default()
+        },
         TextColor(Color::srgb(0.3, 0.3, 0.4)),
         Node {
             position_type: PositionType::Absolute,
@@ -192,12 +214,18 @@ fn setup(mut commands: Commands) {
         },
     ));
 
-    let base = TextFont { font_size: 18.0, ..default() };
+    let base = TextFont {
+        font_size: 18.0,
+        ..default()
+    };
 
     // Speaker name
     commands.spawn((
         Text::new("Speaker"),
-        TextFont { font_size: 20.0, ..default() },
+        TextFont {
+            font_size: 20.0,
+            ..default()
+        },
         TextColor(Color::srgb(0.8, 0.75, 0.4)),
         Node {
             position_type: PositionType::Absolute,
@@ -242,7 +270,10 @@ fn setup(mut commands: Commands) {
     // Hint
     commands.spawn((
         Text::new("SPACE — advance   1/2/3 — choose"),
-        TextFont { font_size: 14.0, ..default() },
+        TextFont {
+            font_size: 14.0,
+            ..default()
+        },
         TextColor(Color::srgb(0.45, 0.45, 0.55)),
         Node {
             position_type: PositionType::Absolute,
@@ -258,7 +289,9 @@ fn setup(mut commands: Commands) {
 
 fn tick_typing(time: Res<Time>, config: Res<DialogSystemConfig>, mut state: ResMut<DialogState>) {
     let tree = build_tree();
-    let Some(node) = tree.get(state.node_id) else { return };
+    let Some(node) = tree.get(state.node_id) else {
+        return;
+    };
     let total_chars = node.text.chars().count();
     if state.char_index >= total_chars {
         state.finished = true;
@@ -272,7 +305,9 @@ fn tick_typing(time: Res<Time>, config: Res<DialogSystemConfig>, mut state: ResM
 
 fn handle_input(input: Res<ButtonInput<KeyCode>>, mut state: ResMut<DialogState>) {
     let tree = build_tree();
-    let Some(node) = tree.get(state.node_id) else { return };
+    let Some(node) = tree.get(state.node_id) else {
+        return;
+    };
 
     // SPACE skips typing or advances when there is exactly one choice or no choices.
     if input.just_pressed(KeyCode::Space) {
@@ -282,10 +317,13 @@ fn handle_input(input: Res<ButtonInput<KeyCode>>, mut state: ResMut<DialogState>
         } else if node.choices.is_empty() {
             // End of dialog — wrap back to start.
             *state = DialogState::default();
-        } else if node.choices.len() == 1 {
-            if let Some(next) = advance_dialog(&tree, state.node_id, 0) {
-                *state = DialogState { node_id: next, ..default() };
-            }
+        } else if node.choices.len() == 1
+            && let Some(next) = advance_dialog(&tree, state.node_id, 0)
+        {
+            *state = DialogState {
+                node_id: next,
+                ..default()
+            };
         }
         return;
     }
@@ -301,19 +339,21 @@ fn handle_input(input: Res<ButtonInput<KeyCode>>, mut state: ResMut<DialogState>
     ] {
         if input.just_pressed(key) {
             if let Some(next) = advance_dialog(&tree, state.node_id, idx) {
-                *state = DialogState { node_id: next, ..default() };
+                *state = DialogState {
+                    node_id: next,
+                    ..default()
+                };
             }
             return;
         }
     }
 }
 
-fn update_ui(
-    state: Res<DialogState>,
-    mut query: Query<(&mut Text, &mut TextColor, &DialogUi)>,
-) {
+fn update_ui(state: Res<DialogState>, mut query: Query<(&mut Text, &mut TextColor, &DialogUi)>) {
     let tree = build_tree();
-    let Some(node) = tree.get(state.node_id) else { return };
+    let Some(node) = tree.get(state.node_id) else {
+        return;
+    };
     let shown = visible_text(node.text, state.char_index);
 
     for (mut text, mut color, label) in &mut query {
