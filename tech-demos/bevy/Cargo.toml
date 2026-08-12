@@ -114,6 +114,14 @@ bevy = "0.18"
 # (Bevy included) fully optimized so the demos run at a playable frame rate.
 [profile.dev]
 opt-level = 1
+# 84 members each produce a lib, a bin, and their test binaries, and full
+# debuginfo dominates every one of them — a measured 1.2 GB of debug sections in
+# a 1.3 GB test binary. Line tables keep panic backtraces pointing at real
+# file:line locations for a fraction of the disk: a full `cargo test --workspace`
+# measured 250 GB of `target/` before this line and 82 GB after. Switch back to
+# `debug = true` if you need to inspect variables in a debugger; it costs disk,
+# not correctness.
+debug = "line-tables-only"
 
 [profile.dev.package."*"]
 opt-level = 3
@@ -121,6 +129,13 @@ opt-level = 3
 # Lints shared by every demo (each member opts in with `[lints] workspace = true`).
 # CI runs `cargo clippy --all-targets -- -D warnings`, so anything not allowed
 # here is a hard failure.
+# Public items must carry `///` docs — the Bevy README promises them, and CI
+# runs clippy with `-D warnings`, so this keeps the promise enforced rather
+# than aspirational. The Godot suite cannot do the same: gdext's `#[export]`
+# generates undocumentable accessor methods (see tech-demos/godot/DEMO_ANATOMY.md).
+[workspace.lints.rust]
+missing_docs = "warn"
+
 [workspace.lints.clippy]
 # Bevy system signatures are inherently wide: one `Query<(&A, &mut B, ...)>` per
 # concern, plus resources. Splitting them to satisfy these two lints would scatter

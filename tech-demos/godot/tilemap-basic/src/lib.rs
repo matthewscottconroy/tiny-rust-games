@@ -1,6 +1,6 @@
 //! Tilemap Basic GDExtension demo — reading and writing TileMap cells from Rust.
 //!
-//! Demonstrates:
+//! Teaches:
 //!
 //! - Storing tile data in a `Vec<u8>` in Rust (0=empty, 1=floor, 2=wall).
 //! - Generating a simple bordered room procedurally: walls on edges, floors inside.

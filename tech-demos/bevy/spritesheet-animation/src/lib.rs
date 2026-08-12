@@ -74,7 +74,9 @@ impl Default for SpritesheetAnimationConfig {
 /// Stores the inclusive index range `[first, last]` for a looping animation.
 #[derive(Component)]
 pub struct AnimationIndices {
+    /// Index of the first frame in the loop.
     pub first: usize,
+    /// Index of the last frame in the loop, inclusive.
     pub last: usize,
 }
 

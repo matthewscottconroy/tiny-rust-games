@@ -50,6 +50,7 @@ const PAN_SPEED: f32 = 220.0;
 
 // ── ZoomDemo — root Node2D ────────────────────────────────────────────────────
 
+/// Godot node mapping mouse-wheel input to a clamped, smoothed camera zoom.
 #[derive(GodotClass)]
 #[class(base=Node2D)]
 pub struct ZoomDemo {

@@ -1,6 +1,9 @@
 //! Canvas Layer demo — a CanvasLayer keeps HUD elements fixed on screen
 //! while a Camera2D scrolls through the world. Demonstrates that UI pinned
 //! to a CanvasLayer is unaffected by camera movement.
+//!
+//! Teaches: why HUD elements parented to a `CanvasLayer` stay fixed on screen while a
+//! `Camera2D` scrolls the world beneath them.
 
 use godot::classes::{Camera2D, CanvasLayer, INode2D, Label, Node2D};
 use godot::prelude::*;

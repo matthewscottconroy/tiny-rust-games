@@ -1,5 +1,8 @@
 //! Timer and Countdown demo — creates a repeating Timer child, tracks ticks,
 //! and shows a live countdown to the next tick on a Label.
+//!
+//! Teaches: driving a `Timer` node from Rust and rendering its remaining time to a
+//! HUD label.
 
 use godot::classes::{INode, Label, Node, Timer};
 use godot::prelude::*;

@@ -3,6 +3,9 @@
 //! Demonstrates a pure-Rust finite state machine (FSM) driving a Node2D
 //! subclass.  Input flags are read every frame and fed into a stateless
 //! `transition` function; the resulting state is displayed on a child Label.
+//!
+//! Teaches: a stateless `transition` function driving a finite state machine, so the
+//! transition rules are unit-testable without an engine.
 
 use godot::classes::{INode2D, Input, Label, Node2D};
 use godot::prelude::*;
@@ -22,9 +25,13 @@ unsafe impl ExtensionLibrary for StateMachineExtension {}
 /// The four states the character can be in.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum FsmState {
+    /// Standing still.
     Idle,
+    /// Moving under player input.
     Walk,
+    /// Airborne.
     Jump,
+    /// Playing the attack action.
     Attack,
 }
 
@@ -127,6 +134,7 @@ pub fn is_terminal(s: u8) -> bool {
 // GodotClass
 // ---------------------------------------------------------------------------
 
+/// Godot node driving the state enum from input and exposing it to the editor.
 #[derive(GodotClass)]
 #[class(base=Node2D)]
 pub struct StateMachine {

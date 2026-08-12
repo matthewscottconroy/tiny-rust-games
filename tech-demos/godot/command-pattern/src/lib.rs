@@ -3,6 +3,9 @@
 //! Implements a classic undo/redo stack using a pure-Rust `Command` trait.
 //! The Godot class exposes `execute_move`, `undo_last`, and `redo_last` as
 //! `#[func]` methods callable from GDScript.
+//!
+//! Teaches: an undo/redo stack built from `Box<dyn Command>` over a pure-Rust
+//! `GameState`, so the history logic is testable without Godot.
 
 use godot::classes::{INode, Label, Node};
 use godot::prelude::*;
@@ -19,14 +22,19 @@ unsafe impl ExtensionLibrary for CommandPatternExtension {}
 // Pure-Rust types
 // ---------------------------------------------------------------------------
 
+/// The state commands act on, kept free of Godot types so it is testable.
 #[derive(Debug, Clone, PartialEq)]
 pub struct GameState {
+    /// Player X position.
     pub x: f32,
+    /// Player Y position.
     pub y: f32,
+    /// Current score.
     pub score: i32,
 }
 
 impl GameState {
+    /// Creates a state at the origin with no score.
     pub fn new() -> Self {
         Self {
             x: 0.0,
@@ -46,27 +54,39 @@ impl Default for GameState {
 // Command trait and implementations
 // ---------------------------------------------------------------------------
 
+/// A reversible action. Implementors must make `undo` exactly cancel `execute`.
 pub trait Command: Send {
+    /// Applies the action and returns the resulting state.
     fn execute(&self, state: &mut GameState) -> GameState;
+    /// Reverses the action and returns the resulting state.
+    ///
+    /// Must exactly cancel [`Command::execute`], or undo/redo will drift.
     fn undo(&self, state: &mut GameState) -> GameState;
 }
 
+/// Moves the player by a fixed offset.
 pub struct MoveCommand {
+    /// Horizontal distance to move.
     pub dx: f32,
+    /// Vertical distance to move.
     pub dy: f32,
 }
 
 impl Command for MoveCommand {
+    /// Applies the action and returns the resulting state.
     fn execute(&self, state: &mut GameState) -> GameState {
         apply_move(state, self.dx, self.dy)
     }
 
+    /// Reverses the action and returns the resulting state.
     fn undo(&self, state: &mut GameState) -> GameState {
         apply_move(state, -self.dx, -self.dy)
     }
 }
 
+/// Adds to (or subtracts from) the score.
 pub struct ScoreCommand {
+    /// Amount added to the score; negative subtracts.
     pub delta: i32,
 }
 
@@ -106,6 +126,7 @@ pub fn apply_score(state: &GameState, delta: i32) -> GameState {
 // GodotClass
 // ---------------------------------------------------------------------------
 
+/// Holds the undo and redo stacks and applies commands to the state.
 #[derive(GodotClass)]
 #[class(base=Node)]
 pub struct CommandManager {
@@ -129,6 +150,7 @@ impl INode for CommandManager {
 
 #[godot_api]
 impl CommandManager {
+    /// Runs a move and pushes it onto the undo stack.
     #[func]
     pub fn execute_move(&mut self, dx: f32, dy: f32) {
         let cmd = MoveCommand { dx, dy };
@@ -138,6 +160,7 @@ impl CommandManager {
         self.refresh_label();
     }
 
+    /// Runs a score change and pushes it onto the undo stack.
     #[func]
     pub fn execute_score(&mut self, delta: i32) {
         let cmd = ScoreCommand { delta };
@@ -147,6 +170,7 @@ impl CommandManager {
         self.refresh_label();
     }
 
+    /// Reverses the most recent command, moving it to the redo stack.
     #[func]
     pub fn undo_last(&mut self) {
         if let Some(cmd) = self.history.pop() {
@@ -156,6 +180,7 @@ impl CommandManager {
         }
     }
 
+    /// Re-applies the most recently undone command.
     #[func]
     pub fn redo_last(&mut self) {
         if let Some(cmd) = self.redo_stack.pop() {
@@ -165,16 +190,19 @@ impl CommandManager {
         }
     }
 
+    /// Current player X position.
     #[func]
     pub fn get_x(&self) -> f32 {
         self.state.x
     }
 
+    /// Current player Y position.
     #[func]
     pub fn get_y(&self) -> f32 {
         self.state.y
     }
 
+    /// Current score.
     #[func]
     pub fn get_score(&self) -> i32 {
         self.state.score

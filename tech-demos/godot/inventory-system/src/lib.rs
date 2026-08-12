@@ -3,6 +3,9 @@
 //! A slot-limited inventory backed by a `Vec<Item>`.  Item lookup, quantity
 //! totalling, and capacity checks live in pure functions so they are easily
 //! unit-tested without the Godot runtime.
+//!
+//! Teaches: a `Vec<Item>` inventory with slot capacity, and add / remove / query
+//! operations kept in plain Rust.
 
 use godot::classes::{INode, Label, Node};
 use godot::prelude::*;
@@ -19,10 +22,14 @@ unsafe impl ExtensionLibrary for InventorySystemExtension {}
 // Pure-Rust types
 // ---------------------------------------------------------------------------
 
+/// A stack of one item kind.
 #[derive(Debug, Clone, PartialEq)]
 pub struct Item {
+    /// Stable identifier for the item kind.
     pub id: u32,
+    /// Display name.
     pub name: String,
+    /// How many are held in this stack.
     pub quantity: u32,
 }
 
@@ -49,6 +56,7 @@ pub fn is_full(inv: &[Item], max: usize) -> bool {
 // GodotClass
 // ---------------------------------------------------------------------------
 
+/// Godot node owning the item list and exposing it to GDScript.
 #[derive(GodotClass)]
 #[class(base=Node)]
 pub struct InventoryManager {
@@ -109,16 +117,19 @@ impl InventoryManager {
         removed
     }
 
+    /// Number of distinct item stacks held.
     #[func]
     pub fn get_item_count(&self) -> i32 {
         self.inventory.len() as i32
     }
 
+    /// Whether any stack of the given item kind is held.
     #[func]
     pub fn has_item(&self, id: i32) -> bool {
         find_item(&self.inventory, id as u32).is_some()
     }
 
+    /// Total items held across every stack.
     #[func]
     pub fn get_total_quantity(&self) -> i32 {
         total_quantity(&self.inventory) as i32

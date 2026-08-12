@@ -1,5 +1,7 @@
 //! UI Health Bar demo — drives a ProgressBar and Label from Rust, exposing
 //! damage() and heal() functions that clamp health to [0, max_health].
+//!
+//! Teaches: wiring a `ProgressBar` and `Label` to a health value owned by Rust.
 
 use godot::classes::{INode, Label, Node, ProgressBar};
 use godot::prelude::*;

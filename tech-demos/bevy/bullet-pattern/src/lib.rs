@@ -115,8 +115,11 @@ pub fn bullet_color(lifetime: f32, max_lifetime: f32) -> Color {
 /// Which firing pattern the emitter is currently using.
 #[derive(Clone, Copy, PartialEq, Eq, Debug)]
 pub enum Pattern {
+    /// Bullets fired evenly in all directions at once.
     Radial,
+    /// A rotating arm of bullets, sweeping as it fires.
     Spiral,
+    /// A tight spread fired toward the player.
     Aimed,
 }
 

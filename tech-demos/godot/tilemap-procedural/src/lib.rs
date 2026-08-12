@@ -1,6 +1,8 @@
 //! Tilemap Procedural demo — fills a TileMap from Rust using a cellular-automata
 //! cave generator. Demonstrates how to drive Godot's TileMap API entirely from
 //! Rust code, including per-cell writes and multi-step smoothing.
+//!
+//! Teaches: a cellular-automata cave generator written cell by cell into a `TileMap`.
 
 use godot::classes::{INode2D, Node2D, TileMap};
 use godot::prelude::*;

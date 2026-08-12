@@ -91,9 +91,13 @@ pub enum Tile {
 /// An axis-aligned rectangle in grid coordinates.
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct Rect {
+    /// Left edge of the room, in tiles.
     pub x: usize,
+    /// Top edge of the room, in tiles.
     pub y: usize,
+    /// Room width in tiles.
     pub w: usize,
+    /// Room height in tiles.
     pub h: usize,
 }
 

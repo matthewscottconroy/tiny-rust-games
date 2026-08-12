@@ -1,6 +1,6 @@
 //! Pathfinding A* GDExtension demo — interactive grid path-finding from Rust.
 //!
-//! Demonstrates:
+//! Teaches:
 //!
 //! - Creating an `AStar2D` instance via `AStar2D::new_gd()`.
 //! - Adding grid points and connecting orthogonal neighbours.

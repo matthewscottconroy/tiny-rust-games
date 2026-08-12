@@ -6,6 +6,9 @@
 //!
 //! `EventListener` connects to all three signals in `ready()` and prints to
 //! the Godot console when they fire.
+//!
+//! Teaches: an autoloaded signal hub, so publishers and subscribers never hold direct
+//! references to each other.
 
 use godot::classes::{INode, Node};
 use godot::prelude::*;
@@ -47,6 +50,7 @@ pub fn event_priority(event_type: u8) -> u8 {
 // EventBus
 // ---------------------------------------------------------------------------
 
+/// Autoloaded signal hub; publishers and subscribers never reference each other.
 #[derive(GodotClass)]
 #[class(base=Node)]
 pub struct EventBus {
@@ -71,6 +75,7 @@ impl EventBus {
     #[signal]
     fn level_completed(level: i32);
 
+    /// Broadcasts that the player died, carrying the final score.
     #[func]
     pub fn emit_player_died(&mut self, score: i32) {
         let score_copy = score;
@@ -78,6 +83,7 @@ impl EventBus {
             .emit_signal("player_died", &[score_copy.to_variant()]);
     }
 
+    /// Broadcasts that an item was picked up.
     #[func]
     pub fn emit_item_collected(&mut self, item_id: i32) {
         let id_copy = item_id;
@@ -85,6 +91,7 @@ impl EventBus {
             .emit_signal("item_collected", &[id_copy.to_variant()]);
     }
 
+    /// Broadcasts that a level was finished.
     #[func]
     pub fn emit_level_completed(&mut self, level: i32) {
         let level_copy = level;
@@ -97,6 +104,7 @@ impl EventBus {
 // EventListener
 // ---------------------------------------------------------------------------
 
+/// Example subscriber that logs everything the bus emits.
 #[derive(GodotClass)]
 #[class(base=Node)]
 pub struct EventListener {
@@ -126,16 +134,19 @@ impl INode for EventListener {
 
 #[godot_api]
 impl EventListener {
+    /// Handler for the bus's player-died signal.
     #[func]
     pub fn on_player_died(&self, score: i32) {
         godot_print!("{}", format_event(0, score));
     }
 
+    /// Handler for the bus's item-collected signal.
     #[func]
     pub fn on_item_collected(&self, item_id: i32) {
         godot_print!("{}", format_event(1, item_id));
     }
 
+    /// Handler for the bus's level-completed signal.
     #[func]
     pub fn on_level_completed(&self, level: i32) {
         godot_print!("{}", format_event(2, level));

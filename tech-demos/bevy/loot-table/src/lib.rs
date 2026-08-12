@@ -56,10 +56,15 @@ impl Plugin for LootTablePlugin {
 /// One item type that can appear in the loot pool.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub enum Item {
+    /// Currency; the most common drop.
     Gold,
+    /// A consumable.
     Potion,
+    /// A weapon.
     Sword,
+    /// Defensive gear.
     Shield,
+    /// The rarest drop.
     Gem,
 }
 

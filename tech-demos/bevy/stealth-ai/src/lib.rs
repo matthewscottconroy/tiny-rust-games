@@ -113,11 +113,20 @@ pub fn in_fov_cone(target: Vec2, origin: Vec2, forward: Vec2, half_angle: f32, r
 #[derive(Clone, PartialEq)]
 pub enum GuardState {
     /// Walking between waypoints.
-    Patrol { waypoint_idx: usize },
+    Patrol {
+        /// Index of the waypoint currently being walked toward.
+        waypoint_idx: usize,
+    },
     /// Stopped and looking after spotting the player.
-    Alert { timer: f32 },
+    Alert {
+        /// Seconds left before giving up and returning to [`GuardState::Patrol`].
+        timer: f32,
+    },
     /// Running toward the last known player position.
-    Chase { last_known: Vec2 },
+    Chase {
+        /// Where the player was when last seen.
+        last_known: Vec2,
+    },
 }
 
 // ─── Waypoints ───────────────────────────────────────────────────────────────

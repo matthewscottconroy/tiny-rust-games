@@ -21,6 +21,7 @@ unsafe impl ExtensionLibrary for HexGridExt {}
 
 // ── Pure hex math ─────────────────────────────────────────────────────────────
 
+/// Distance from a hexagon's centre to a vertex, in pixels.
 pub const HEX_SIZE: f32 = 32.0;
 
 /// Flat-top axial `(q, r)` → pixel centre.
@@ -92,6 +93,7 @@ pub fn hex_polygon(centre: Vector2, size: f32) -> Vec<Vector2> {
 
 // ── HexGridDemo — root Node2D ─────────────────────────────────────────────────
 
+/// Godot node drawing the hex grid and tracking the selected cell.
 #[derive(GodotClass)]
 #[class(base=Node2D)]
 pub struct HexGridDemo {

@@ -1,5 +1,8 @@
 //! Animation Player demo — controls an AnimationPlayer timeline from Rust:
 //! play, seek, adjust speed scale, and react to the `animation_finished` signal.
+//!
+//! Teaches: controlling an `AnimationPlayer` timeline from Rust — play, seek, speed
+//! scale — and reacting to its `animation_finished` signal.
 
 use godot::classes::{AnimationPlayer, INode2D, Node2D};
 use godot::prelude::*;

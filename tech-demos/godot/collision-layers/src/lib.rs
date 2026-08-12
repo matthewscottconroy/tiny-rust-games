@@ -1,6 +1,9 @@
 //! collision-layers: Demonstrates programmatic control of Godot collision layers
 //! and masks from Rust. Spawns StaticBody2D children and configures their
 //! layer / mask bits at runtime.
+//!
+//! Teaches: setting collision layer and mask bits programmatically from Rust, and what
+//! each bit means for who collides with whom.
 
 use godot::classes::{INode2D, Label, Node2D, StaticBody2D};
 use godot::prelude::*;

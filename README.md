@@ -42,7 +42,9 @@ pull request. It enforces, across every crate:
 
 - `cargo fmt --check` — deliberately hand-aligned data tables opt out with
   `#[rustfmt::skip]`;
-- `cargo clippy --all-targets -- -D warnings`;
+- `cargo clippy --all-targets -- -D warnings`, including `missing_docs` for
+  every crate except the Godot demos (gdext's `#[export]` generates accessors
+  that cannot carry docs);
 - `cargo test`;
 - `--locked`, so the committed `Cargo.lock` files are verified rather than
   silently updated.

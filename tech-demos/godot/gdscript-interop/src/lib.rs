@@ -1,6 +1,9 @@
 //! GDScript Interop demo — calling GDScript methods from Rust via `call()`,
 //! and exposing Rust `#[func]` methods to GDScript. Demonstrates `Variant`
 //! conversion in both directions.
+//!
+//! Teaches: calling GDScript from Rust with `call()`, exposing Rust to GDScript with
+//! `#[func]`, and converting values through `Variant`.
 
 use godot::classes::{INode, Node};
 use godot::prelude::*;

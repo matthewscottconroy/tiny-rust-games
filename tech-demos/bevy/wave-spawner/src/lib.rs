@@ -82,15 +82,20 @@ pub fn enemy_count_for_wave(wave: u32) -> u32 {
 /// Tracks the wave progression state.
 #[derive(Resource)]
 pub struct WaveState {
+    /// Index of the wave currently running, counting from zero.
     pub wave: u32,
+    /// Whether enemies are spawning or the next wave is counting down.
     pub phase: WavePhase,
+    /// Seconds elapsed inside the current phase.
     pub timer: f32,
 }
 
 /// Whether we're actively fighting or waiting between waves.
 #[derive(PartialEq)]
 pub enum WavePhase {
+    /// Enemies are spawning and fighting.
     Active,
+    /// Breathing room before the next wave starts.
     Countdown,
 }
 
@@ -111,8 +116,11 @@ pub struct Enemy;
 /// Marks the HUD text entities.
 #[derive(Component)]
 pub enum HudLabel {
+    /// The label showing the current wave number.
     Wave,
+    /// The label showing how many enemies remain.
     Count,
+    /// The label showing time left in the phase.
     Timer,
 }
 

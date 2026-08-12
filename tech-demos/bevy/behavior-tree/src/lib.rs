@@ -88,32 +88,45 @@ impl Default for BehaviorTreeConfig {
 /// Result of ticking one BT node.
 #[derive(Clone, Copy, PartialEq, Eq, Debug)]
 pub enum NodeStatus {
+    /// Still working; tick again next frame.
     Running,
+    /// Finished successfully.
     Success,
+    /// Could not complete; the parent should try an alternative.
     Failure,
 }
 
 /// The leaf actions and conditions the guard can execute or test.
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub enum LeafKind {
+    /// Condition: the player is within the guard's sight range.
     CanSeePlayer,
+    /// Condition: the player is within attack range.
     IsNearPlayer,
+    /// Action: move toward the player.
     Chase,
+    /// Action: strike the player.
     Attack,
+    /// Action: walk the patrol route.
     Patrol,
 }
 
 /// A node in the behavior tree.
 #[derive(Clone, Debug)]
 pub enum BtNode {
+    /// Runs children in order, failing as soon as one fails (logical AND).
     Sequence(Vec<BtNode>),
+    /// Runs children in order, succeeding as soon as one succeeds (logical OR).
     Selector(Vec<BtNode>),
+    /// A condition to test or an action to perform.
     Leaf(LeafKind),
 }
 
 /// Shared read-only snapshot passed to every node tick.
 pub struct BtCtx {
+    /// Where the guard is this frame.
     pub guard_pos: Vec2,
+    /// Where the player is this frame.
     pub player_pos: Vec2,
 }
 

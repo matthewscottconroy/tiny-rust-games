@@ -1,6 +1,6 @@
 //! Ability Cooldowns GDExtension demo — a cooldown system for game abilities from Rust.
 //!
-//! Demonstrates:
+//! Teaches:
 //!
 //! - Defining a plain Rust struct (`Ability`) to hold per-ability state.
 //! - Ticking cooldowns every frame in `process()`.

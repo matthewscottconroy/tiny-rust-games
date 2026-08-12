@@ -1,5 +1,8 @@
 //! Animated Sprite demo — switches between Idle, Walk, and Attack states
 //! based on user input, driving an AnimatedSprite2D child node.
+//!
+//! Teaches: driving an `AnimatedSprite2D` child from a Rust state enum, and switching
+//! animations only when the state actually changes.
 
 use godot::classes::{AnimatedSprite2D, INode2D, Input, Node2D};
 use godot::prelude::*;
@@ -11,8 +14,11 @@ unsafe impl ExtensionLibrary for AnimatedSpriteExtension {}
 /// Animation state for the character.
 #[derive(Clone, Copy, PartialEq, Eq, Debug)]
 pub enum AnimState {
+    /// Standing still.
     Idle,
+    /// Moving under player input.
     Walk,
+    /// Playing the attack animation.
     Attack,
 }
 

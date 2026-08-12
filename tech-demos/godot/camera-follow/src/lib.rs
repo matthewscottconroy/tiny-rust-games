@@ -1,5 +1,8 @@
 //! Camera Follow demo — a Camera2D that smoothly lerps toward the first node
 //! in the "player" group, respecting a configurable dead zone.
+//!
+//! Teaches: a `Camera2D` that lerps toward a target found by group lookup, with a dead
+//! zone so small movements do not jitter the view.
 
 use godot::classes::{Camera2D, ICamera2D};
 use godot::prelude::*;

@@ -1,5 +1,8 @@
 //! Tooltip System demo — shows a PanelContainer with tooltip text on mouse
 //! enter and hides it on mouse exit.
+//!
+//! Teaches: showing and hiding a `PanelContainer` tooltip from hover signals wired up
+//! in Rust.
 
 use godot::classes::{Control, IControl, Label, PanelContainer};
 use godot::prelude::*;

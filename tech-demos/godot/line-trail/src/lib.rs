@@ -58,6 +58,7 @@ const TRAIL_COLOR: Color = Color {
     a: 1.0,
 };
 
+/// Godot node recording recent positions and drawing them as a fading trail.
 #[derive(GodotClass)]
 #[class(base=Node2D)]
 pub struct TrailDemo {
@@ -142,6 +143,7 @@ impl INode2D for TrailDemo {
 
 #[godot_api]
 impl TrailDemo {
+    /// How many points the trail currently holds.
     pub fn trail_len(&self) -> usize {
         self.trail_points.len()
     }

@@ -9,6 +9,9 @@
 //!
 //! Useful as a foundation for projectile systems, particle effects, and
 //! procedural generation patterns.
+//!
+//! Teaches: instantiating nodes at runtime from Rust and giving each one its own
+//! per-instance state.
 
 use godot::prelude::*;
 

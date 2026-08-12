@@ -106,15 +106,21 @@ pub fn height_to_color(h: f32) -> Color {
 
 // ── Simulation grid ───────────────────────────────────────────────────────────
 
+/// Height field for the wave simulation, double-buffered across frames.
 #[derive(Resource)]
 pub struct WaterGrid {
+    /// Grid width in cells.
     pub cols: usize,
+    /// Grid height in cells.
     pub rows: usize,
+    /// Surface height this frame, row-major.
     pub curr: Vec<f32>,
+    /// Surface height last frame; the wave equation needs both.
     pub prev: Vec<f32>,
 }
 
 impl WaterGrid {
+    /// Creates a flat, still surface of the given size.
     pub fn new(cols: usize, rows: usize) -> Self {
         let n = cols * rows;
         Self {
@@ -125,10 +131,12 @@ impl WaterGrid {
         }
     }
 
+    /// Row-major index of a cell.
     pub fn idx(&self, col: usize, row: usize) -> usize {
         row * self.cols + col
     }
 
+    /// Pushes a cell down by `strength`, starting a ripple.
     pub fn disturb(&mut self, col: usize, row: usize, strength: f32) {
         if col < self.cols && row < self.rows {
             let i = self.idx(col, row);
@@ -149,6 +157,7 @@ impl FromWorld for WaterGrid {
 
 // ── ECS ───────────────────────────────────────────────────────────────────────
 
+/// Marks a tile sprite with the grid cell it draws, as `(col, row)`.
 #[derive(Component)]
 pub struct Cell(pub usize, pub usize); // (col, row)
 

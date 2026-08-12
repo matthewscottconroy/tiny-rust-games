@@ -94,7 +94,9 @@ pub struct Player;
 /// Per-entity enemy data: patrol waypoints and attack pulse state.
 #[derive(Component)]
 pub struct Enemy {
+    /// One end of the patrol route.
     pub patrol_a: Vec2,
+    /// The other end of the patrol route.
     pub patrol_b: Vec2,
     /// Index into `[patrol_a, patrol_b]` of the current destination.
     pub patrol_target: usize,
@@ -105,8 +107,11 @@ pub struct Enemy {
 /// Per-entity FSM state.  Transitions are computed from player distance.
 #[derive(Component, Debug, PartialEq, Clone, Copy)]
 pub enum EnemyState {
+    /// Walking between the two patrol waypoints.
     Patrol,
+    /// Moving toward the player after spotting them.
     Chase,
+    /// In range and striking the player.
     Attack,
 }
 

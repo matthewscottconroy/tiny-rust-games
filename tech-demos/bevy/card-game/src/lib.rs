@@ -81,26 +81,34 @@ impl Default for CardGameConfig {
 /// A single playing card: a suit and a rank in `1..=13`.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct Card {
+    /// The card's suit.
     pub suit: Suit,
+    /// Rank from 1 (Ace) to 13 (King).
     pub rank: u8, // 1–13
 }
 
 /// The four card suits.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Suit {
+    /// Black suit.
     Clubs,
+    /// Red suit.
     Diamonds,
+    /// Red suit.
     Hearts,
+    /// Black suit.
     Spades,
 }
 
 impl Card {
+    /// The colour this suit is drawn in — red for hearts and diamonds.
     pub fn color(self) -> Color {
         match self.suit {
             Suit::Hearts | Suit::Diamonds => Color::srgb(0.88, 0.2, 0.2),
             Suit::Clubs | Suit::Spades => Color::srgb(0.15, 0.15, 0.15),
         }
     }
+    /// The card's short label, e.g. `"A♠"` or `"10♥"`.
     pub fn label(self) -> String {
         let rank = match self.rank {
             1 => "A".to_string(),
@@ -196,13 +204,18 @@ pub fn full_deck() -> Vec<Card> {
 /// The three card piles plus the running RNG state.
 #[derive(Resource)]
 pub struct Deck {
+    /// The face-down draw pile; the next card comes off the end.
     pub draw: Vec<Card>,
+    /// Cards currently in the player's hand.
     pub hand: Vec<Card>,
+    /// Cards already played, reshuffled into the draw pile when it empties.
     pub discard: Vec<Card>,
+    /// Seeded LCG state, so a deal is reproducible from its seed.
     pub rng: u64,
 }
 
 impl Deck {
+    /// Builds a full 52-card deck shuffled from `seed`.
     pub fn new_shuffled(seed: u64) -> Self {
         let mut draw = full_deck();
         shuffle(&mut draw, seed);

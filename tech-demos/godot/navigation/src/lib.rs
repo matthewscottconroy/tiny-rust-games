@@ -1,6 +1,6 @@
 //! Navigation GDExtension demo — NavigationAgent2D path-following from Rust.
 //!
-//! Demonstrates:
+//! Teaches:
 //!
 //! - Subclassing `CharacterBody2D` and fetching a child `NavigationAgent2D`
 //!   via `get_node_as` in `ready()`.

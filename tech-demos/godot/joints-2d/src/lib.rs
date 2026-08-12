@@ -1,7 +1,7 @@
 //! Joints 2D GDExtension demo — connect physics bodies with PinJoint2D and
 //! DampedSpringJoint2D entirely from Rust.
 //!
-//! Demonstrates:
+//! Teaches:
 //!
 //! - Spawning `RigidBody2D` nodes with `CollisionShape2D` children at runtime.
 //! - Creating a `PinJoint2D` and connecting two bodies via `set_node_a`/`set_node_b`.

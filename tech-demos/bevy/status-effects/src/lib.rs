@@ -85,11 +85,16 @@ impl Default for StatusEffectsConfig {
 
 // ── Pure effect model ─────────────────────────────────────────────────────────
 
+/// The four status effects a target can be under.
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub enum EffectKind {
+    /// Steady damage over time.
     Poison,
+    /// Damage over time at 2.5x the poison rate.
     Burn,
+    /// Reduces movement speed by `strength`, in `0.0..=1.0`.
     Slow,
+    /// Stops movement entirely while active.
     Stun,
 }
 
@@ -104,8 +109,10 @@ impl fmt::Display for EffectKind {
     }
 }
 
+/// One active status effect on a target.
 #[derive(Clone, Debug)]
 pub struct Effect {
+    /// Which effect this is.
     pub kind: EffectKind,
     /// Seconds remaining.
     pub remaining: f32,
@@ -150,20 +157,29 @@ pub fn speed_multiplier(effects: &[Effect]) -> f32 {
 
 // ── ECS ───────────────────────────────────────────────────────────────────────
 
+/// Marks the player, who periodically applies effects to nearby enemies.
 #[derive(Component)]
 pub struct Player {
+    /// Seconds until the player may apply another effect.
     pub apply_cd: f32,
 }
 
+/// An enemy that accumulates status effects and wanders the arena.
 #[derive(Component)]
 pub struct Enemy {
+    /// Current hit points; the enemy despawns at zero.
     pub hp: f32,
+    /// Starting hit points, used to scale the health bar.
     pub max_hp: f32,
+    /// Every effect currently active on this enemy.
     pub effects: Vec<Effect>,
+    /// Current wander velocity, in pixels per second.
     pub vel: Vec2,
+    /// Seconds until a new wander direction is chosen.
     pub wander_timer: f32,
 }
 
+/// Marks the heads-up display text entity.
 #[derive(Component)]
 pub struct HudText;
 

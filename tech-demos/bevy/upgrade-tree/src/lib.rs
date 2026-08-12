@@ -71,10 +71,15 @@ impl Default for UpgradeTreeConfig {
 
 // ── Pure tree model ───────────────────────────────────────────────────────────
 
+/// One purchasable node in the upgrade tree.
 pub struct UpgradeNode {
+    /// Display name.
     pub name: &'static str,
+    /// One-line description shown when selected.
     pub desc: &'static str,
+    /// Points required to unlock.
     pub cost: u32,
+    /// Indices into `NODES` that must be unlocked first.
     pub prereqs: &'static [usize],
 }
 
@@ -132,7 +137,9 @@ const NODE_POS: [(f32, f32); 9] = [
 /// Tracks which node indices are unlocked and the current spendable points.
 #[derive(Resource)]
 pub struct TreeState {
+    /// Indices of nodes already purchased.
     pub unlocked: HashSet<usize>,
+    /// Points available to spend.
     pub points: u32,
 }
 
@@ -155,6 +162,7 @@ impl FromWorld for TreeState {
 #[derive(Component)]
 pub struct NodeSprite(pub usize);
 
+/// Marks the text entity showing remaining points.
 #[derive(Component)]
 pub struct PointsLabel;
 

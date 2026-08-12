@@ -76,8 +76,10 @@ pub fn clamp_to_arena(pos: Vec2, half_w: f32, half_h: f32) -> Vec2 {
 /// Top-level state: configure then play.
 #[derive(Debug, Clone, Eq, PartialEq, Hash, Default, States)]
 pub enum GameState {
+    /// Title screen, waiting for the player to start.
     #[default]
     MainMenu,
+    /// The simulation is running.
     InGame,
 }
 
@@ -86,9 +88,13 @@ pub enum GameState {
 /// User-configurable parameters set in the main-menu egui window.
 #[derive(Resource)]
 pub struct SimulationConfig {
+    /// How many rabbits the simulation starts with.
     pub initial_rabbits: usize,
+    /// How many wolves the simulation starts with.
     pub initial_wolves: usize,
+    /// Maximum carrots that can exist at once.
     pub carrot_max: usize,
+    /// Seconds between carrot spawns.
     pub carrot_refill_interval: f32,
 }
 

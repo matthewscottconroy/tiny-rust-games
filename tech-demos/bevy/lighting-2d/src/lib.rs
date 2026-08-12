@@ -173,6 +173,7 @@ pub struct LitTile {
 #[derive(Resource)]
 pub struct OrbitLights(pub Vec<OrbitLight>);
 
+/// A coloured light circling the arena centre.
 pub struct OrbitLight {
     angle: f32,
     orbit_radius: f32,
@@ -181,9 +182,11 @@ pub struct OrbitLight {
     reach: f32,
 }
 
+/// Baseline light level applied to every tile, in `0.0..=1.0`.
 #[derive(Resource)]
 pub struct Ambient(pub f32);
 
+/// Marks the light that follows the player.
 #[derive(Component)]
 pub struct PlayerLight;
 

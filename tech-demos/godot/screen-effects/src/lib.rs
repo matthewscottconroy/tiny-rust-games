@@ -59,6 +59,7 @@ pub fn lcg_angle(state: u64) -> (f32, u64) {
 
 // ─── EffectsArena — root Node2D ───────────────────────────────────────────────
 
+/// Godot node driving camera shake and a colour-flash overlay.
 #[derive(GodotClass)]
 #[class(base=Node2D)]
 pub struct EffectsArena {

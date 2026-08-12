@@ -3,6 +3,9 @@
 //! Manages a collection of `Quest` values with status transitions driven by
 //! `start_quest`, `advance_quest`, and `fail_quest`.  All pure logic lives
 //! in helper functions so unit tests run without the Godot runtime.
+//!
+//! Teaches: a quest log driven by a `QuestStatus` enum, with objective progress and
+//! automatic completion.
 
 use godot::classes::{INode, Label, Node};
 use godot::prelude::*;
@@ -19,21 +22,33 @@ unsafe impl ExtensionLibrary for QuestSystemExtension {}
 // Pure-Rust types
 // ---------------------------------------------------------------------------
 
+/// Where a quest sits in its lifecycle.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum QuestStatus {
+    /// Prerequisites are unmet; the quest is not offered yet.
     Locked,
+    /// Offered but not yet accepted.
     Available,
+    /// Accepted and in progress.
     Active,
+    /// All objectives met.
     Completed,
+    /// Ended without meeting the objectives.
     Failed,
 }
 
+/// A single quest and its progress.
 #[derive(Debug, Clone)]
 pub struct Quest {
+    /// Stable identifier used to look the quest up.
     pub id: u32,
+    /// Display name shown in the quest log.
     pub title: String,
+    /// Where the quest currently sits.
     pub status: QuestStatus,
+    /// How much progress is needed to complete it.
     pub objective_count: u32,
+    /// Progress accumulated so far, capped at `objective_count`.
     pub progress: u32,
 }
 
@@ -81,6 +96,7 @@ pub fn status_to_u8(s: QuestStatus) -> u8 {
 // GodotClass
 // ---------------------------------------------------------------------------
 
+/// Godot node owning the quest list and driving the HUD.
 #[derive(GodotClass)]
 #[class(base=Node)]
 pub struct QuestManager {

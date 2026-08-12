@@ -124,7 +124,9 @@ impl Default for EcsAsciiSimConfig {
 /// `Position` on many entities at once.
 #[derive(Component, Clone, Copy, PartialEq, Eq, Debug)]
 pub struct Position {
+    /// Column in the simulation grid.
     pub x: usize,
+    /// Row in the simulation grid.
     pub y: usize,
 }
 
@@ -152,11 +154,14 @@ pub struct Npc;
 #[derive(Resource)]
 pub struct OccupancyGrid {
     cells: Vec<bool>,
+    /// Grid width in cells.
     pub width: usize,
+    /// Grid height in cells.
     pub height: usize,
 }
 
 impl OccupancyGrid {
+    /// Creates an empty occupancy grid of the given size.
     pub fn new(width: usize, height: usize) -> Self {
         Self {
             cells: vec![false; width * height],
@@ -165,11 +170,13 @@ impl OccupancyGrid {
         }
     }
 
+    /// Whether a cell already holds an entity.
     #[inline]
     pub fn is_occupied(&self, x: usize, y: usize) -> bool {
         self.cells[y * self.width + x]
     }
 
+    /// Marks a cell occupied or free.
     #[inline]
     pub fn set(&mut self, x: usize, y: usize, occupied: bool) {
         self.cells[y * self.width + x] = occupied;
@@ -186,10 +193,12 @@ pub struct Rng {
 }
 
 impl Rng {
+    /// Creates a generator seeded for reproducible runs.
     pub fn new(seed: u64) -> Self {
         Self { state: seed }
     }
 
+    /// Returns the next pseudo-random value and advances the state.
     pub fn next_u64(&mut self) -> u64 {
         self.state = lcg_next(self.state);
         self.state

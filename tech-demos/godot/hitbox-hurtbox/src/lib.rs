@@ -51,6 +51,7 @@ pub fn clamp_health(health: i32, max_health: i32) -> i32 {
 
 // ─── HitboxArena — root Node2D that owns spawning and the HUD ─────────────────
 
+/// Godot node wiring an attack hitbox against a target hurtbox.
 #[derive(GodotClass)]
 #[class(base=Node2D)]
 pub struct HitboxArena {
@@ -192,11 +193,14 @@ use godot::classes::ColorRect;
 
 #[godot_api]
 impl HitboxPlayer {
-    // gdext auto-generates `get_health()` for the `#[export]` field, so this
-    // accessor must use a different name.
+    /// The target's current health.
+    ///
+    /// Named `current_health` rather than `get_health` because gdext already
+    /// generates `get_health()` for the `#[export]` field.
     pub fn current_health(&self) -> i32 {
         self.health
     }
+    /// The direction the attacker is facing, used to aim knockback.
     pub fn get_facing(&self) -> Vector2 {
         self.facing
     }
@@ -284,8 +288,10 @@ impl HurtboxEnemy {
         }
     }
 
-    // gdext auto-generates `get_health()` for the `#[export]` field, so this
-    // accessor must use a different name.
+    /// The target's current health.
+    ///
+    /// Named `current_health` rather than `get_health` because gdext already
+    /// generates `get_health()` for the `#[export]` field.
     pub fn current_health(&self) -> i32 {
         self.health
     }

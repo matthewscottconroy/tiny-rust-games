@@ -1,6 +1,6 @@
 //! Noise Generation GDExtension demo — procedural terrain using FastNoiseLite from Rust.
 //!
-//! Demonstrates:
+//! Teaches:
 //!
 //! - Creating a `FastNoiseLite` instance via `FastNoiseLite::new_gd()`.
 //! - Querying a 2-D grid of noise values and caching them in a `Vec<Vec<f32>>`.

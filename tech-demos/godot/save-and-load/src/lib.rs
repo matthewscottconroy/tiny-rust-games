@@ -3,6 +3,9 @@
 //! Demonstrates reading and writing `user://save.json` via Godot's
 //! `FileAccess` API.  Serialization is done by hand (no serde) using simple
 //! string formatting and splitting so the demo has no external crate deps.
+//!
+//! Teaches: hand-rolled JSON serialization written to `user://` through Godot's
+//! `FileAccess`, with no external crate dependency.
 
 use godot::classes::{FileAccess, INode, Label, Node, file_access};
 use godot::prelude::*;
@@ -19,10 +22,14 @@ unsafe impl ExtensionLibrary for SaveAndLoadExtension {}
 // Pure-Rust data type
 // ---------------------------------------------------------------------------
 
+/// The values persisted to disk.
 #[derive(Debug, Clone, PartialEq)]
 pub struct SaveData {
+    /// Level the player had reached.
     pub level: i32,
+    /// Score at the time of saving.
     pub score: i32,
+    /// Player's chosen name.
     pub player_name: String,
 }
 
@@ -91,6 +98,7 @@ pub fn level_display(level: i32) -> String {
 // GodotClass
 // ---------------------------------------------------------------------------
 
+/// Godot node that serialises `SaveData` to `user://`.
 #[derive(GodotClass)]
 #[class(base=Node)]
 pub struct SaveManager {
@@ -114,6 +122,7 @@ impl INode for SaveManager {
 
 #[godot_api]
 impl SaveManager {
+    /// Writes the current state to the save file.
     #[func]
     pub fn save_game(&mut self) {
         let json = serialize_save(&self.data);
@@ -123,6 +132,7 @@ impl SaveManager {
         }
     }
 
+    /// Reads the save file, returning `false` if none exists.
     #[func]
     pub fn load_game(&mut self) -> bool {
         if let Some(file) = FileAccess::open("user://save.json", file_access::ModeFlags::READ) {
@@ -136,16 +146,19 @@ impl SaveManager {
         false
     }
 
+    /// Sets the name that will be written on the next save.
     #[func]
     pub fn set_player_name(&mut self, name: GString) {
         self.data.player_name = name.to_string();
     }
 
+    /// Sets the level that will be written on the next save.
     #[func]
     pub fn set_level(&mut self, level: i32) {
         self.data.level = level;
     }
 
+    /// Sets the score that will be written on the next save.
     #[func]
     pub fn set_score(&mut self, score: i32) {
         self.data.score = score;

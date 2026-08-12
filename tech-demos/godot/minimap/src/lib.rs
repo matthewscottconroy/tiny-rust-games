@@ -54,6 +54,7 @@ const MAP_ORIGIN: Vector2 = Vector2::new(590.0, 10.0);
 
 // ─── MinimapArena ─────────────────────────────────────────────────────────────
 
+/// Godot node projecting world entities onto an overhead minimap each frame.
 #[derive(GodotClass)]
 #[class(base=Node2D)]
 pub struct MinimapArena {

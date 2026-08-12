@@ -1,4 +1,7 @@
 //! Tweening demo — animates a node's position and modulate color using Godot Tweens.
+//!
+//! Teaches: creating and sequencing a `Tween` entirely from Rust, including chained
+//! and parallel steps.
 
 use godot::classes::{INode2D, Node2D, Tween};
 use godot::prelude::*;

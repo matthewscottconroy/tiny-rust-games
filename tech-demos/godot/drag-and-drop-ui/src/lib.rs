@@ -1,5 +1,8 @@
 //! drag-and-drop-ui: Demonstrates GUI input events and custom drawing in Rust.
 //! A colored rectangle can be clicked and dragged around the screen.
+//!
+//! Teaches: handling `Control::_gui_input` and distinguishing
+//! `InputEventMouseButton` from `InputEventMouseMotion` while dragging.
 
 use godot::classes::{Control, IControl, InputEvent, InputEventMouseButton, InputEventMouseMotion};
 use godot::prelude::*;

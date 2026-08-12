@@ -48,6 +48,7 @@ pub fn movement_delta(dir: Vector2, speed: f32, dt: f32) -> Vector2 {
 const PLAYER_SPEED: f32 = 160.0;
 const CAM_FOLLOW_SPEED: f32 = 8.0;
 
+/// Godot node wiring two viewports with independent per-player cameras.
 #[derive(GodotClass)]
 #[class(base=Node2D)]
 pub struct SplitScreenDemo {

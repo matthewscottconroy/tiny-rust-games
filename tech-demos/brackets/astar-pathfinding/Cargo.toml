@@ -1,15 +1,14 @@
 [package]
-name = "tic-tac-toe-brackets"
+name = "astar-pathfinding"
 version = "0.1.0"
 edition = "2024"
 license = "MIT"
 repository = "https://github.com/matthewscottconroy/tiny-rust-games"
-description = "A mouse-driven bracket-lib"
-authors = ["Matthew Scott Conroy <matthewscottconroy@gmail.com>"]
+description = "A* pathfinding demo — click anywhere and walk there through a random cave"
 
 [dependencies]
-bracket-lib = "~0.8.1"
-tic-tac-toe-lib = { path = "../tic-tac-toe-lib" }
+# bracket-lib bundles bracket-terminal, bracket-pathfinding and bracket-random.
+bracket-lib = "~0.8.7"
 
 # Public items must carry `///` docs; CI runs clippy with `-D warnings`.
 [lints.rust]

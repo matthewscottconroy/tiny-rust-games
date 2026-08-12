@@ -8,3 +8,7 @@ description = "An interactive terminal frontend for tic_tac_toe_lib"
 
 [dependencies]
 tic-tac-toe-lib = { path = "../tic-tac-toe-lib" }
+
+# Public items must carry `///` docs; CI runs clippy with `-D warnings`.
+[lints.rust]
+missing_docs = "warn"

@@ -6,6 +6,9 @@
 //!
 //! `ScoreDisplay` is a Label subclass that polls the singleton every frame
 //! and updates its own text.
+//!
+//! Teaches: registering a Rust node as an autoloaded global service, and reading it
+//! from an unrelated consumer node.
 
 use godot::classes::{Engine, ILabel, INode, Label, Node};
 use godot::prelude::*;
@@ -36,6 +39,7 @@ pub fn format_score(score: i32, level: i32) -> String {
 // GameManager singleton
 // ---------------------------------------------------------------------------
 
+/// Autoloaded global service holding score and level for the whole game.
 #[derive(GodotClass)]
 #[class(base=Node)]
 pub struct GameManager {
@@ -57,27 +61,32 @@ impl INode for GameManager {
 
 #[godot_api]
 impl GameManager {
+    /// Adds to the running score.
     #[func]
     pub fn add_score(&mut self, points: i32) {
         self.score += points;
     }
 
+    /// Advances to the next level.
     #[func]
     pub fn next_level(&mut self) {
         self.level += 1;
     }
 
+    /// Returns score and level to their starting values.
     #[func]
     pub fn reset(&mut self) {
         self.score = 0;
         self.level = 1;
     }
 
+    /// Current score.
     #[func]
     pub fn get_score(&self) -> i32 {
         self.score
     }
 
+    /// Current level.
     #[func]
     pub fn get_level(&self) -> i32 {
         self.level
@@ -88,6 +97,7 @@ impl GameManager {
 // ScoreDisplay — polls the singleton every frame
 // ---------------------------------------------------------------------------
 
+/// Consumer node that reads the autoload and renders its values.
 #[derive(GodotClass)]
 #[class(base=Label)]
 pub struct ScoreDisplay {

@@ -1,6 +1,6 @@
 //! Rigid Body 2D GDExtension demo — impulse-based physics movement from Rust.
 //!
-//! Demonstrates:
+//! Teaches:
 //!
 //! - Subclassing `RigidBody2D` and implementing `IRigidBody2D::physics_process`.
 //! - Reading `Input::singleton()` for WASD directional input each physics frame.

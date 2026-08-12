@@ -30,7 +30,7 @@ jobs:
           for manifest in \
             tech-demos/bevy/Cargo.toml \
             tech-demos/godot/*/Cargo.toml \
-            tech-demos/brackets/mouse-control/Cargo.toml \
+            tech-demos/brackets/*/Cargo.toml \
             tic-tac-toe/*/Cargo.toml; do
             if ! cargo fmt --manifest-path "$manifest" --all --check; then
               failed="$failed $manifest"
@@ -164,7 +164,7 @@ jobs:
             tic-tac-toe/tic-tac-toe-lib/Cargo.toml \
             tic-tac-toe/tic-tac-toe-cli/Cargo.toml \
             tic-tac-toe/tic-tac-toe-brackets/Cargo.toml \
-            tech-demos/brackets/mouse-control/Cargo.toml; do
+            tech-demos/brackets/*/Cargo.toml; do
             echo "::group::$manifest"
             if ! cargo clippy --locked --manifest-path "$manifest" --all-targets -- -D warnings; then
               failed="$failed $manifest(clippy)"

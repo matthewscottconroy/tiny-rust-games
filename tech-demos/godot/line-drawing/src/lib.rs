@@ -1,5 +1,8 @@
 //! Line Drawing demo — captures mouse left-click positions and draws a
 //! colour-cycling polyline using Node2D's _draw() hook.
+//!
+//! Teaches: procedural polyline drawing in `_draw()`, plus undo and clear over the
+//! stored point list.
 
 use godot::classes::{INode2D, InputEvent, InputEventMouseButton, Node2D};
 use godot::prelude::*;

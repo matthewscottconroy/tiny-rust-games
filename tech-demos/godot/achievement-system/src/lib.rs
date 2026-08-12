@@ -46,15 +46,21 @@ pub fn progress_text(name: &str, progress: i32, goal: i32) -> String {
 
 // ─── Achievement data ─────────────────────────────────────────────────────────
 
+/// One achievement and the progress toward it.
 #[derive(Clone)]
 pub struct Achievement {
+    /// Display name shown in the unlock banner.
     pub name: &'static str,
+    /// Progress required to unlock.
     pub goal: i32,
+    /// Progress accumulated so far, capped at `goal`.
     pub progress: i32,
+    /// Whether the unlock has already fired; prevents repeat banners.
     pub unlocked: bool,
 }
 
 impl Achievement {
+    /// Creates a locked achievement with no progress.
     pub fn new(name: &'static str, goal: i32) -> Self {
         Self {
             name,
@@ -80,6 +86,7 @@ impl Achievement {
 
 // ─── AchievementArena — root Node2D ───────────────────────────────────────────
 
+/// Godot node that tracks player actions and shows unlock banners.
 #[derive(GodotClass)]
 #[class(base=Node2D)]
 pub struct AchievementArena {
@@ -90,6 +97,7 @@ pub struct AchievementArena {
     base: Base<Node2D>,
 }
 
+/// The achievements this demo ships with.
 pub fn default_achievements() -> Vec<Achievement> {
     vec![
         Achievement::new("First Blood", 1),
@@ -223,10 +231,12 @@ impl AchievementArena {
         }
     }
 
+    /// Total number of achievements being tracked.
     pub fn achievement_count(&self) -> usize {
         self.achievements.len()
     }
 
+    /// How many achievements have been unlocked.
     pub fn unlocked_count(&self) -> usize {
         self.achievements.iter().filter(|a| a.unlocked).count()
     }

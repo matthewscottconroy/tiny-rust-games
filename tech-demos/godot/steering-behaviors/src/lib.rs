@@ -9,6 +9,9 @@
 //! The chosen behavior is selectable via the exported `behavior` field.
 //! `physics_process()` computes the steering force each fixed tick and applies
 //! it to `CharacterBody2D::move_and_slide()`.
+//!
+//! Teaches: Seek, Flee, and Wander as pure vector math applied to a
+//! `CharacterBody2D`.
 
 use godot::classes::{CharacterBody2D, ICharacterBody2D, Label};
 use godot::prelude::*;

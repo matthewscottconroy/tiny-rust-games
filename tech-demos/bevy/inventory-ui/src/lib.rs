@@ -72,8 +72,11 @@ impl Default for InventoryUiConfig {
 
 // ── Pure layout helpers ───────────────────────────────────────────────────────
 
+/// Number of inventory columns.
 pub const COLS: usize = 8;
+/// Number of inventory rows.
 pub const ROWS: usize = 5;
+/// Width and height of one slot, in pixels.
 pub const CELL: f32 = 52.0;
 
 /// World-space centre of grid slot `(col, row)`.
@@ -112,16 +115,23 @@ pub fn first_empty_slot(slots: &[Option<Item>]) -> Option<usize> {
 
 // ── Item ──────────────────────────────────────────────────────────────────────
 
+/// The item kinds that can occupy a slot.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Item {
+    /// A weapon.
     Sword,
+    /// Defensive gear.
     Shield,
+    /// A consumable.
     Potion,
+    /// A valuable.
     Gem,
+    /// A quest item.
     Key,
 }
 
 impl Item {
+    /// The swatch colour drawn for this item.
     pub fn color(self) -> Color {
         match self {
             Item::Sword => Color::srgb(0.7, 0.75, 0.95),
@@ -131,6 +141,7 @@ impl Item {
             Item::Key => Color::srgb(1.0, 0.85, 0.2),
         }
     }
+    /// The glyph drawn on the item's tile.
     pub fn label(self) -> &'static str {
         match self {
             Item::Sword => "⚔",
@@ -144,8 +155,10 @@ impl Item {
 
 // ── ECS ───────────────────────────────────────────────────────────────────────
 
+/// The inventory contents, one entry per slot.
 #[derive(Resource)]
 pub struct ItemGrid {
+    /// Row-major slots; index with `row * COLS + col`.
     pub slots: Vec<Option<Item>>,
 }
 
@@ -167,6 +180,7 @@ impl Default for ItemGrid {
     }
 }
 
+/// The item currently picked up and following the cursor, if any.
 #[derive(Resource)]
 pub struct HeldItem(pub Option<Item>);
 

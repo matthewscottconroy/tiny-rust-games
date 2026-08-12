@@ -1,7 +1,7 @@
 //! Scene Instancing GDExtension demo — load a `.tscn` at runtime and instantiate
 //! it from Rust using `ResourceLoader` and `PackedScene`.
 //!
-//! Demonstrates:
+//! Teaches:
 //!
 //! - Using `ResourceLoader::singleton()` to load a resource by path.
 //! - Casting `Gd<Resource>` to `Gd<PackedScene>` with `try_cast`.

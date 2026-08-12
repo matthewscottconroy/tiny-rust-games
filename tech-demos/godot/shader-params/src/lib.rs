@@ -1,5 +1,8 @@
 //! Shader Params demo — drives a ShaderMaterial's uniform parameters from Rust,
 //! animating a time value each frame.
+//!
+//! Teaches: setting `ShaderMaterial` uniforms from Rust at runtime to drive a shader
+//! from gameplay state.
 
 use godot::classes::{INode2D, MeshInstance2D, Node2D, ShaderMaterial};
 use godot::prelude::*;

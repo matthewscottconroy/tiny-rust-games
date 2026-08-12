@@ -1,5 +1,8 @@
 //! input-actions: Demonstrates polling Godot's Input singleton for action state
 //! from Rust. Shows held vs. just-pressed distinction for any configurable action.
+//!
+//! Teaches: polling the `Input` singleton, and when `is_action_pressed` differs from
+//! `is_action_just_pressed`.
 
 use godot::classes::{INode2D, Input, Label, Node2D};
 use godot::prelude::*;

@@ -157,8 +157,10 @@ Every member's `Cargo.toml` ends with:
 workspace = true
 ```
 
-which pulls in `[workspace.lints.clippy]` from the workspace manifest. Three
-lints are allowed there — `type_complexity` and `too_many_arguments`, because
+which pulls in `[workspace.lints.rust]` and `[workspace.lints.clippy]` from the
+workspace manifest. `missing_docs` is warned there, so with CI's `-D warnings`
+**every public item must carry a `///` comment** — the README's promise of item
+docs is enforced rather than aspirational. Three clippy lints are allowed — `type_complexity` and `too_many_arguments`, because
 Bevy system signatures are legitimately wide, and `needless_range_loop`, because
 the demos do 2D grid work where the index *is* the meaning. Everything else is a
 hard error: CI runs `cargo clippy --all-targets -- -D warnings`.

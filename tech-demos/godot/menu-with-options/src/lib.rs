@@ -1,6 +1,6 @@
 //! Menu With Options GDExtension demo — a settings menu with live config from Rust.
 //!
-//! Demonstrates:
+//! Teaches:
 //!
 //! - Subclassing `Control` and populating an `OptionButton` in `ready()`.
 //! - Connecting a `Button`'s `pressed` signal to a Rust `#[func]` handler.

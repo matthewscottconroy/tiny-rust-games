@@ -29,6 +29,7 @@ pub struct DialogueNode {
 }
 
 impl DialogueNode {
+    /// Creates a node showing `text` with the given choice/target pairs.
     pub fn new(text: impl Into<String>, choices: Vec<(&'static str, usize)>) -> Self {
         Self {
             text: text.into(),
@@ -67,6 +68,7 @@ pub fn next_node_index(tree: &[DialogueNode], index: usize, choice: usize) -> Op
 
 // ─── Hardcoded sample tree ────────────────────────────────────────────────────
 
+/// The sample conversation this demo walks through.
 pub fn build_tree() -> Vec<DialogueNode> {
     vec![
         // 0 — opening
@@ -104,6 +106,7 @@ pub fn build_tree() -> Vec<DialogueNode> {
 
 // ─── DialogueManager — root Node2D ────────────────────────────────────────────
 
+/// Godot node that renders the current node and handles choice input.
 #[derive(GodotClass)]
 #[class(base=Node2D)]
 pub struct DialogueManager {
@@ -204,6 +207,7 @@ impl DialogueManager {
         }
     }
 
+    /// Index of the dialogue node currently displayed.
     pub fn get_current_index(&self) -> usize {
         self.current
     }

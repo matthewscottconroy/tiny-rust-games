@@ -4,6 +4,9 @@
 //! with a breadcrumb history so `go_back()` can navigate to the previous
 //! scene.  All path validation lives in pure functions that are fully testable
 //! without the Godot runtime.
+//!
+//! Teaches: an autoload that swaps scenes with `change_scene_to_file` while keeping a
+//! breadcrumb of where the player has been.
 
 use godot::classes::{INode, Node};
 use godot::prelude::*;
@@ -34,6 +37,7 @@ pub fn history_depth(history: &[String]) -> usize {
 // GodotClass
 // ---------------------------------------------------------------------------
 
+/// Autoloaded node that changes scenes and remembers the navigation history.
 #[derive(GodotClass)]
 #[class(base=Node)]
 pub struct SceneManager {

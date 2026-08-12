@@ -138,15 +138,36 @@ pub fn pan_position(from: Vec2, to: Vec2, progress: f32) -> Vec2 {
 #[derive(Clone, Debug)]
 pub enum CutsceneStep {
     /// Fade the black overlay from opaque to transparent.
-    FadeIn { duration: f32 },
+    FadeIn {
+        /// Seconds the fade takes.
+        duration: f32,
+    },
     /// Fade the black overlay from transparent to opaque.
-    FadeOut { duration: f32 },
+    FadeOut {
+        /// Seconds the fade takes.
+        duration: f32,
+    },
     /// Animate the camera from `from` to `to` over `duration` seconds.
-    PanCamera { from: Vec2, to: Vec2, duration: f32 },
+    PanCamera {
+        /// World-space position the camera starts at.
+        from: Vec2,
+        /// World-space position the camera ends at.
+        to: Vec2,
+        /// Seconds the pan takes.
+        duration: f32,
+    },
     /// Show `text` for `duration` seconds.
-    ShowText { text: String, duration: f32 },
+    ShowText {
+        /// The caption to display.
+        text: String,
+        /// Seconds the caption stays on screen.
+        duration: f32,
+    },
     /// Pause for `duration` seconds with no other action.
-    Wait { duration: f32 },
+    Wait {
+        /// Seconds to wait.
+        duration: f32,
+    },
 }
 
 impl CutsceneStep {
@@ -165,9 +186,13 @@ impl CutsceneStep {
 /// Drives the cutscene; lives as a `Resource`.
 #[derive(Resource)]
 pub struct Cutscene {
+    /// The steps to play, in order.
     pub steps: Vec<CutsceneStep>,
+    /// Index of the step currently playing.
     pub current: usize,
+    /// Seconds spent inside the current step.
     pub elapsed: f32,
+    /// Whether every step has completed.
     pub finished: bool,
 }
 

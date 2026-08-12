@@ -15,6 +15,9 @@
 //!
 //! Both classes implement `on_notification` to intercept `ENTER_TREE`,
 //! `READY`, and `EXIT_TREE` events.
+//!
+//! Teaches: the ordering of `_enter_tree`, `_ready`, and `_exit_tree`, and how to
+//! handle `NodeNotification`.
 
 use godot::classes::notify::NodeNotification;
 use godot::classes::{INode, Node};

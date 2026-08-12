@@ -90,9 +90,13 @@ impl Default for WeatherConfig {
 /// The four cyclic weather states.
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub enum Weather {
+    /// Bright sky, no precipitation.
     Clear,
+    /// Dimmed sky, no precipitation.
     Cloudy,
+    /// Steady rain and a darker sky.
     Rainy,
+    /// Heavy rain, strong wind, and the darkest sky.
     Stormy,
 }
 
@@ -163,7 +167,9 @@ pub fn rain_speed(w: Weather) -> f32 {
 /// Tracks the active weather and the countdown to the next transition.
 #[derive(Resource)]
 pub struct WeatherState {
+    /// The weather in effect right now.
     pub current: Weather,
+    /// Seconds until the weather changes again.
     pub timer: f32,
 }
 
@@ -183,8 +189,11 @@ pub struct RainPool(pub Vec<Entity>);
 /// A single pooled rain drop with its logical position and per-drop speed scale.
 #[derive(Component)]
 pub struct RainDrop {
+    /// Horizontal position of the raindrop, in pixels.
     pub x: f32,
+    /// Vertical position of the raindrop, in pixels.
     pub y: f32,
+    /// Per-drop speed multiplier, so rain does not fall in lockstep.
     pub speed_scale: f32,
 }
 

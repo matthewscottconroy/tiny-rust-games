@@ -1,6 +1,6 @@
 //! Audio Manager GDExtension demo — polyphonic SFX pool management from Rust.
 //!
-//! Demonstrates:
+//! Teaches:
 //!
 //! - Managing a fixed pool of `AudioStreamPlayer` children for polyphonic playback.
 //! - Loading an `AudioStream` resource at runtime and assigning it to a free player.

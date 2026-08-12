@@ -8,6 +8,9 @@
 //! - Querying group membership with `get_nodes_in_group`.
 //! - Dispatching a method call to every member of a group.
 //! - A "manager" node that orchestrates periodic group-wide damage.
+//!
+//! Teaches: adding nodes to groups, querying group membership, and calling methods
+//! across a whole group at once.
 
 use godot::prelude::*;
 

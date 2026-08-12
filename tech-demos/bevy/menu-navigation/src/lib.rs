@@ -95,8 +95,10 @@ impl Default for MenuNavigationConfig {
 /// Application-level state.
 #[derive(Debug, Clone, Eq, PartialEq, Hash, Default, States)]
 pub enum AppState {
+    /// The menu is showing and accepting navigation keys.
     #[default]
     MainMenu,
+    /// The game is running; Escape returns to the menu.
     InGame,
 }
 

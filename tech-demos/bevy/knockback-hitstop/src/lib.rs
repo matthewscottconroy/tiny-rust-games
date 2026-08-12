@@ -115,25 +115,35 @@ pub fn decay_vel(vel: Vec2, decay: f32, dt: f32) -> Vec2 {
 
 // ── ECS ───────────────────────────────────────────────────────────────────────
 
+/// The player, who attacks nearby enemies and knocks them back.
 #[derive(Component)]
 pub struct Player {
+    /// Seconds until the player may attack again.
     pub attack_cd: f32,
 }
 
+/// An enemy that wanders until struck, then gets knocked away.
 #[derive(Component)]
 pub struct Enemy {
+    /// Current velocity, in pixels per second.
     pub vel: Vec2,
+    /// Seconds until a new wander direction is chosen.
     pub wander_timer: f32,
+    /// Current hit points; the enemy despawns at zero.
     pub hp: i32,
 }
 
+/// Camera that shakes in proportion to accumulated trauma.
 #[derive(Component)]
 pub struct ShakeCamera {
+    /// Shake intensity in `0.0..=1.0`, decaying toward zero each frame.
     pub trauma: f32,
 }
 
+/// Global freeze applied on impact to sell the hit.
 #[derive(Resource, Default)]
 pub struct HitStop {
+    /// Seconds of freeze left; systems skip their work while positive.
     pub remaining: f32,
 }
 

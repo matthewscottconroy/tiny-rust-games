@@ -1,6 +1,9 @@
 //! ray-casting: Demonstrates Godot 2D physics ray-casting from Rust.
 //! Draws a line from the node origin toward the mouse cursor, stopping at the
 //! first physics body hit.
+//!
+//! Teaches: querying `PhysicsDirectSpaceState2D` for a ray hit and reading back the
+//! collision point and surface normal.
 
 use godot::classes::{INode2D, Node2D, PhysicsRayQueryParameters2D};
 use godot::prelude::*;

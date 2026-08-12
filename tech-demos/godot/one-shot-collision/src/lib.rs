@@ -1,5 +1,8 @@
 //! one-shot-collision: Demonstrates `move_and_collide` with `KinematicCollision2D`
 //! inspection in Rust. The body bounces around the screen, reflecting off surfaces.
+//!
+//! Teaches: `move_and_collide` and reading the resulting `KinematicCollision2D` to
+//! bounce off a surface.
 
 use godot::classes::{CharacterBody2D, ICharacterBody2D};
 use godot::prelude::*;

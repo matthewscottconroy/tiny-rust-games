@@ -100,6 +100,10 @@ CI enforces all of these on every crate, so run them before claiming done:
 - `cargo test`
 - `--locked` — never let a build silently rewrite a committed `Cargo.lock`.
 
+Doc coverage is enforced by `missing_docs` everywhere except the Godot demos,
+where gdext's `#[export]` generates accessor methods that cannot be documented.
+Godot demos keep docs by hand; their module doc opens with a `Teaches:` line.
+
 Every demo needs module-level `//!` rustdoc and a `#[cfg(test)]` module
 exercising its pure functions. The only exemptions are demos that are pure
 engine wiring with no logic (`bevy/draw-window`); if you find

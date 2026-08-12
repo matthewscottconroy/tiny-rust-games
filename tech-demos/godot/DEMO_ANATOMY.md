@@ -131,6 +131,11 @@ mod tests { /* exercises the pure functions */ }
    tunes.** Both are part of the demo's public contract — document them.
 8. **`clippy` is clean at `-D warnings` and `cargo fmt` is a no-op.** CI enforces
    both.
+9. **Every public item carries a `///` doc comment.** Unlike the Bevy workspace,
+   this is *not* machine-enforced here: `#[export]` makes gdext generate getter
+   and setter methods that no one can attach docs to, so `missing_docs` reports
+   about 60 unfixable warnings across the suite and cannot be turned on. Keep it
+   by hand instead — document the field, and the accessor's meaning follows.
 
 ## Duplication across engines is deliberate
 

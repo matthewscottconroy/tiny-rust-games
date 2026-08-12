@@ -2,7 +2,8 @@
 
 A collection of small, self-contained [Bevy](https://bevyengine.org/) `0.18` demos,
 each isolating a single engine concept or gameplay system. Every demo has
-module-level rustdoc and `///` item docs, and every demo with logic to exercise
+module-level rustdoc and `///` docs on every public item — `missing_docs` is
+enabled workspace-wide and CI denies warnings, so this cannot silently rot — and every demo with logic to exercise
 has a `#[cfg(test)]` test module — most game logic is factored into `pub fn`
 pure functions so it can be unit-tested headlessly without a window. The sole
 exception is `draw-window`, ten lines that open a window and contain no logic.

@@ -1,5 +1,8 @@
 //! grid-movement: Demonstrates tile-based movement with a queue of pending
 //! directions and smooth lerp toward the target cell position.
+//!
+//! Teaches: queueing direction input in a `VecDeque` and lerping between grid cells so
+//! movement snaps without feeling instant.
 
 use std::collections::VecDeque;
 

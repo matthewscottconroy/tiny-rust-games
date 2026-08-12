@@ -88,14 +88,20 @@ impl Default for CraftingSystemConfig {
 /// A collectable/craftable material.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub enum Item {
+    /// Common material, gathered from the ground.
     Wood,
+    /// Common material used in heavier recipes.
     Stone,
+    /// Metal used for weapons and armour.
     Iron,
+    /// Plant material used for potions.
     Herb,
+    /// Fuel used for torches.
     Coal,
 }
 
 impl Item {
+    /// The item's display name.
     pub fn label(self) -> &'static str {
         match self {
             Item::Wood => "Wood",
@@ -105,6 +111,7 @@ impl Item {
             Item::Coal => "Coal",
         }
     }
+    /// The colour this item is drawn in.
     pub fn color(self) -> Color {
         match self {
             Item::Wood => Color::srgb(0.6, 0.4, 0.2),
@@ -118,8 +125,11 @@ impl Item {
 
 /// A crafting recipe: a set of input ingredients and a single output item.
 pub struct Recipe {
+    /// The recipe's display name.
     pub name: &'static str,
+    /// Ingredients and quantities the recipe consumes.
     pub inputs: &'static [(Item, u32)],
+    /// The item produced.
     pub output: Item,
 }
 

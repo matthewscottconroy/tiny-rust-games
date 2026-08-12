@@ -1,5 +1,8 @@
 //! area-detection: Demonstrates connecting Area2D body_entered / body_exited
 //! signals to Rust methods. Tracks overlap count and displays it on a Label.
+//!
+//! Teaches: connecting `Area2D` `body_entered` / `body_exited` signals to Rust methods
+//! and tracking the resulting overlap count.
 
 use godot::classes::{Area2D, IArea2D, Label, Node};
 use godot::prelude::*;

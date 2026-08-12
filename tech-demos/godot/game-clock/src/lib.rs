@@ -58,6 +58,7 @@ pub fn sky_color(hour: f32) -> Color {
     lerp_color(a, b, t)
 }
 
+/// Blends two colours, with `t` clamped to `0.0..=1.0`.
 pub fn lerp_color(a: Color, b: Color, t: f32) -> Color {
     let t = t.clamp(0.0, 1.0);
     Color::from_rgb(
@@ -83,6 +84,7 @@ pub fn time_period(hour: f32) -> &'static str {
 
 // ── GameClockDemo — root Node2D ───────────────────────────────────────────────
 
+/// Godot node advancing an in-game clock and tinting the sky from it.
 #[derive(GodotClass)]
 #[class(base=Node2D)]
 pub struct GameClockDemo {
@@ -180,6 +182,7 @@ impl GameClockDemo {
         }
     }
 
+    /// Current in-game hour, in `0.0..24.0`.
     pub fn get_hour(&self) -> f32 {
         self.hour
     }

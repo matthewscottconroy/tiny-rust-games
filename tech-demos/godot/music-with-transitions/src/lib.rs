@@ -1,6 +1,6 @@
 //! Music With Transitions GDExtension demo — crossfade between music tracks from Rust.
 //!
-//! Demonstrates:
+//! Teaches:
 //!
 //! - Holding two `AudioStreamPlayer` children (`PlayerA` and `PlayerB`) for
 //!   smooth crossfading between music tracks.

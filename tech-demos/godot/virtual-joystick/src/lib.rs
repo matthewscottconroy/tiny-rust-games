@@ -1,5 +1,8 @@
 //! virtual-joystick: An on-screen joystick Control drawn entirely in Rust.
 //! Reports a clamped unit-vector axis value that other nodes can read.
+//!
+//! Teaches: an on-screen joystick drawn with `draw_arc` / `draw_circle`, including a
+//! dead zone so a resting thumb reads as no input.
 
 use godot::classes::{Control, IControl, InputEvent, InputEventMouseButton, InputEventMouseMotion};
 use godot::prelude::*;
