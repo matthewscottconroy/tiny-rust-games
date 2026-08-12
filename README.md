@@ -28,6 +28,7 @@ concept, and produced from each demo's own module docs so it cannot drift.
 | [`tech-demos/godot/`](tech-demos/godot/) | 67 [Godot](https://godotengine.org/) `4.3` demos with game logic in Rust via [gdext](https://github.com/godot-rust/gdext) `0.5` — see the [Godot demo index](tech-demos/godot/README.md). |
 | [`tech-demos/brackets/`](tech-demos/brackets/) | A [bracket-lib](https://github.com/amethyst/bracket-lib) mouse-control demo. |
 | [`snake/`](snake/) | The second game: an engine-agnostic `snake-lib` with `-bevy` and `-godot` front-ends. Where tic-tac-toe proves the boundary for turn-based play, this proves it for **real-time** — the library owns the rules, never the clock. |
+| [`breakout/`](breakout/) | The third game: continuous physics on a fixed timestep. Chosen because it looked like the one that would break the pattern — it did not, but it revealed that continuous state needs interpolated *rendering*, which discrete state does not. |
 | [`tic-tac-toe/`](tic-tac-toe/) | The reference "well-known game": an engine-agnostic `tic-tac-toe-lib` core with **four** front-ends — `-cli`, `-brackets`, `-bevy`, and `-godot` (goals #2 and #4 in practice). |
 
 The same tic-tac-toe rules drive a terminal loop, an ASCII console, Bevy's ECS,
@@ -40,7 +41,18 @@ player acts; a real-time one moves on its own, so *something* must own the
 clock. `snake-lib` deliberately does not: it exposes `step()`, and ships a
 `Ticker` that converts frame time into whole steps. Bevy feeds it `Time::delta`,
 Godot feeds it `process(delta)`, and neither can disagree about how fast the
-snake moves because neither one decides.
+snake moves because neither one decides. Because nothing else enters a game,
+[`snake-lib`](snake/) can record one: a replay is a board size, a seed and the
+turns queued on each tick, which is a few hundred bytes of readable text that
+reproduces a death exactly.
+
+Breakout is the case that was supposed to break this. Floating-point positions,
+floating-point velocities, and two engines that ship physics of their own. It
+holds — on the condition that `step()` advances a **fixed** timestep rather than
+a frame's elapsed time, which is what keeps it both deterministic and out of the
+engine's hands. What it did add is interpolation: a ball simulated at 120 Hz and
+drawn at 144 Hz judders unless rendering blends between steps. Rendering
+interpolates; the simulation never does.
 
 Every demo ships module-level rustdoc, and every demo with logic to exercise
 ships a `#[cfg(test)]` test module — the sole exception is `bevy/draw-window`,
@@ -159,8 +171,9 @@ cd tech-demos/bevy && cargo run -p hello-world
 # Godot demos (standalone crates; Godot 4.3+ needed only to *run* them):
 cd tech-demos/godot/hello-world && cargo build
 
-# Snake (Bevy window):
+# Snake and Breakout (Bevy windows):
 just snake
+just breakout
 
 # Tic-tac-toe, four ways:
 cd tic-tac-toe/tic-tac-toe-cli && cargo run                      # terminal

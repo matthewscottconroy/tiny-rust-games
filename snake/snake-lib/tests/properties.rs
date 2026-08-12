@@ -195,3 +195,70 @@ proptest! {
         }
     }
 }
+
+// ── Replay fidelity ──────────────────────────────────────────────────────────
+
+use snake_lib::Replay;
+
+proptest! {
+    /// A replay reproduces its game exactly, for any board, seed and input.
+    ///
+    /// This is the property the whole feature rests on. Example-based tests can
+    /// only ever check the scripts someone thought of.
+    #[test]
+    fn a_replay_always_reproduces_its_game(
+        w in 4i32..20, h in 4i32..20, seed: u64,
+        inputs in prop::collection::vec((0u64..80, any_direction()), 0..40),
+    ) {
+        // Recording requires ascending ticks, which is also how a frontend
+        // produces them.
+        let mut script: Vec<(u64, Direction)> = inputs;
+        script.sort_by_key(|(tick, _)| *tick);
+        script.dedup_by_key(|(tick, _)| *tick);
+
+        let mut live = SnakeGame::new(w, h, seed);
+        let mut replay = Replay::recording(w, h, seed);
+        for _ in 0..80 {
+            if live.is_over() {
+                break;
+            }
+            for (tick, direction) in &script {
+                if *tick == live.ticks() {
+                    replay.record_turn(*tick, *direction);
+                    live.queue_turn(*direction);
+                }
+            }
+            live.step();
+        }
+
+        let replayed = replay.play(80);
+        prop_assert_eq!(live.ticks(), replayed.ticks());
+        prop_assert_eq!(live.score(), replayed.score());
+        prop_assert_eq!(live.status(), replayed.status());
+        prop_assert_eq!(live.food(), replayed.food());
+        prop_assert_eq!(
+            live.body().collect::<Vec<_>>(),
+            replayed.body().collect::<Vec<_>>()
+        );
+    }
+
+    /// Serialising and parsing a replay never changes it.
+    #[test]
+    fn replay_text_round_trips(
+        w in 2i32..40, h in 2i32..40, seed: u64,
+        turns in prop::collection::vec((0u64..500, any_direction()), 0..60),
+    ) {
+        let mut sorted = turns;
+        sorted.sort_by_key(|(tick, _)| *tick);
+        sorted.dedup_by_key(|(tick, _)| *tick);
+
+        let mut replay = Replay::recording(w, h, seed);
+        for (tick, direction) in sorted {
+            replay.record_turn(tick, direction);
+        }
+
+        let parsed = Replay::from_text(&replay.to_text())
+            .expect("a replay we just wrote must parse");
+        prop_assert_eq!(parsed, replay);
+    }
+}

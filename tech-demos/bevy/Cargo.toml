@@ -95,6 +95,7 @@ members = [
     # for the whole repository rather than a second time for the game.
     "../../tic-tac-toe/tic-tac-toe-bevy",
     "../../snake/snake-bevy",
+    "../../breakout/breakout-bevy",
     "../../benchmarks",
 ]
 

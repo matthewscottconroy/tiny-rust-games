@@ -1868,6 +1868,18 @@ dependencies = [
 ]
 
 [[package]]
+name = "breakout-bevy"
+version = "0.1.0"
+dependencies = [
+ "bevy",
+ "breakout-lib",
+]
+
+[[package]]
+name = "breakout-lib"
+version = "0.1.0"
+
+[[package]]
 name = "bullet-pattern"
 version = "0.1.0"
 dependencies = [

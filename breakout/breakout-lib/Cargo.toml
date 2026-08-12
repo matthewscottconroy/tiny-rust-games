@@ -1,0 +1,16 @@
+[package]
+name = "breakout-lib"
+version = "0.1.0"
+edition = "2024"
+license = "MIT"
+repository = "https://github.com/matthewscottconroy/tiny-rust-games"
+keywords = ["game", "breakout", "gamedev", "physics", "engine-agnostic"]
+categories = ["game-development", "games"]
+readme = "README.md"
+description = "Engine-agnostic Breakout rules: continuous physics on a fixed timestep"
+
+[dependencies]
+
+# Public items must carry `///` docs; CI runs clippy with `-D warnings`.
+[lints.rust]
+missing_docs = "warn"

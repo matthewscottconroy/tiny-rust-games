@@ -52,22 +52,70 @@ fn ticker_keeps_the_remainder_so_frame_rate_does_not_change_speed() {
 }
 
 #[test]
-fn ticker_agrees_across_frame_rates_to_within_one_step() {
-    // Exact agreement is not achievable: f32 deltas are mostly unrepresentable,
-    // so 100 frames of 0.01 sum to 0.99999998 and land one step short. The
-    // contract is "within one step", and this pins that rather than pretending.
+fn ticker_agrees_across_frame_rates_exactly() {
+    // This used to allow a one-step discrepancy, because a float accumulator
+    // drifted: 100 frames of 0.01 summed to 0.99999998 and lost a step against
+    // four frames of 0.25. Counting whole microseconds instead makes the two
+    // agree exactly, which is what replays and lockstep need.
     let mut many = Ticker::new(10.0);
     let mut few = Ticker::new(10.0);
+    let mut mixed = Ticker::new(10.0);
 
     let many_steps: u32 = (0..100).map(|_| many.accumulate(0.01)).sum();
     let few_steps: u32 = (0..4).map(|_| few.accumulate(0.25)).sum();
+    let mixed_steps: u32 = [0.004, 0.030, 0.016, 0.100, 0.050, 0.300, 0.200, 0.300]
+        .iter()
+        .map(|d| mixed.accumulate(*d))
+        .sum();
 
-    assert!(
-        many_steps.abs_diff(few_steps) <= 1,
-        "{many_steps} vs {few_steps} steps for the same elapsed second"
-    );
-    assert!((9..=10).contains(&many_steps), "got {many_steps}");
-    assert!((9..=10).contains(&few_steps), "got {few_steps}");
+    assert_eq!(many_steps, 10, "100 frames of 10 ms");
+    assert_eq!(few_steps, 10, "4 frames of 250 ms");
+    assert_eq!(mixed_steps, 10, "8 uneven frames");
+}
+
+#[test]
+fn seconds_to_micros_rounds_rather_than_truncating() {
+    // Truncation is what lost the step: 0.01f32 is really 0.00999999977, so
+    // truncating gives 9_999 and a hundred of them fall short of a second.
+    assert_eq!(seconds_to_micros(0.01), 10_000);
+    assert_eq!(seconds_to_micros(0.25), 250_000);
+    assert_eq!(seconds_to_micros(1.0), MICROS_PER_SECOND);
+}
+
+#[test]
+fn seconds_to_micros_collapses_nonsense_to_zero() {
+    assert_eq!(seconds_to_micros(-1.0), 0);
+    assert_eq!(seconds_to_micros(0.0), 0);
+    assert_eq!(seconds_to_micros(f32::NAN), 0);
+    assert_eq!(seconds_to_micros(f32::NEG_INFINITY), 0);
+}
+
+#[test]
+fn ticker_accepts_exact_microsecond_input() {
+    // The path a replay uses: no float conversion anywhere.
+    let mut t = Ticker::new(8.0);
+    assert_eq!(t.micros_per_step(), 125_000);
+    assert_eq!(t.accumulate_micros(124_999), 0);
+    assert_eq!(t.accumulate_micros(1), 1);
+    assert_eq!(t.accumulate_micros(250_000), 2);
+}
+
+#[test]
+fn two_tickers_fed_the_same_time_in_different_groupings_agree() {
+    // The property that makes deterministic replay possible.
+    let mut a = Ticker::new(9.0);
+    let mut b = Ticker::new(9.0);
+    let mut a_steps = 0;
+    let mut b_steps = 0;
+
+    for _ in 0..600 {
+        a_steps += a.accumulate_micros(16_667); // ~60 fps
+    }
+    for _ in 0..200 {
+        b_steps += b.accumulate_micros(50_001); // ~20 fps, same total
+    }
+    assert_eq!(a_steps, b_steps);
+    assert_eq!(a, b, "including the leftover remainder");
 }
 
 #[test]
@@ -106,6 +154,18 @@ fn ticker_reports_its_rate() {
 #[should_panic(expected = "steps_per_second must be positive")]
 fn ticker_rejects_a_non_positive_rate() {
     Ticker::new(0.0);
+}
+
+#[test]
+#[should_panic(expected = "positive and finite")]
+fn ticker_rejects_a_non_finite_rate() {
+    Ticker::new(f32::NAN);
+}
+
+#[test]
+#[should_panic(expected = "faster than one step per microsecond")]
+fn ticker_rejects_an_absurdly_fast_rate() {
+    Ticker::new(10_000_000.0);
 }
 
 // ── Direction ────────────────────────────────────────────────────────────────
@@ -633,4 +693,33 @@ fn a_negative_delta_never_rewinds_the_ticker() {
     );
     // And the ticker still fires on schedule afterwards.
     assert_eq!(t.accumulate(0.05), 1);
+}
+
+#[test]
+fn ticker_keeps_the_remainder_when_exactly_at_the_cap() {
+    // Mutation: `due > MAX` -> `>=`, which would discard the remainder on a
+    // frame that lands exactly on the cap rather than one that exceeds it.
+    let mut t = Ticker::new(10.0); // 100_000 us per step
+    let exactly_max = Ticker::MAX_STEPS_PER_CALL as u64 * 100_000;
+
+    assert_eq!(t.accumulate_micros(exactly_max + 40_000), 8);
+    // Not over the cap, so the leftover 40 ms is still owed.
+    assert!((t.alpha() - 0.4).abs() < 1e-4, "alpha was {}", t.alpha());
+}
+
+#[test]
+fn ticker_discards_the_backlog_only_when_over_the_cap() {
+    let mut t = Ticker::new(10.0);
+    // Twenty steps' worth: over the cap, so the surplus is dropped entirely.
+    assert_eq!(t.accumulate_micros(2_000_000), Ticker::MAX_STEPS_PER_CALL);
+    assert_eq!(t.alpha(), 0.0);
+    assert_eq!(t.accumulate_micros(0), 0);
+}
+
+#[test]
+fn an_infinite_delta_is_absorbed_rather_than_exploding() {
+    // `seconds_to_micros` saturates +inf to u64::MAX; the cap must contain it.
+    let mut t = Ticker::new(10.0);
+    assert_eq!(t.accumulate(f32::INFINITY), Ticker::MAX_STEPS_PER_CALL);
+    assert_eq!(t.alpha(), 0.0);
 }

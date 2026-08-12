@@ -36,6 +36,14 @@
 //! Godot calls it from `process(delta)`. None of them contains a rule, and none
 //! of them can disagree about how fast the snake moves.
 //!
+//! # Determinism buys replays
+//!
+//! Because nothing enters a game except its board size, its seed and the turns
+//! queued on each tick, recording those three reproduces it exactly. See
+//! [`Replay`]: a bug report becomes a few hundred bytes of readable text that
+//! reproduces the death in CI, rather than a description of what someone
+//! thought they pressed.
+//!
 //! # Input arrives faster than ticks
 //!
 //! At 8 steps per second a player can easily press two keys inside one tick.
@@ -44,6 +52,9 @@
 //! [`queue_turn`](SnakeGame::queue_turn) records the intended direction and
 //! [`step`](SnakeGame::step) commits it, validating against the direction
 //! actually travelled rather than the last one requested.
+
+mod replay;
+pub use replay::{REPLAY_VERSION, Replay, ReplayError};
 
 use std::collections::VecDeque;
 
@@ -141,38 +152,70 @@ pub enum StepOutcome {
     Ended,
 }
 
+/// Microseconds in one second, the unit [`Ticker`] counts in.
+pub const MICROS_PER_SECOND: u64 = 1_000_000;
+
+/// Converts a duration in seconds to whole microseconds.
+///
+/// Rounds rather than truncates, which matters more than it looks: `0.01f32` is
+/// really `0.00999999977`, so truncating gives 9,999 µs and a hundred of them
+/// fall 100 µs short of a second — one step lost. Rounding gives exactly
+/// 10,000. Negatives, NaN and infinities all collapse to zero, so a clock
+/// adjustment cannot rewind a ticker.
+pub fn seconds_to_micros(seconds: f32) -> u64 {
+    // No guard against negatives or NaN: Rust's float-to-int casts saturate, so
+    // NaN, any negative and -inf already become 0, and +inf becomes `u64::MAX`
+    // which the ticker's step cap absorbs. An explicit check here would be a
+    // branch whose two arms behave identically — mutation testing found exactly
+    // that and it was right.
+    (seconds * MICROS_PER_SECOND as f32).round() as u64
+}
+
 /// Converts elapsed real time into whole simulation steps.
 ///
 /// Every frontend needs this and none of them should write it twice. Carrying
 /// the remainder forward rather than discarding it each frame is what keeps the
 /// snake's speed independent of frame rate: sixty short frames and six long
-/// ones covering the same second yield the same number of steps.
+/// ones covering the same second produce the same number of steps.
 ///
-/// "The same" to within one step, not bit-for-bit. Frame deltas are `f32` and
-/// most of them are not exactly representable — a hundred frames of `0.01`
-/// sum to `0.99999998`, not `1.0` — so a long run of small deltas can land one
-/// step behind a short run of large ones. One step at nine steps per second is
-/// about a hundred milliseconds and nobody can see it; do not build a lockstep
-/// network protocol on this.
-#[derive(Debug, Clone)]
+/// # The accumulator is an integer on purpose
+///
+/// It counts whole microseconds, not seconds in `f32`. An earlier version
+/// accumulated floats and drifted — a hundred frames of `0.01` summed to
+/// `0.99999998` and silently lost a step against four frames of `0.25`. Its
+/// documentation had to warn against building anything that needs exact
+/// agreement, which is a bad thing for a timing primitive to have to say.
+///
+/// With integer microseconds the accumulator is exact: the only rounding
+/// happens once, converting each incoming delta (see [`seconds_to_micros`]),
+/// and it never compounds. Two tickers fed the same deltas in any grouping
+/// agree exactly, on any machine, which is what makes replays and lockstep
+/// simulation possible.
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Ticker {
-    seconds_per_step: f32,
-    accumulated: f32,
+    micros_per_step: u64,
+    accumulated: u64,
 }
 
 impl Ticker {
     /// Creates a ticker running at `steps_per_second`.
     ///
     /// # Panics
-    /// Panics if `steps_per_second` is not positive.
+    /// Panics if `steps_per_second` is not positive and finite, or is so large
+    /// that a step would take less than a microsecond.
     pub fn new(steps_per_second: f32) -> Self {
         assert!(
-            steps_per_second > 0.0,
-            "steps_per_second must be positive, got {steps_per_second}"
+            steps_per_second > 0.0 && steps_per_second.is_finite(),
+            "steps_per_second must be positive and finite, got {steps_per_second}"
+        );
+        let micros_per_step = (MICROS_PER_SECOND as f32 / steps_per_second).round() as u64;
+        assert!(
+            micros_per_step > 0,
+            "steps_per_second {steps_per_second} is faster than one step per microsecond"
         );
         Self {
-            seconds_per_step: 1.0 / steps_per_second,
-            accumulated: 0.0,
+            micros_per_step,
+            accumulated: 0,
         }
     }
 
@@ -182,17 +225,24 @@ impl Ticker {
     /// hundreds of steps and teleport the snake, so the return value is capped
     /// at [`Ticker::MAX_STEPS_PER_CALL`] and the surplus is discarded.
     pub fn accumulate(&mut self, delta: f32) -> u32 {
-        // Clamped rather than branched: a negative delta (a clock adjustment)
-        // must not rewind the accumulator, and `max` says so without a branch
-        // whose two arms behave identically.
-        self.accumulated += delta.max(0.0);
-        let mut steps = 0;
-        while self.accumulated >= self.seconds_per_step && steps < Self::MAX_STEPS_PER_CALL {
-            self.accumulated -= self.seconds_per_step;
-            steps += 1;
-        }
-        if steps == Self::MAX_STEPS_PER_CALL {
-            self.accumulated = 0.0;
+        self.accumulate_micros(seconds_to_micros(delta))
+    }
+
+    /// Adds `micros` microseconds and returns how many steps are now due.
+    ///
+    /// The exact path, with no float conversion at all. A replay feeds this
+    /// directly so playback cannot diverge from the recording by even one step.
+    pub fn accumulate_micros(&mut self, micros: u64) -> u32 {
+        self.accumulated = self.accumulated.saturating_add(micros);
+
+        let due = self.accumulated / self.micros_per_step;
+        let steps = due.min(Self::MAX_STEPS_PER_CALL as u64) as u32;
+        if due > Self::MAX_STEPS_PER_CALL as u64 {
+            // Dropped the backlog, so drop the remainder with it rather than
+            // paying it out on the next call.
+            self.accumulated = 0;
+        } else {
+            self.accumulated -= steps as u64 * self.micros_per_step;
         }
         steps
     }
@@ -202,7 +252,12 @@ impl Ticker {
 
     /// Steps per second this ticker runs at.
     pub fn steps_per_second(&self) -> f32 {
-        1.0 / self.seconds_per_step
+        MICROS_PER_SECOND as f32 / self.micros_per_step as f32
+    }
+
+    /// Microseconds one step takes.
+    pub fn micros_per_step(&self) -> u64 {
+        self.micros_per_step
     }
 
     /// Fraction of the way to the next step, in `0.0..1.0`.
@@ -210,7 +265,7 @@ impl Ticker {
     /// Frontends use this to interpolate the snake between cells so movement
     /// looks smooth at 60 fps while the simulation runs at 8 Hz.
     pub fn alpha(&self) -> f32 {
-        (self.accumulated / self.seconds_per_step).clamp(0.0, 1.0)
+        (self.accumulated as f32 / self.micros_per_step as f32).clamp(0.0, 1.0)
     }
 }
 

@@ -1,0 +1,16 @@
+[package]
+name = "breakout-bevy"
+# Member of the Bevy demo workspace so Bevy compiles once for the repository.
+workspace = "../../tech-demos/bevy"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "Breakout rendered with Bevy's ECS, over the shared engine-agnostic rules"
+
+[dependencies]
+bevy.workspace = true
+breakout-lib = { path = "../breakout-lib" }
+
+[lints]
+workspace = true

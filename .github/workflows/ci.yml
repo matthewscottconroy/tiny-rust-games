@@ -33,7 +33,8 @@ jobs:
             tech-demos/brackets/*/Cargo.toml \
             tic-tac-toe/*/Cargo.toml \
             snake/snake-lib/Cargo.toml \
-            snake/snake-godot/Cargo.toml; do
+            snake/snake-godot/Cargo.toml \
+            breakout/breakout-lib/Cargo.toml; do
             if ! cargo fmt --manifest-path "$manifest" --all --check; then
               failed="$failed $manifest"
             fi
@@ -176,6 +177,7 @@ jobs:
             tic-tac-toe/tic-tac-toe-cli/Cargo.toml \
             tic-tac-toe/tic-tac-toe-brackets/Cargo.toml \
             snake/snake-lib/Cargo.toml \
+            breakout/breakout-lib/Cargo.toml \
             tech-demos/brackets/*/Cargo.toml; do
             echo "::group::$manifest"
             if ! cargo clippy --locked --manifest-path "$manifest" --all-targets -- -D warnings; then
