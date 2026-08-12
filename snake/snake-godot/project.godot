@@ -2,6 +2,7 @@
 
 [application]
 
+run/main_scene="res://scenes/main.tscn"
 config/name="Snake (Godot)"
 config/features=PackedStringArray("4.3")
 

@@ -67,3 +67,6 @@ mutants.out.old/
 
 # Generated web build output (web/index.html and the template are source)
 web/dist/
+
+# rustdoc build directory used by tools/build-web.sh
+target-doc/

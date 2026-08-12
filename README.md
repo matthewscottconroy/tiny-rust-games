@@ -77,6 +77,22 @@ there from 85 MB.
 GitHub Pages on every push to `main`. It needs Pages enabled for the repository
 with **GitHub Actions** as the source.
 
+## Benchmarks
+
+A few demos claim something about performance. [`benchmarks/`](benchmarks/)
+measures those claims against the naive implementation they say they beat:
+
+```bash
+just bench
+```
+
+The first run was worth the effort. `spatial-partitioning` documents "O(1)
+neighbour queries" and displays a savings counter — both true — but at its
+default of 60 balls the grid is **15× slower** than simply comparing every pair,
+because rebuilding the bucket map costs more than the comparisons it saves. The
+measured crossover is around four thousand entities. The demo's documentation
+now says so; see [`benchmarks/README.md`](benchmarks/README.md).
+
 ## Continuous integration
 
 [`.github/workflows/ci.yml`](.github/workflows/ci.yml) runs on every push and
@@ -91,7 +107,13 @@ pull request. It enforces, across every crate:
 - `--locked`, so the committed `Cargo.lock` files are verified rather than
   silently updated;
 - that both games still build for `wasm32-unknown-unknown`;
-- that the generated catalogue is not stale.
+- that the generated catalogue is not stale;
+- that every Godot project actually **loads** and registers its Rust classes.
+  Compiling proves less than it looks: a `.gdextension` naming a library that
+  does not exist, or a scene referencing an unregistered class, compiles fine
+  and fails the moment anyone opens the project. `tools/validate-godot.sh` runs
+  each project headlessly and inspects the log, because Godot reports those as
+  errors and then exits 0 anyway.
 
 The Bevy workspace is checked on Linux, macOS and Windows. The Godot suite is
 Linux-only on purpose: it is 69 crates, and gdext's behaviour does not vary by

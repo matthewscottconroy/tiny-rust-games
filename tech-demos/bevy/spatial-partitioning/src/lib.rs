@@ -1,4 +1,4 @@
-//! Spatial partitioning — grid-cell bucketing for O(1) neighbour queries.
+//! Spatial partitioning — grid-cell bucketing to avoid checking every pair.
 //!
 //! This crate is a *building block*: drop [`SpatialPartitioningPlugin`] into any
 //! Bevy app with `app.add_plugins(SpatialPartitioningPlugin)`.
@@ -11,6 +11,23 @@
 //! - [`cell_of`] and [`neighbour_cells`] are pure functions with no ECS dependency.
 //! - The HUD compares the brute-force pair count (N*(N-1)/2) to the spatial
 //!   check count, showing the savings as entities cluster or spread out.
+//!
+//! # Fewer comparisons is not the same as faster
+//!
+//! The HUD counts comparisons, and the grid genuinely does far fewer of them.
+//! It is still *slower* than brute force at this demo's default of 60 balls —
+//! measurably so, by about 15x. Rebuilding the bucket `HashMap` every frame
+//! costs more than the 1,770 distance checks it saves, and those checks run over
+//! contiguous memory the CPU prefetches perfectly.
+//!
+//! Measured crossover is around four thousand entities. Below that, the obvious
+//! nested loop wins. See `benchmarks/README.md` for the numbers.
+//!
+//! None of which makes the technique wrong — it is what you need once N is
+//! large, and reusing the bucket storage between frames rather than rebuilding
+//! it moves the crossover down substantially. It does mean an asymptotic
+//! improvement is worth nothing until N is big enough to pay for its constant,
+//! which is the more useful lesson.
 //!
 //! Balls that are within proximity of another ball turn red. Tune the grid,
 //! ball count, and speeds through [`SpatialPartitioningConfig`].

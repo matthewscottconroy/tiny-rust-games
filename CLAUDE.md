@@ -108,6 +108,15 @@ membership, gdext version drift, `.gdextension` name match, `Teaches:` lines).
 pre-push compiles and tests the affected crates. Keep pre-commit
 compile-free — the build is minutes long, and a slow hook just gets bypassed.
 
+**Godot projects must declare `run/main_scene`.** Without it a project hangs
+forever under `--headless` rather than erroring — it waits on a UI that never
+appears. Twelve projects were missing it. `tools/validate-godot.sh` fails such a
+project instead of hanging, and CI runs it.
+
+**Performance claims in docs need a benchmark.** `benchmarks/` measures them.
+The first run falsified one: `spatial-partitioning`'s grid is 15x *slower* than
+brute force at its default 60 entities. Prefer measuring to asserting.
+
 ## Bar for a change
 
 CI enforces all of these on every crate, so run them before claiming done:

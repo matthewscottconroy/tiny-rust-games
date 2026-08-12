@@ -2,5 +2,6 @@
 
 [application]
 
+run/main_scene="res://scenes/main.tscn"
 config/name="Custom Resource"
 config/features=PackedStringArray("4.3")

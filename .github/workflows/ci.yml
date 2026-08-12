@@ -229,3 +229,51 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - run: python3 tools/catalogue.py --check
+
+  # CI compiled the Godot demos but never loaded one, which left a whole class
+  # of breakage invisible: a .gdextension naming a library that does not exist,
+  # a scene referencing a class the Rust side never registers. Both compile
+  # perfectly and fail the moment anyone opens the project.
+  #
+  # Godot reports those as errors and then carries on with a placeholder node,
+  # exiting 0 — so tools/validate-godot.sh inspects the log rather than trusting
+  # the exit code.
+  godot-loads:
+    name: Godot projects load their Rust classes
+    runs-on: ubuntu-latest
+    env:
+      CARGO_TARGET_DIR: ${{ github.workspace }}/tech-demos/godot/.shared-target
+      GODOT_VERSION: "4.3"
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: tech-demos/godot -> .shared-target
+          key: godot-loads
+
+      - name: Install Godot
+        run: |
+          url="https://github.com/godotengine/godot/releases/download"
+          file="Godot_v${GODOT_VERSION}-stable_linux.x86_64"
+          curl -sSL -o godot.zip "$url/${GODOT_VERSION}-stable/${file}.zip"
+          unzip -q godot.zip
+          sudo install -m 755 "$file" /usr/local/bin/godot
+          godot --version
+
+      # One shared target directory, so gdext compiles once rather than 70
+      # times; the validator copies each artifact to the res://target/debug path
+      # a .gdextension expects.
+      - name: Build every Godot extension
+        run: |
+          set -uo pipefail
+          for manifest in tech-demos/godot/*/Cargo.toml \
+                          tic-tac-toe/tic-tac-toe-godot/Cargo.toml \
+                          snake/snake-godot/Cargo.toml; do
+            cargo build --locked --manifest-path "$manifest"
+          done
+
+      - name: Load every project headlessly
+        run: tools/validate-godot.sh

@@ -1,0 +1,27 @@
+[package]
+name = "benchmarks"
+# A member of the Bevy workspace so Bevy compiles once, and so the demo crates
+# being measured are ordinary path dependencies.
+workspace = "../tech-demos/bevy"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "Benchmarks checking the demos' documented performance claims"
+publish = false
+
+[dependencies]
+bevy.workspace = true
+snake-lib = { path = "../snake/snake-lib" }
+spatial-partitioning = { path = "../tech-demos/bevy/spatial-partitioning" }
+tic-tac-toe-lib = { path = "../tic-tac-toe/tic-tac-toe-lib" }
+
+[dev-dependencies]
+criterion = "0.5"
+
+[[bench]]
+name = "claims"
+harness = false
+
+[lints]
+workspace = true

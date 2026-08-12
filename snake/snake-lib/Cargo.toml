@@ -4,6 +4,9 @@ version = "0.1.0"
 edition = "2024"
 license = "MIT"
 repository = "https://github.com/matthewscottconroy/tiny-rust-games"
+keywords = ["game", "snake", "gamedev", "no-std-compatible", "engine-agnostic"]
+categories = ["game-development", "games"]
+readme = "README.md"
 description = "Engine-agnostic Snake rules, with a Ticker that turns frame time into simulation steps"
 
 [dependencies]

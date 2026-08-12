@@ -63,6 +63,8 @@ jobs:
         run: |
           sudo apt-get install -y binaryen
 
+      # Also builds rustdoc for every crate, which is the slow part of this
+      # job. Set SKIP_DOCS=1 to publish just the games and the catalogue.
       - name: Build the site
         run: tools/build-web.sh
 

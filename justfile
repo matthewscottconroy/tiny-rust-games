@@ -117,6 +117,15 @@ play-bevy:
 play-godot:
     cargo build --manifest-path tic-tac-toe/tic-tac-toe-godot/Cargo.toml
 
+# Needs Godot 4.3+ on PATH and the crates built (just test-godot).
+# Load every Godot project headlessly and check its Rust classes register.
+validate-godot:
+    tools/validate-godot.sh
+
+# Run the benchmarks that check the demos' documented performance claims.
+bench:
+    cargo bench --manifest-path benchmarks/Cargo.toml --bench claims
+
 # --- Web ---
 
 # Build the browser-playable games and the catalogue into web/dist.

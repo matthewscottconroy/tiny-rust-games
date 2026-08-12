@@ -79,6 +79,45 @@ for entry in "${games[@]}"; do
   echo "    $slug: $size"
 done
 
+# --- API documentation -------------------------------------------------------
+#
+# Every demo carries module-level rustdoc and `///` docs on every public item
+# (CI enforces the latter), which is invisible to anyone who has not cloned the
+# repository. Publishing it alongside the games is most of the payoff for that
+# effort.
+#
+# All the crates share one target directory so their output merges into a single
+# doc/ tree rather than overwriting each other.
+if [ "${SKIP_DOCS:-}" = "1" ]; then
+  echo "==> skipping rustdoc (SKIP_DOCS=1)"
+else
+  echo "==> building API documentation"
+  doc_target="$root/target-doc"
+  CARGO_TARGET_DIR="$doc_target" cargo doc --locked --workspace --no-deps \
+    --manifest-path "$manifest" --quiet
+
+  # The standalone crates are separate builds; the shared target dir merges them.
+  for m in snake/snake-lib/Cargo.toml \
+           tic-tac-toe/tic-tac-toe-lib/Cargo.toml \
+           snake/snake-godot/Cargo.toml \
+           tic-tac-toe/tic-tac-toe-godot/Cargo.toml; do
+    CARGO_TARGET_DIR="$doc_target" cargo doc --locked --no-deps \
+      --manifest-path "$m" --quiet
+  done
+
+  cp -r "$doc_target/doc" "$dist/doc"
+  # rustdoc only writes a redirect index when one crate is unambiguous, so point
+  # at the library a reader most likely wants.
+  cat > "$dist/doc/index.html" <<'HTML'
+<!doctype html>
+<meta charset="utf-8">
+<title>tiny-rust-games — API documentation</title>
+<meta http-equiv="refresh" content="0; url=snake_lib/index.html">
+<p><a href="snake_lib/index.html">API documentation</a></p>
+HTML
+  echo "    doc: $(du -sh "$dist/doc" | cut -f1)"
+fi
+
 echo "==> built $dist"
 
 if [ "${1:-}" = "--serve" ]; then

@@ -1,8 +1,11 @@
-[gd_resource type="ProjectSettings" format=3]
+; Godot Project, Format=3
 
 [application]
+
+run/main_scene="res://scenes/main.tscn"
 config/name="Editor Plugin Demo"
 config/features=PackedStringArray("4.3")
 
 [editor_plugins]
+
 enabled=PackedStringArray("res://addons/rust-panel/plugin.cfg")
