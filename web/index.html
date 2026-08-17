@@ -45,6 +45,11 @@
       <h3>Tic-Tac-Toe</h3>
       <p>Click a cell to play, R to restart. Bevy, compiled to WebAssembly.</p>
     </a>
+    <a class="card" href="breakout/">
+      <h3>Breakout</h3>
+      <p>Move with the arrows, Space to launch. Continuous physics on a fixed
+      timestep, still bit-for-bit deterministic.</p>
+    </a>
   </div>
 
   <h2>Browse the demos</h2>
@@ -65,13 +70,15 @@
     </a>
   </div>
 
-  <h2>Why both games are playable here</h2>
+  <h2>Why these games are playable here</h2>
   <p>Each game's rules live in a small library with no engine dependency —
-  <code>snake-lib</code> and <code>tic-tac-toe-lib</code> — and each engine gets
-  a thin frontend over it. Tic-tac-toe runs on four of them (a terminal, an
-  ASCII console, Bevy and Godot); Snake runs on two. None of the frontends
-  contains a rule of the game, which is what makes compiling one of them to
-  WebAssembly a build-target change rather than a rewrite.</p>
+  <code>snake-lib</code>, <code>tic-tac-toe-lib</code> and
+  <code>breakout-lib</code> — and each engine gets a thin frontend over it.
+  Tic-tac-toe runs on four of them (a terminal, an ASCII console, Bevy and
+  Godot); Snake on two; Breakout proves the pattern survives continuous
+  physics. None of the frontends contains a rule of the game, which is what
+  makes compiling one of them to WebAssembly a build-target change rather than
+  a rewrite.</p>
 
   <footer>
     Built from <a href="https://github.com/matthewscottconroy/tiny-rust-games">the repository</a>.

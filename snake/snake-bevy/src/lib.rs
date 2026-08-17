@@ -150,7 +150,7 @@ pub fn status_line(game: &SnakeGame) -> String {
     match game.status() {
         GameStatus::Running => format!("Score {}   Length {}", game.score(), game.len()),
         GameStatus::Dead(cause) => {
-            format!("Score {} — died: {cause:?}.  R to restart", game.score())
+            format!("Score {} - died: {cause:?}.  R to restart", game.score())
         }
         GameStatus::Won => format!("Board full! Score {}.  R to restart", game.score()),
     }

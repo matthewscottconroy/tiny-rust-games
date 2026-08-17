@@ -16,18 +16,15 @@
   a { color: var(--accent); }
   .hint { color: var(--dim); font-size: .9rem; }
   #status { padding: 3rem 1.5rem; color: var(--dim); text-align: center; }
-  /* Bevy appends its canvas straight to <body> at the resolution the game asks
-     for, which is usually taller than the viewport once the header and footer
-     are accounted for. Constraining both axes letterboxes it to fit instead of
-     forcing the page to scroll. */
+  /* Bevy appends its canvas straight to <body>, and winit keeps the element's
+     inline width/height pinned to the game's resolution. Fighting that with a
+     stylesheet max-height crops the *bottom* of the play field on short
+     viewports — the paddle in Breakout simply vanished. Constrain width only
+     and let a short viewport scroll: scrolling is visible, cropping is not. */
   body > canvas {
     display: block;
     margin: .25rem auto 1rem;
-    max-width: min(100%, 900px);
-    max-height: calc(100vh - 150px);
-    height: auto;
-    width: auto;
-    object-fit: contain;
+    max-width: 100%;
     border-radius: 8px;
     outline: none;
   }

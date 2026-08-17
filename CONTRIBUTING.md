@@ -92,7 +92,7 @@ The short version:
 | `cargo clippy --all-targets -- -D warnings` | Includes `missing_docs`: every public item needs a `///`. |
 | `cargo test` | |
 | `--locked` | Never let a build silently rewrite a committed `Cargo.lock`. |
-| wasm build | Both games must keep compiling for `wasm32-unknown-unknown`. |
+| wasm build | The games must keep compiling for `wasm32-unknown-unknown`. |
 | catalogue freshness | Run `just catalogue` after adding a demo. |
 
 The Bevy workspace is additionally built on macOS and Windows.
@@ -105,7 +105,7 @@ Keep docs by hand there.
 
 Recorded because they cost real time, and none are guessable:
 
-- **All 68 Godot crates must pin the same `godot` version.** They are separate
+- **Every Godot crate (the 68 demos plus the games' `-godot` frontends) must pin the same `godot` version.** They are separate
   crates with separate lockfiles; one `cargo update` in one of them is how they
   drifted to three different versions. Use `just sync-godot-locks`.
 - **`snake-bevy` and `tic-tac-toe-bevy` live outside `tech-demos/bevy/` but are

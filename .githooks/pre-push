@@ -52,7 +52,9 @@ run_all=0
 if changed_matches 'tech-demos/bevy/Cargo.toml' \
   || changed_matches '.github/workflows/*' \
   || changed_matches 'justfile' \
-  || changed_matches 'tic-tac-toe/tic-tac-toe-lib/*'; then
+  || changed_matches 'tic-tac-toe/tic-tac-toe-lib/*' \
+  || changed_matches 'snake/snake-lib/*' \
+  || changed_matches 'breakout/breakout-lib/*'; then
   run_all=1
 fi
 
@@ -100,6 +102,8 @@ else
     case $dir in
       tech-demos/bevy/*)            bevy_pkgs+=("$(basename "$dir")") ;;
       tic-tac-toe/tic-tac-toe-bevy) bevy_pkgs+=("tic-tac-toe-bevy") ;;
+      snake/snake-bevy)             bevy_pkgs+=("snake-bevy") ;;
+      breakout/breakout-bevy)       bevy_pkgs+=("breakout-bevy") ;;
       tech-demos/godot/*|tic-tac-toe/tic-tac-toe-godot) godot_manifests+=("$dir/Cargo.toml") ;;
       *)                            misc_manifests+=("$dir/Cargo.toml") ;;
     esac

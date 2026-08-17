@@ -32,14 +32,14 @@ server=$!
 trap 'kill $server 2>/dev/null || true' EXIT
 sleep 2
 
-for slug in snake tic-tac-toe; do
+for slug in snake tic-tac-toe breakout; do
   echo "==> $slug"
   # `--virtual-time-budget` lets the page run a simulated 25 s in far less
   # wall-clock time, so the game is past its loading screen when the shot is
   # taken. swiftshader gives WebGL without a GPU, which is what CI has.
   "$chrome" --headless=new --no-sandbox --disable-gpu \
     --enable-unsafe-swiftshader \
-    --virtual-time-budget=25000 --window-size=900,700 \
+    --virtual-time-budget=25000 --window-size=900,1000 \
     --screenshot="$out/$slug.png" \
     "http://localhost:$port/$slug/" >/dev/null 2>&1
 

@@ -28,7 +28,7 @@ impl Board {
 
     /// Writes `val` into a cell without any validation.
     ///
-    /// Prefer [`TicTacToeGame::take_turn`], which enforces the rules; this is
+    /// Prefer [`TicTacToeGame::take_turn`](crate::TicTacToeGame::take_turn), which enforces the rules; this is
     /// the raw primitive it is built from.
     ///
     /// # Panics

@@ -177,8 +177,10 @@ uninstall-hooks:
 # Run this after a gdext bump so the 67 lockfiles cannot drift apart.
 # Re-pin every Godot crate to the same dependency versions.
 sync-godot-locks:
-    @for m in tech-demos/godot/*/Cargo.toml; do cargo update --manifest-path "$m" -q; done
+    @for m in tech-demos/godot/*/Cargo.toml tic-tac-toe/tic-tac-toe-godot/Cargo.toml \
+             snake/snake-godot/Cargo.toml; do cargo update --manifest-path "$m" -q; done
     @echo "godot versions now pinned at:"
-    @for f in tech-demos/godot/*/Cargo.lock; do \
+    @for f in tech-demos/godot/*/Cargo.lock tic-tac-toe/tic-tac-toe-godot/Cargo.lock \
+             snake/snake-godot/Cargo.lock; do \
         awk '/^name = "godot"$/{getline; print $3}' "$f"; \
     done | sort -u

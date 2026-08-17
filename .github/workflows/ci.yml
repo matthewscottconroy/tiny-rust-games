@@ -220,7 +220,7 @@ jobs:
         run: >
           cargo build --locked --target wasm32-unknown-unknown
           --manifest-path tech-demos/bevy/Cargo.toml
-          -p snake-bevy -p tic-tac-toe-bevy
+          -p snake-bevy -p tic-tac-toe-bevy -p breakout-bevy
 
   # The catalogue is generated from each demo's own module docs. Regenerating
   # and diffing catches a demo added without refreshing it, which is the only

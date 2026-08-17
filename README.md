@@ -8,13 +8,13 @@ The purpose of this repository is to hold example implementations of some very s
 3. The code should be extensible so that others can use it as a starter template for a more complicated game of their own.
 4. The core game logic should be factored into its own library and game engine agnostic wherever this heuristic can be sensibly applied so that the same code can be used across multiple engines. Wherever this goal detracts from goal number one, goal number one should take precedence.
 
-Both games are playable in a browser — the Bevy frontends compile to
+The games are playable in a browser — the Bevy frontends compile to
 WebAssembly, which is a build-target change rather than a rewrite precisely
 because their rules crates never depended on an engine.
 
-| | |
-|---|---|
-| ![Snake](docs/images/snake.png) | ![Tic-Tac-Toe](docs/images/tic-tac-toe.png) |
+| | | |
+|---|---|---|
+| ![Snake](docs/images/snake.png) | ![Tic-Tac-Toe](docs/images/tic-tac-toe.png) | ![Breakout](docs/images/breakout.png) |
 
 Build the site with `just web`, preview it with `just web-serve`, and browse all
 151 demos in the [generated catalogue](web/catalogue.html) — searchable by
@@ -118,7 +118,7 @@ pull request. It enforces, across every crate:
 - `cargo test`;
 - `--locked`, so the committed `Cargo.lock` files are verified rather than
   silently updated;
-- that both games still build for `wasm32-unknown-unknown`;
+- that all three games still build for `wasm32-unknown-unknown`;
 - that the generated catalogue is not stale;
 - that every Godot project actually **loads** and registers its Rust classes.
   Compiling proves less than it looks: a `.gdextension` naming a library that

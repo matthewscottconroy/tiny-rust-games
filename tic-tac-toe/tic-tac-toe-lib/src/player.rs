@@ -13,7 +13,7 @@ pub struct Player {
 }
 
 impl Player {
-    /// Creates a player. `symbol` should not be [`EMPTY_SYMBOL`], and should be
+    /// Creates a player. `symbol` should not be [`EMPTY_SYMBOL`](crate::EMPTY_SYMBOL), and should be
     /// distinct from every other player's symbol.
     pub fn new(name: String, symbol: char) -> Self {
         Self { name, symbol }
@@ -57,7 +57,7 @@ impl Placement {
     }
 }
 
-/// A completed move, recorded in [`TicTacToeGame::turn_history`].
+/// A completed move, recorded in [`TicTacToeGame::turn_history`](crate::TicTacToeGame::turn_history).
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Turn {
     player: Player,

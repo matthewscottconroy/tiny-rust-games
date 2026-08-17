@@ -20,7 +20,7 @@
 //! destroys reproducibility, because the physics then depends on how busy the
 //! machine was.
 //!
-//! So the frontend's job is unchanged from Snake: use [`snake_lib::Ticker`]-style
+//! So the frontend's job is unchanged from Snake: use `snake_lib::Ticker`-style
 //! accumulation to convert frame time into a whole number of fixed steps.
 //!
 //! # What continuous motion *does* add

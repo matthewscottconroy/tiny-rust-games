@@ -92,7 +92,7 @@ pub fn status_line(game: &BreakoutGame) -> String {
     match game.status() {
         GameStatus::Playing if game.ball_is_stuck() => {
             format!(
-                "Score {}   Lives {}   —   Space to launch",
+                "Score {}   Lives {}  -  Space to launch",
                 game.score(),
                 game.lives()
             )

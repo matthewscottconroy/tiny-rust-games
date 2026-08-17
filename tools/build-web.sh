@@ -24,6 +24,7 @@ dist="web/dist"
 games=(
   "snake-bevy:snake:Snake:Arrows or WASD to steer · R to restart:snake-lib"
   "tic-tac-toe-bevy:tic-tac-toe:Tic-Tac-Toe:Click a cell to play · R to restart:tic-tac-toe-lib"
+  "breakout-bevy:breakout:Breakout:Left/right or A/D to move · Space to launch · R to restart:breakout-lib"
 )
 
 command -v wasm-bindgen >/dev/null || {
@@ -39,12 +40,15 @@ rustup target list --installed | grep -q wasm32-unknown-unknown || {
 }
 
 echo "==> building ${#games[@]} games for wasm32 ($profile)"
-pkg_args=()
+# One package per invocation, deliberately. The wasm-release profile uses fat
+# LTO with a single codegen unit, and each final link peaks at several GB;
+# passing all the -p flags at once lets cargo run those links in parallel,
+# which has OOM-killed a 54 GB dev machine and would sink a 7 GB CI runner.
+# Serial links cost a little wall-clock and bound the memory to one link.
 for entry in "${games[@]}"; do
-  pkg_args+=(-p "${entry%%:*}")
+  cargo build --locked --target wasm32-unknown-unknown --profile "$profile" \
+    --manifest-path "$manifest" -p "${entry%%:*}"
 done
-cargo build --locked --target wasm32-unknown-unknown --profile "$profile" \
-  --manifest-path "$manifest" "${pkg_args[@]}"
 
 rm -rf "$dist"
 mkdir -p "$dist"
@@ -99,6 +103,7 @@ else
   # The standalone crates are separate builds; the shared target dir merges them.
   for m in snake/snake-lib/Cargo.toml \
            tic-tac-toe/tic-tac-toe-lib/Cargo.toml \
+           breakout/breakout-lib/Cargo.toml \
            snake/snake-godot/Cargo.toml \
            tic-tac-toe/tic-tac-toe-godot/Cargo.toml; do
     CARGO_TARGET_DIR="$doc_target" cargo doc --locked --no-deps \

@@ -2,7 +2,7 @@
 
 use std::fmt;
 
-/// Why a call to [`TicTacToeGame::take_turn`] was rejected.
+/// Why a call to [`TicTacToeGame::take_turn`](crate::TicTacToeGame::take_turn) was rejected.
 ///
 /// Move validation lives in the library so every frontend enforces the same
 /// rules; a frontend should surface these rather than pre-checking itself.
