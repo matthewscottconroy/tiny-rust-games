@@ -67,6 +67,15 @@ run() {  # run <label> <cmd...>
   else
     printf 'FAILED\n'
     fail="$fail $label"
+    # A missing system library is not a code failure, and its build-script
+    # output buries that under forty lines of rerun-if-env-changed. Say so
+    # before the noise, or the next person reads a pkg-config panic as a Rust
+    # error — which is exactly what it looks like.
+    if grep -qE "was not found in the pkg-config search path|Package '(wayland-client|libudev|alsa)' was not found|unable to find library -l(udev|asound|wayland-client)" \
+         /tmp/pre-push-$$.log 2>/dev/null; then
+      printf '      NOTE: this is a missing system library, not a code problem.\n'
+      printf '            Run: bash tools/doctor.sh\n'
+    fi
     tail -25 /tmp/pre-push-$$.log | sed 's/^/      /'
   fi
   rm -f /tmp/pre-push-$$.log
@@ -79,11 +88,31 @@ if [ "$run_all" -eq 1 ]; then
       --manifest-path tech-demos/bevy/Cargo.toml -- -D warnings
   run "bevy workspace (test)" \
     cargo test --locked --workspace --manifest-path tech-demos/bevy/Cargo.toml
-  godot_manifests=(tech-demos/godot/*/Cargo.toml tic-tac-toe/tic-tac-toe-godot/Cargo.toml)
-  misc_manifests=(tic-tac-toe/tic-tac-toe-lib/Cargo.toml
-                  tic-tac-toe/tic-tac-toe-cli/Cargo.toml
-                  tic-tac-toe/tic-tac-toe-brackets/Cargo.toml
-                  tech-demos/brackets/*/Cargo.toml)
+  # Discovered, not enumerated. These used to be hand-written lists, and they
+  # went stale exactly as you would expect: the hook announced "checking
+  # everything" while silently skipping snake-lib, snake-lockstep, breakout-lib,
+  # tic-tac-toe-web, snake-godot and breakout-godot — including all three rules
+  # crates, which are the most important things in the repository. A list that
+  # has to be updated by hand every time a crate is added will be wrong.
+  #
+  # Bevy workspace members are excluded because `--workspace` above already
+  # covers them; they are identified by the `workspace = "…/tech-demos/bevy"`
+  # key, which is how the out-of-tree members join that workspace.
+  godot_manifests=(); misc_manifests=()
+  while IFS= read -r manifest; do
+    dir=$(dirname "$manifest")
+    case $dir in
+      ./tech-demos/bevy|./tech-demos/bevy/*) continue ;;
+    esac
+    if grep -qE 'workspace *= *"\.\./.*tech-demos/bevy"' "$manifest" 2>/dev/null; then
+      continue  # a Bevy workspace member, already covered
+    fi
+    case $dir in
+      ./tech-demos/godot/*|*-godot) godot_manifests+=("${dir#./}/Cargo.toml") ;;
+      *)                            misc_manifests+=("${dir#./}/Cargo.toml") ;;
+    esac
+  done < <(find . -name Cargo.toml -not -path '*/target/*' \
+             -not -path '*/.shared-target/*' | sort)
 else
   say "checking crates touched by $range"
   # Map each changed path to the crate that owns it.
