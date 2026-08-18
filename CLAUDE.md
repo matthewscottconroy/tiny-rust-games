@@ -60,9 +60,12 @@ resolves the compiled library through `res://target/debug/lib*.so`, where
 `res://` is the crate's own directory. A shared workspace `target/` would put
 the binary where Godot cannot find it. Do not "fix" this by merging them.
 
-The cost is 67 separate `Cargo.lock` files. They must all pin the **same**
-`godot` version — running `cargo update` in one crate alone is exactly how they
-drifted to three different versions once before. Update all of them or none.
+The cost is 70 separate `Cargo.lock` files — the 67 demos, `_template`, and
+the two game frontends (`tic-tac-toe-godot`, `snake-godot`), which the
+pre-commit hook checks as a single set. They must all pin the **same**
+`godot` version — running `cargo update` in one crate alone is exactly how
+they drifted to three different versions once before. Update all of them or
+none.
 
 **Bevy demos inherit lints from the workspace.** Every member `Cargo.toml` ends
 with `[lints]\nworkspace = true`. A new demo that omits it silently opts out of

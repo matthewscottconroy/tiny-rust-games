@@ -128,7 +128,7 @@ pull request. It enforces, across every crate:
   errors and then exits 0 anyway.
 
 The Bevy workspace is checked on Linux, macOS and Windows. The Godot suite is
-Linux-only on purpose: it is 69 crates, and gdext's behaviour does not vary by
+Linux-only on purpose: it is 70 crates, and gdext's behaviour does not vary by
 host in a way that would justify tripling that.
 
 ## Git hooks

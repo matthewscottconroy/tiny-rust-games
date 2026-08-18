@@ -351,6 +351,33 @@ fn clearing_every_brick_wins() {
     assert!(g.is_over());
 }
 
+#[test]
+fn the_ball_cannot_cross_a_brick_in_one_step() {
+    // `DT`'s doc comment claims 120 Hz is "fast enough that the ball never
+    // crosses a brick in a single step at the speeds this game uses". Nothing
+    // enforced that, so raising `ball_speed` or shrinking a brick could quietly
+    // make it false — and the symptom, a ball that occasionally passes straight
+    // through a brick, looks like a collision bug rather than a timestep one.
+    let layout = BreakoutGame::default_layout();
+    let per_step = layout.ball_speed * DT;
+
+    // The thinnest dimension of the thinnest brick is the tightest gap the ball
+    // has to be caught by, so compare against that rather than a literal.
+    let thinnest = layout
+        .bricks
+        .iter()
+        .flat_map(|b| [b.rect.half.x, b.rect.half.y])
+        .fold(f32::INFINITY, f32::min)
+        * 2.0;
+
+    assert!(
+        per_step < thinnest,
+        "ball travels {per_step} per step but the thinnest brick is only \
+         {thinnest} thick - it can tunnel through. Raise STEPS_PER_SECOND or \
+         lower ball_speed."
+    );
+}
+
 // ── Losing ───────────────────────────────────────────────────────────────────
 
 #[test]
