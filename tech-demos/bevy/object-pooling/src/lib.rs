@@ -187,7 +187,7 @@ fn setup(mut commands: Commands, config: Res<PoolConfig>) {
         HudLabel::Pool,
     ));
     commands.spawn((
-        Text::new("SPACE / Left-click — fire"),
+        Text::new("SPACE / Left-click - fire"),
         TextFont {
             font_size: 16.0,
             ..default()

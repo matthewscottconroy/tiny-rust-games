@@ -122,7 +122,7 @@ fn setup(mut commands: Commands, config: Res<BoidsFlockingConfig>) {
     }
 
     commands.spawn((
-        Text::new("Boids: separation + alignment + cohesion → emergent flocking"),
+        Text::new("Boids: separation + alignment + cohesion -> emergent flocking"),
         TextFont {
             font_size: 14.0,
             ..default()

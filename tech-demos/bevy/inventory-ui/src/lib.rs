@@ -144,11 +144,11 @@ impl Item {
     /// The glyph drawn on the item's tile.
     pub fn label(self) -> &'static str {
         match self {
-            Item::Sword => "⚔",
-            Item::Shield => "🛡",
-            Item::Potion => "⚗",
-            Item::Gem => "💎",
-            Item::Key => "🗝",
+            Item::Sword => "sword",
+            Item::Shield => "shield",
+            Item::Potion => "potion",
+            Item::Gem => "gem",
+            Item::Key => "key",
         }
     }
 }

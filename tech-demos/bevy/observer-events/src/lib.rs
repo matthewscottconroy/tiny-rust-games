@@ -229,8 +229,8 @@ fn setup(mut commands: Commands) {
 
     // Labels above each target
     for (label, left_px) in [
-        ("Message system\n(MessageWriter — press Q)", 80.0_f32),
-        ("Observer system\n(Trigger — press E)", 470.0_f32),
+        ("Message system\n(MessageWriter - press Q)", 80.0_f32),
+        ("Observer system\n(Trigger - press E)", 470.0_f32),
     ] {
         commands.spawn((
             Text::new(label),

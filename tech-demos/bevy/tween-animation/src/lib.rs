@@ -185,9 +185,9 @@ fn setup(mut commands: Commands) {
     ));
 
     for (label, left_px) in [
-        ("1 — scale pop", 120.0_f32),
-        ("auto — slide in", 360.0),
-        ("2 — alpha pulse", 600.0),
+        ("1 - scale pop", 120.0_f32),
+        ("auto - slide in", 360.0),
+        ("2 - alpha pulse", 600.0),
     ] {
         commands.spawn((
             Text::new(label),

@@ -203,7 +203,7 @@ fn setup(mut commands: Commands, mut sounds: ResMut<Assets<PcmAudio>>, config: R
     commands.insert_resource(BlipSound(blip));
 
     commands.spawn((
-        Text::new("SPACE — play blip (all sound generated in code)"),
+        Text::new("SPACE - play blip (all sound generated in code)"),
         TextFont {
             font_size: 24.0,
             ..default()

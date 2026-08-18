@@ -221,7 +221,7 @@ fn setup(mut commands: Commands, config: Res<DayNightCycleConfig>) {
 
     // HUD
     commands.spawn((
-        Text::new(format!("00:00  Night  ×{:.1}", config.start_speed)),
+        Text::new(format!("00:00  Night  x{:.1}", config.start_speed)),
         TextFont {
             font_size: 22.0,
             ..default()
@@ -236,7 +236,7 @@ fn setup(mut commands: Commands, config: Res<DayNightCycleConfig>) {
         HudLabel,
     ));
     commands.spawn((
-        Text::new("+/= — faster   - — slower   R — reset"),
+        Text::new("+/= - faster   - - slower   R - reset"),
         TextFont {
             font_size: 16.0,
             ..default()
@@ -320,7 +320,7 @@ fn update_hud(clock: Res<DayClock>, mut q: Query<&mut Text, With<HudLabel>>) {
     let m = ((clock.hours - h as f32) * 60.0) as u32;
     let label = hours_to_label(clock.hours);
     for mut text in &mut q {
-        text.0 = format!("{:02}:{:02}  {}  ×{:.1}", h, m, label, clock.speed);
+        text.0 = format!("{:02}:{:02}  {}  x{:.1}", h, m, label, clock.speed);
     }
 }
 

@@ -191,7 +191,7 @@ fn setup_menu(mut commands: Commands, menu: Res<MenuState>, config: Res<MenuNavi
     }
 
     commands.spawn((
-        Text::new("↑↓ navigate   ENTER select"),
+        Text::new("^v navigate   ENTER select"),
         TextFont {
             font_size: 18.0,
             ..default()

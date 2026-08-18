@@ -165,7 +165,7 @@ fn setup(mut commands: Commands, config: Res<RopeConfig>) {
     }
 
     commands.spawn((
-        Text::new("Move the mouse — the rope hangs from the cursor"),
+        Text::new("Move the mouse - the rope hangs from the cursor"),
         TextFont {
             font_size: 15.0,
             ..default()

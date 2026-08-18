@@ -269,7 +269,7 @@ fn setup(mut commands: Commands) {
 
     // Hint
     commands.spawn((
-        Text::new("SPACE — advance   1/2/3 — choose"),
+        Text::new("SPACE - advance   1/2/3 - choose"),
         TextFont {
             font_size: 14.0,
             ..default()
@@ -374,10 +374,10 @@ fn update_ui(state: Res<DialogState>, mut query: Query<(&mut Text, &mut TextColo
             DialogUi::Hint => {
                 if node.choices.is_empty() && state.finished {
                     color.0 = Color::srgb(0.8, 0.75, 0.3);
-                    text.0 = "SPACE — restart".to_string();
+                    text.0 = "SPACE - restart".to_string();
                 } else {
                     color.0 = Color::srgb(0.45, 0.45, 0.55);
-                    text.0 = "SPACE — skip / advance   1/2/3 — choose".to_string();
+                    text.0 = "SPACE - skip / advance   1/2/3 - choose".to_string();
                 }
             }
         }

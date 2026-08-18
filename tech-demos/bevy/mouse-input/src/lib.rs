@@ -132,7 +132,7 @@ fn setup(mut commands: Commands) {
     ));
 
     commands.spawn((
-        Text::new("Left-drag — move shapes"),
+        Text::new("Left-drag - move shapes"),
         TextFont {
             font_size: 14.0,
             ..default()
@@ -269,11 +269,11 @@ fn handle_drag(
     }
 }
 
-/// Shows "Dragging…" in the label while a drag is in progress.
+/// Shows "Dragging..." in the label while a drag is in progress.
 fn update_labels(drag: Res<DragState>, mut label_query: Query<&mut Text, With<HoverLabel>>) {
     if drag.entity.is_some() {
         for mut text in &mut label_query {
-            *text = Text::new("Dragging…");
+            *text = Text::new("Dragging...");
         }
     }
 }

@@ -188,7 +188,7 @@ fn setup(mut commands: Commands, config: Res<StateMachineAiConfig>) {
     ));
 
     commands.spawn((
-        Text::new("WASD — move player   approach the grey enemy"),
+        Text::new("WASD - move player   approach the grey enemy"),
         TextFont {
             font_size: 14.0,
             ..default()
@@ -328,9 +328,9 @@ fn update_hud(
     };
     for mut text in &mut hud_query {
         let (label, color_desc) = match state {
-            EnemyState::Patrol => ("Patrol", "grey — wandering waypoints"),
-            EnemyState::Chase => ("Chase", "orange — chasing player"),
-            EnemyState::Attack => ("Attack", "red pulse — in range"),
+            EnemyState::Patrol => ("Patrol", "grey - wandering waypoints"),
+            EnemyState::Chase => ("Chase", "orange - chasing player"),
+            EnemyState::Attack => ("Attack", "red pulse - in range"),
         };
         *text = Text::new(format!("State: {}  ({})", label, color_desc));
     }

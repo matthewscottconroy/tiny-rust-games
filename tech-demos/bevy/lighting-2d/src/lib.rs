@@ -265,7 +265,7 @@ fn setup(mut commands: Commands) {
         HudLabel,
     ));
     commands.spawn((
-        Text::new("WASD — move   + — brighter   - — darker"),
+        Text::new("WASD - move   + - brighter   - - darker"),
         TextFont {
             font_size: 14.0,
             ..default()

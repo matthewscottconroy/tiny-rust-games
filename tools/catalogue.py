@@ -35,6 +35,30 @@ SUITES = [
 # Directories that are not demos.
 SKIP = {"target", "_template", ".shared-target"}
 
+# The demos the web build publishes as playable. Read out of build-web.sh rather
+# than repeated here: two lists that could disagree about what is playable would
+# put a dead "Play" link in the catalogue, which is worse than no link at all.
+BUILD_WEB = ROOT / "tools" / "build-web.sh"
+
+
+def playable_slugs() -> set[str]:
+    """Slugs from the `demos=(...)` array in tools/build-web.sh."""
+    if not BUILD_WEB.exists():
+        return set()
+    text = BUILD_WEB.read_text(encoding="utf-8")
+    match = re.search(r"^demos=\((.*?)^\)", text, re.S | re.M)
+    if not match:
+        return set()
+    slugs = set()
+    for line in match.group(1).splitlines():
+        line = line.strip().strip('"')
+        if not line or line.startswith("#"):
+            continue
+        parts = line.split(":")
+        if len(parts) >= 2:
+            slugs.add(parts[1])
+    return slugs
+
 
 def module_doc(src: Path) -> list[str]:
     """The leading `//!` block of a source file, as plain lines."""
@@ -118,6 +142,7 @@ def parse_demo(demo_dir: Path, engine: str) -> dict | None:
 
 
 def collect() -> list[dict]:
+    playable = playable_slugs()
     demos: list[dict] = []
     for _label, directory, engine in SUITES:
         if not directory.exists():
@@ -129,6 +154,9 @@ def collect() -> list[dict]:
                 continue
             entry = parse_demo(demo_dir, engine)
             if entry:
+                # Only the Bevy demos are built for the web; a Godot demo of the
+                # same name is not playable just because its Bevy twin is.
+                entry["playable"] = engine == "bevy" and entry["name"] in playable
                 demos.append(entry)
     return demos
 
@@ -172,6 +200,8 @@ PAGE = """<!doctype html>
   .summary {{ margin: .35rem 0 .4rem; }}
   .teaches {{ color: var(--dim); font-size: .9rem; margin: 0; }}
   .meta {{ margin-top: .5rem; color: var(--dim); font-size: .78rem; }}
+  .play {{ color: var(--accent); font-weight: 600; text-decoration: none; }}
+  .play:hover {{ text-decoration: underline; }}
   #count {{ color: var(--dim); font-size: .9rem; }}
   .empty {{ grid-column: 1/-1; color: var(--dim); padding: 2rem 0; }}
 </style>
@@ -212,7 +242,7 @@ function render() {{
       <h2><a href="${{REPO}}${{d.path}}">${{d.name}}</a></h2>
       <p class="summary">${{d.summary}}</p>
       ${{d.teaches ? `<p class="teaches">${{d.teaches}}</p>` : ""}}
-      <p class="meta">${{d.tests}} test${{d.tests === 1 ? "" : "s"}}${{d.controls ? " · " + d.controls : ""}}</p>
+      <p class="meta">${{d.tests}} test${{d.tests === 1 ? "" : "s"}}${{d.controls ? " · " + d.controls : ""}}${{d.playable ? ` · <a class="play" href="demos/${{d.name}}/">▶ play in your browser</a>` : ""}}</p>
     </article>`).join("") : `<p class="empty">Nothing matches “${{needle}}”.</p>`;
 }}
 

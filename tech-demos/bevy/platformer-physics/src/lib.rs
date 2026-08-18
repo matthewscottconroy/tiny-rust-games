@@ -174,7 +174,7 @@ fn setup(mut commands: Commands) {
     ));
 
     commands.spawn((
-        Text::new("A/D — move   SPACE — jump"),
+        Text::new("A/D - move   SPACE - jump"),
         TextFont {
             font_size: 20.0,
             ..default()

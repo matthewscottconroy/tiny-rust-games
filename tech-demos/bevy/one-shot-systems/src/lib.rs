@@ -213,7 +213,7 @@ fn setup(mut commands: Commands, config: Res<OneShotSystemsConfig>) {
         ),
         (
             ButtonAction::Damage,
-            "Damage −15 HP",
+            "Damage -15 HP",
             Color::srgb(0.8, 0.2, 0.2),
             0.0_f32,
         ),

@@ -106,7 +106,7 @@ fn setup(mut commands: Commands) {
     ));
 
     commands.spawn((
-        Text::new("WASD — move   Arrow keys — fire"),
+        Text::new("WASD - move   Arrow keys - fire"),
         TextFont {
             font_size: 16.0,
             ..default()

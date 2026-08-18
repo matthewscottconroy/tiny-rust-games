@@ -104,7 +104,7 @@ fn setup(mut commands: Commands) {
     ));
 
     commands.spawn((
-        Text::new("WASD — move   (camera lerp-follows)"),
+        Text::new("WASD - move   (camera lerp-follows)"),
         TextFont {
             font_size: 16.0,
             ..default()

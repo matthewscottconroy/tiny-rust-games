@@ -143,7 +143,7 @@ fn setup(mut commands: Commands) {
     ));
 
     commands.spawn((
-        Text::new("SPACE — burst at center   continuous emitter at bottom"),
+        Text::new("SPACE - burst at center   continuous emitter at bottom"),
         TextFont {
             font_size: 14.0,
             ..default()

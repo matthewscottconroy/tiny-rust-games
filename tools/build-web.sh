@@ -32,6 +32,21 @@ games=(
   "breakout-bevy:breakout:Breakout:Left/right or A/D to move · Space to launch · R to restart:breakout-lib"
 )
 
+# A curated handful of demos, playable from the catalogue.
+#
+# Deliberately not all 82. Each Bevy wasm build is roughly 25 MB and a fat-LTO
+# link of its own, so publishing every demo would mean two gigabytes of
+# WebAssembly and an hour of linking to make the catalogue slightly livelier.
+# These are the ones that are worth watching move and that load no assets, since
+# an asset a demo cannot fetch is a demo that fails in the browser only.
+#
+# package : slug : title : controls
+demos=(
+  "boids-flocking:boids-flocking:Boids flocking:Watch — separation, alignment and cohesion"
+  "particle-system:particle-system:Particle system:Watch — pooled particles with lifetimes"
+  "rope-simulation:rope-simulation:Rope simulation:Drag the rope — Verlet integration"
+)
+
 command -v wasm-bindgen >/dev/null || {
   echo "wasm-bindgen not found. Install the version matching the lockfile:" >&2
   awk '/^name = "wasm-bindgen"$/{getline; print "  cargo install wasm-bindgen-cli --version " $3}' \
@@ -51,6 +66,13 @@ echo "==> building ${#games[@]} games for wasm32 ($profile)"
 # which has OOM-killed a 54 GB dev machine and would sink a 7 GB CI runner.
 # Serial links cost a little wall-clock and bound the memory to one link.
 for entry in "${games[@]}"; do
+  cargo build --locked --target wasm32-unknown-unknown --profile "$profile" \
+    --manifest-path "$manifest" -p "${entry%%:*}"
+done
+
+echo "==> building ${#demos[@]} demos for wasm32 ($profile)"
+# Serial for the same reason as the games above: one fat-LTO link at a time.
+for entry in "${demos[@]}"; do
   cargo build --locked --target wasm32-unknown-unknown --profile "$profile" \
     --manifest-path "$manifest" -p "${entry%%:*}"
 done
@@ -93,6 +115,26 @@ for entry in "${games[@]}"; do
 
   size=$(du -h "$dist/$slug/${pkg}_bg.wasm" | cut -f1)
   echo "    $slug: $size"
+done
+
+# --- Playable demos ----------------------------------------------------------
+mkdir -p "$dist/demos"
+for entry in "${demos[@]}"; do
+  IFS=: read -r pkg slug title controls <<<"$entry"
+  echo "==> demo $slug"
+  mkdir -p "$dist/demos/$slug"
+  wasm-bindgen --no-typescript --target web \
+    --out-dir "$dist/demos/$slug" --out-name "$pkg" \
+    "$target_dir/$pkg.wasm"
+  if command -v wasm-opt >/dev/null; then
+    wasm-opt -Os "$dist/demos/$slug/${pkg}_bg.wasm" -o "$dist/demos/$slug/${pkg}_bg.wasm"
+  fi
+  sed -e "s|__TITLE__|$title|g" \
+      -e "s|__CONTROLS__|$controls|g" \
+      -e "s|__MODULE__|$pkg|g" \
+      -e "s|__LIB__|tech-demos/bevy/$slug|g" \
+      web/game.html > "$dist/demos/$slug/index.html"
+  echo "    demos/$slug: $(du -h "$dist/demos/$slug/${pkg}_bg.wasm" | cut -f1)"
 done
 
 # --- The engine-free frontend ------------------------------------------------

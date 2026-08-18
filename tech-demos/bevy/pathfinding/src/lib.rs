@@ -195,7 +195,7 @@ fn setup(mut commands: Commands, config: Res<PathfindingConfig>) {
     commands.insert_resource(PathGrid(grid));
 
     commands.spawn((
-        Text::new("Arrow keys / WASD — move   Red chases you"),
+        Text::new("Arrow keys / WASD - move   Red chases you"),
         TextFont {
             font_size: 18.0,
             ..default()

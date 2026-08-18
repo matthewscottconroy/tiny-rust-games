@@ -123,6 +123,13 @@ forever under `--headless` rather than erroring — it waits on a UI that never
 appears. Twelve projects were missing it. `tools/validate-godot.sh` fails such a
 project instead of hanging, and CI runs it.
 
+**Bevy's default font is ASCII-only.** It embeds `FiraMono-subset.ttf`, which
+covers 95 codepoints. An em dash, arrow, card suit or emoji in a `Text` string
+compiles, passes every test, and renders as a tofu box — the only way to notice
+is to look at the running game, which is how it was found twice.
+`tools/check-font-coverage.py` scans for it and CI runs it. Window titles are
+exempt: the window manager draws those in a system font.
+
 **Performance claims in docs need a benchmark.** `benchmarks/` measures them.
 The first run falsified one: `spatial-partitioning`'s grid is 15x *slower* than
 brute force at its default 60 entities. Prefer measuring to asserting.

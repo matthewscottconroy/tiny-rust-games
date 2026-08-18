@@ -217,7 +217,7 @@ fn setup(mut commands: Commands, config: Res<StealthAiConfig>) {
 
     // Legend
     commands.spawn((
-        Text::new("WASD / Arrow keys — move\nGreen = Patrol   Orange = Alert   Red = Chase"),
+        Text::new("WASD / Arrow keys - move\nGreen = Patrol   Orange = Alert   Red = Chase"),
         TextFont {
             font_size: 16.0,
             ..default()

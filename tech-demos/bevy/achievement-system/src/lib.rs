@@ -84,9 +84,9 @@ pub fn is_unlocked(progress: u32, goal: u32) -> bool {
     progress >= goal
 }
 
-/// Formats `"Name — progress / goal"` for the HUD (progress clamped at goal).
+/// Formats `"Name - progress / goal"` for the HUD (progress clamped at goal).
 pub fn progress_text(name: &str, progress: u32, goal: u32) -> String {
-    format!("{} — {} / {}", name, progress.min(goal), goal)
+    format!("{} - {} / {}", name, progress.min(goal), goal)
 }
 
 // ── Data model ────────────────────────────────────────────────────────────────
@@ -297,12 +297,12 @@ mod tests {
 
     #[test]
     fn progress_text_formats_correctly() {
-        assert_eq!(progress_text("Scorer", 3, 10), "Scorer — 3 / 10");
+        assert_eq!(progress_text("Scorer", 3, 10), "Scorer - 3 / 10");
     }
 
     #[test]
     fn progress_text_clamps_display_at_goal() {
-        assert_eq!(progress_text("Test", 25, 10), "Test — 10 / 10");
+        assert_eq!(progress_text("Test", 25, 10), "Test - 10 / 10");
     }
 
     #[test]

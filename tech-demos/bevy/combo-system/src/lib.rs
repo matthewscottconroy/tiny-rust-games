@@ -221,7 +221,7 @@ fn setup(mut commands: Commands) {
 
     // Combo guide
     commands.spawn((
-        Text::new("Combos:\n↑↑  Double Up\n↑→↓←  Spin\n←→←  Zigzag\n↓↓  Dive"),
+        Text::new("Combos:\nUU  Double Up\nURDL  Spin\nLRL  Zigzag\nDD  Dive"),
         TextFont {
             font_size: 18.0,
             ..default()
@@ -295,10 +295,10 @@ fn update_hud(
     mut query: Query<(&mut Text, &mut TextColor, &HudLabel)>,
 ) {
     let key_name = |k: KeyCode| match k {
-        KeyCode::ArrowUp => "↑",
-        KeyCode::ArrowDown => "↓",
-        KeyCode::ArrowLeft => "←",
-        KeyCode::ArrowRight => "→",
+        KeyCode::ArrowUp => "U",
+        KeyCode::ArrowDown => "D",
+        KeyCode::ArrowLeft => "L",
+        KeyCode::ArrowRight => "R",
         _ => "?",
     };
     let buf_str: String = buf

@@ -262,7 +262,7 @@ fn setup(mut commands: Commands, state: Res<TreeState>) {
     ));
 
     commands.spawn((
-        Text::new("SPACE — earn point   1–9 — unlock node   Yellow = available   Green = unlocked"),
+        Text::new("SPACE - earn point   1-9 - unlock node   Yellow = available   Green = unlocked"),
         TextFont {
             font_size: 13.0,
             ..default()

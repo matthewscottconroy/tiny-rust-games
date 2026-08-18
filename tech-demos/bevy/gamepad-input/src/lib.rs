@@ -133,16 +133,26 @@ fn setup(mut commands: Commands) {
 
     // Button HUD — four face buttons.
     let buttons = [
+        // Xbox letter / PlayStation shape. The shapes are spelled out because
+        // Bevy's default font is ASCII-only and the glyphs render as tofu.
         (
             GamepadButton::South,
-            "South (A/X)",
+            "South (A/Cross)",
             Vec2::new(100.0, -120.0),
         ),
-        (GamepadButton::East, "East  (B/○)", Vec2::new(220.0, -120.0)),
-        (GamepadButton::West, "West  (X/□)", Vec2::new(100.0, -150.0)),
+        (
+            GamepadButton::East,
+            "East  (B/Circle)",
+            Vec2::new(220.0, -120.0),
+        ),
+        (
+            GamepadButton::West,
+            "West  (X/Square)",
+            Vec2::new(100.0, -150.0),
+        ),
         (
             GamepadButton::North,
-            "North (Y/△)",
+            "North (Y/Triangle)",
             Vec2::new(220.0, -150.0),
         ),
     ];
@@ -165,7 +175,7 @@ fn setup(mut commands: Commands) {
     }
 
     commands.spawn((
-        Text::new("No gamepad connected — using keyboard (WASD / arrows)"),
+        Text::new("No gamepad connected - using keyboard (WASD / arrows)"),
         TextFont {
             font_size: 20.0,
             ..default()
@@ -227,9 +237,9 @@ fn move_player(
     // Update connection label.
     if let Ok(mut text) = conn_query.single_mut() {
         if has_gamepad {
-            text.0 = "Gamepad connected — left stick to move".to_string();
+            text.0 = "Gamepad connected - left stick to move".to_string();
         } else {
-            text.0 = "No gamepad connected — using keyboard (WASD / arrows)".to_string();
+            text.0 = "No gamepad connected - using keyboard (WASD / arrows)".to_string();
         }
     }
 }

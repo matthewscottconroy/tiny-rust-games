@@ -135,7 +135,7 @@ fn setup(mut commands: Commands) {
     }
 
     commands.spawn((
-        Text::new("Boxes resolve AABB overlaps each frame — orange = colliding"),
+        Text::new("Boxes resolve AABB overlaps each frame - orange = colliding"),
         TextFont {
             font_size: 14.0,
             ..default()

@@ -174,7 +174,7 @@ fn setup(mut commands: Commands) {
     ));
 
     commands.spawn((
-        Text::new("WASD — move   walk behind/in-front of colored characters"),
+        Text::new("WASD - move   walk behind/in-front of colored characters"),
         TextFont {
             font_size: 14.0,
             ..default()

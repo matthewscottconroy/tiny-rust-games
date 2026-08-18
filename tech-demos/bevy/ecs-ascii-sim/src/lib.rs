@@ -413,7 +413,7 @@ fn render(
     // ANSI: move cursor to row 1 column 1 (home), then overwrite in-place.
     // This avoids clearing the terminal and prevents flicker.
     println!(
-        "\x1b[H{frame}Turn {:>6}   NPCs {:>5}   Grid {}×{}",
+        "\x1b[H{frame}Turn {:>6}   NPCs {:>5}   Grid {}x{}",
         turn.0,
         positions.len(),
         config.width,

@@ -159,7 +159,7 @@ fn setup(mut commands: Commands, config: Res<PickupConfig>, mut inventory: ResMu
     ));
 
     commands.spawn((
-        Text::new("WASD — move   Q — drop item"),
+        Text::new("WASD - move   Q - drop item"),
         TextFont {
             font_size: 14.0,
             ..default()

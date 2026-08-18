@@ -278,7 +278,7 @@ fn setup(mut commands: Commands, config: Res<WeatherConfig>, mut pool: ResMut<Ra
     ));
 
     commands.spawn((
-        Text::new("WASD / Arrows — move   R — advance weather"),
+        Text::new("WASD / Arrows - move   R - advance weather"),
         TextFont {
             font_size: 13.0,
             ..default()

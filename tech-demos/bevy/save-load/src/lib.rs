@@ -84,7 +84,7 @@ pub struct SaveData {
 #[derive(Component)]
 pub struct ScoreText;
 
-/// Marker for the transient status line (e.g. "Saved to …").
+/// Marker for the transient status line (e.g. "Saved to ...").
 #[derive(Component)]
 pub struct StatusText;
 
@@ -206,7 +206,7 @@ fn handle_input(
     if input.just_pressed(KeyCode::KeyR) {
         *save = SaveData::default();
         let _ = fs::remove_file(&config.save_path);
-        status = Some("Reset — save file deleted".to_string());
+        status = Some("Reset - save file deleted".to_string());
     }
 
     if let Some(msg) = status {

@@ -291,7 +291,7 @@ fn setup(mut commands: Commands, config: Res<TurnBasedConfig>) {
         HudLabel::Status,
     ));
     commands.spawn((
-        Text::new("WASD — move/attack   SPACE — end turn"),
+        Text::new("WASD - move/attack   SPACE - end turn"),
         TextFont {
             font_size: 14.0,
             ..default()

@@ -127,7 +127,7 @@ fn setup(
 
     // HUD label
     commands.spawn((
-        Text::new("Custom WGSL shader — animated ripple"),
+        Text::new("Custom WGSL shader - animated ripple"),
         TextFont {
             font_size: 18.0,
             ..default()

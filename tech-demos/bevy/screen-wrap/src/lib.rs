@@ -131,7 +131,7 @@ fn setup(mut commands: Commands) {
     }
 
     commands.spawn((
-        Text::new("WASD — move   objects and player wrap at screen edges"),
+        Text::new("WASD - move   objects and player wrap at screen edges"),
         TextFont {
             font_size: 15.0,
             ..default()

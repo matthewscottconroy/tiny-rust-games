@@ -292,7 +292,7 @@ fn setup(mut commands: Commands, _config: Res<BehaviorTreeConfig>) {
     ));
 
     commands.spawn((
-        Text::new("WASD / Arrows — move player   approach the guard to trigger its BT"),
+        Text::new("WASD / Arrows - move player   approach the guard to trigger its BT"),
         TextFont {
             font_size: 13.0,
             ..default()

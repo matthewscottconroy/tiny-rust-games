@@ -186,7 +186,7 @@ fn setup_menu(mut commands: Commands) {
                 TextColor(Color::WHITE),
             ));
             p.spawn((
-                Text::new("SPACE — start"),
+                Text::new("SPACE - start"),
                 TextFont {
                     font_size: 22.0,
                     ..default()
@@ -220,7 +220,7 @@ fn setup_loading(mut commands: Commands, config: Res<SceneTransitionConfig>) {
         ))
         .with_children(|p| {
             p.spawn((
-                Text::new("Loading…"),
+                Text::new("Loading..."),
                 TextFont {
                     font_size: 32.0,
                     ..default()

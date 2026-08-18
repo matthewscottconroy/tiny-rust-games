@@ -177,7 +177,7 @@ fn setup(mut commands: Commands, config: Res<FixedTimestepConfig>) {
 
     commands.spawn((
         Text::new(format!(
-            "Physics at {} Hz fixed step — rendering uncapped",
+            "Physics at {} Hz fixed step - rendering uncapped",
             config.tick_hz as u32
         )),
         TextFont {

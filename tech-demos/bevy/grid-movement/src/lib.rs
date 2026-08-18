@@ -155,7 +155,7 @@ fn setup(mut commands: Commands, config: Res<GridConfig>) {
     ));
 
     commands.spawn((
-        Text::new("Arrow keys or WASD — move one cell per press"),
+        Text::new("Arrow keys or WASD - move one cell per press"),
         TextFont {
             font_size: 15.0,
             ..default()

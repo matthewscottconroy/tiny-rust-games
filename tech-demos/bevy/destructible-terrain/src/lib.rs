@@ -209,7 +209,7 @@ fn setup(mut commands: Commands, mut walls: ResMut<WallSet>) {
 
     commands.spawn((
         HudText,
-        Text::new("SPACE — attack facing wall"),
+        Text::new("SPACE - attack facing wall"),
         TextFont {
             font_size: 14.0,
             ..default()
@@ -224,7 +224,7 @@ fn setup(mut commands: Commands, mut walls: ResMut<WallSet>) {
     ));
 
     commands.spawn((
-        Text::new("WASD / Arrows — move   SPACE — break wall"),
+        Text::new("WASD / Arrows - move   SPACE - break wall"),
         TextFont {
             font_size: 13.0,
             ..default()

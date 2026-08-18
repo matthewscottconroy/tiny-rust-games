@@ -124,7 +124,7 @@ fn setup(mut commands: Commands) {
     ));
 
     commands.spawn((
-        Text::new("WASD — move   notice layers scroll at different speeds"),
+        Text::new("WASD - move   notice layers scroll at different speeds"),
         TextFont {
             font_size: 15.0,
             ..default()

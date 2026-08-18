@@ -153,6 +153,10 @@ web-serve:
     python3 tools/catalogue.py
     tools/build-web.sh --serve
 
+# Fail if a Bevy demo draws text its ASCII-only font cannot render.
+check-fonts:
+    python3 tools/check-font-coverage.py
+
 # Check this machine can build what the repository needs.
 doctor:
     bash tools/doctor.sh

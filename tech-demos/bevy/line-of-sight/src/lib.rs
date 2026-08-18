@@ -226,7 +226,7 @@ fn setup(mut commands: Commands, mut revealed: ResMut<Revealed>, config: Res<Lin
     commands.insert_resource(PlayerCell(start));
 
     commands.spawn((
-        Text::new("WASD / Arrow keys — move"),
+        Text::new("WASD / Arrow keys - move"),
         TextFont {
             font_size: 16.0,
             ..default()

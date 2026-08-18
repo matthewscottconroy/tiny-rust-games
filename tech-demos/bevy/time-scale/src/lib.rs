@@ -121,7 +121,7 @@ fn setup(mut commands: Commands) {
     ));
 
     commands.spawn((
-        Text::new("Speed: 1.00×  [running]"),
+        Text::new("Speed: 1.00x  [running]"),
         TextFont {
             font_size: 22.0,
             ..default()
@@ -137,7 +137,7 @@ fn setup(mut commands: Commands) {
     ));
 
     commands.spawn((
-        Text::new("1 = 0.25×   2 = 0.5×   3 = 1×   4 = 2×   SPACE = pause"),
+        Text::new("1 = 0.25x   2 = 0.5x   3 = 1x   4 = 2x   SPACE = pause"),
         TextFont {
             font_size: 18.0,
             ..default()
@@ -198,7 +198,7 @@ fn update_hud(virtual_time: Res<Time<Virtual>>, mut query: Query<&mut Text, With
     } else {
         "running"
     };
-    text.0 = format!("Speed: {:.2}×  [{}]", virtual_time.relative_speed(), status);
+    text.0 = format!("Speed: {:.2}x  [{}]", virtual_time.relative_speed(), status);
 }
 
 #[cfg(test)]

@@ -142,7 +142,7 @@ fn setup(mut commands: Commands) {
     ));
 
     commands.spawn((
-        Text::new("WASD — move   survive the horde"),
+        Text::new("WASD - move   survive the horde"),
         TextFont {
             font_size: 16.0,
             ..default()

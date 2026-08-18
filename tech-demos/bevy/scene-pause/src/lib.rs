@@ -164,7 +164,7 @@ fn setup(mut commands: Commands) {
         });
 
     commands.spawn((
-        Text::new("P — toggle pause"),
+        Text::new("P - toggle pause"),
         TextFont {
             font_size: 16.0,
             ..default()

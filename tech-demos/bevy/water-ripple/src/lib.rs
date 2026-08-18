@@ -165,7 +165,7 @@ fn setup(mut commands: Commands, grid: Res<WaterGrid>) {
     commands.spawn(Camera2d);
 
     commands.spawn((
-        Text::new("left-click — add ripple"),
+        Text::new("left-click - add ripple"),
         TextFont {
             font_size: 15.0,
             ..default()

@@ -202,7 +202,7 @@ fn setup(mut commands: Commands, config: Res<NoiseMapConfig>, seed: Res<MapSeed>
     }
 
     commands.spawn((
-        Text::new("SPACE — regenerate with a new seed"),
+        Text::new("SPACE - regenerate with a new seed"),
         TextFont {
             font_size: 15.0,
             ..default()

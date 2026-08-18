@@ -218,7 +218,7 @@ fn setup(mut commands: Commands, abilities: Res<Abilities>, config: Res<AbilityC
     }
 
     commands.spawn((
-        Text::new("Q — Dash (1s)   W — Shield (3s)   E — Nova (8s)"),
+        Text::new("Q - Dash (1s)   W - Shield (3s)   E - Nova (8s)"),
         TextFont {
             font_size: 14.0,
             ..default()

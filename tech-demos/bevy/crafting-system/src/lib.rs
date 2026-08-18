@@ -267,7 +267,7 @@ fn setup(mut commands: Commands) {
     ));
 
     commands.spawn((
-        Text::new("WASD — move   walk into items to collect   C near workbench to craft (1–4)"),
+        Text::new("WASD - move   walk into items to collect   C near workbench to craft (1-4)"),
         TextFont {
             font_size: 13.0,
             ..default()
@@ -398,7 +398,7 @@ fn update_hud(
     let mut lines = format!("Inventory: {inv}\n");
 
     if near {
-        lines.push_str("[ Workbench — press C to ");
+        lines.push_str("[ Workbench - press C to ");
         lines.push_str(if open.0 { "close ]" } else { "open ]" });
         if open.0 {
             lines.push('\n');
@@ -411,11 +411,11 @@ fn update_hud(
                 let inputs: String = recipe
                     .inputs
                     .iter()
-                    .map(|(item, qty)| format!("{}×{}", qty, item.label()))
+                    .map(|(item, qty)| format!("{}x{}", qty, item.label()))
                     .collect::<Vec<_>>()
                     .join(" + ");
                 lines.push_str(&format!(
-                    "  {} [{}] → {}: {inputs}\n",
+                    "  {} [{}] -> {}: {inputs}\n",
                     i + 1,
                     ready,
                     recipe.name

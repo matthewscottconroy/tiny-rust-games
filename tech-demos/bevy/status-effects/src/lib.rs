@@ -229,7 +229,7 @@ fn setup(mut commands: Commands) {
     ));
 
     commands.spawn((
-        Text::new("WASD/Arrows — move   Q Poison   W Slow   E Burn   R Stun   (get close first)"),
+        Text::new("WASD/Arrows - move   Q Poison   W Slow   E Burn   R Stun   (get close first)"),
         TextFont {
             font_size: 13.0,
             ..default()

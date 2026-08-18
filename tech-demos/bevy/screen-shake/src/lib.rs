@@ -104,7 +104,7 @@ fn setup(mut commands: Commands) {
     }
 
     commands.spawn((
-        Text::new("SPACE — add trauma\nR — reset"),
+        Text::new("SPACE - add trauma\nR - reset"),
         TextFont {
             font_size: 22.0,
             ..default()

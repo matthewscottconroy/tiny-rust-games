@@ -108,7 +108,7 @@ impl Card {
             Suit::Clubs | Suit::Spades => Color::srgb(0.15, 0.15, 0.15),
         }
     }
-    /// The card's short label, e.g. `"A♠"` or `"10♥"`.
+    /// The card's short label, e.g. `"AS"` or `"10H"`.
     pub fn label(self) -> String {
         let rank = match self.rank {
             1 => "A".to_string(),
@@ -118,10 +118,10 @@ impl Card {
             n => n.to_string(),
         };
         let suit = match self.suit {
-            Suit::Clubs => "♣",
-            Suit::Diamonds => "♦",
-            Suit::Hearts => "♥",
-            Suit::Spades => "♠",
+            Suit::Clubs => "C",
+            Suit::Diamonds => "D",
+            Suit::Hearts => "H",
+            Suit::Spades => "S",
         };
         format!("{}{}", rank, suit)
     }
@@ -246,7 +246,7 @@ fn setup(mut commands: Commands, deck: Res<Deck>) {
     commands.spawn(Camera2d);
 
     commands.spawn((
-        Text::new("SPACE — draw   click — play"),
+        Text::new("SPACE - draw   click - play"),
         TextFont {
             font_size: 15.0,
             ..default()
