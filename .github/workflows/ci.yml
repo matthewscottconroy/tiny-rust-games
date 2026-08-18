@@ -192,6 +192,105 @@ jobs:
             exit 1
           fi
 
+  # The three rules crates promise reproducibility: the same inputs give the
+  # same game, which is what makes replays and lockstep possible. Every test
+  # asserting that runs on one machine, where it is nearly free. This job asks
+  # the harder question — do Linux, macOS and Windows agree? — because Breakout
+  # is f32 throughout, and floating point is allowed to differ between targets.
+  #
+  # The rules crates have no dependencies at all, so this stays cheap: no system
+  # libraries, no engine, a few seconds of compiling per platform.
+  determinism:
+    name: Determinism (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      - uses: Swatinem/rust-cache@v2
+
+      - name: Test the rules crates
+        shell: bash
+        run: |
+          set -euo pipefail
+          for manifest in snake/snake-lib/Cargo.toml breakout/breakout-lib/Cargo.toml; do
+            echo "::group::$manifest"
+            cargo test --locked --manifest-path "$manifest"
+            echo "::endgroup::"
+          done
+
+      - name: Record state digests
+        shell: bash
+        run: |
+          set -euo pipefail
+          {
+            cargo run --locked --quiet --manifest-path snake/snake-lib/Cargo.toml \
+              --example state-hash
+            cargo run --locked --quiet --manifest-path breakout/breakout-lib/Cargo.toml \
+              --example state-hash
+          } | tee full-${{ matrix.os }}.txt
+          # Keep only the digest lines; the rest is context for a human reading
+          # the log, and would differ harmlessly in formatting.
+          grep -E '^(snake|breakout) ' "full-${{ matrix.os }}.txt" > "digest-${{ matrix.os }}.txt"
+          cat "digest-${{ matrix.os }}.txt"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: digest-${{ matrix.os }}
+          path: digest-${{ matrix.os }}.txt
+
+  # Compares what the three platforms produced. Kept as a separate job so the
+  # failure message can show all three digests at once, which is the only form
+  # in which a mismatch is actually informative.
+  determinism-compare:
+    name: Determinism agrees across platforms
+    needs: determinism
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: digest-*
+          merge-multiple: false
+
+      - name: Compare digests
+        run: |
+          set -euo pipefail
+          echo "Digests reported by each platform:"
+          for dir in digest-*; do
+            echo "--- $dir"
+            cat "$dir"/*.txt
+          done
+
+          failed=""
+          for game in snake breakout; do
+            # One line per platform for this game, deduplicated.
+            distinct=$(grep -h "^$game " digest-*/*.txt | sort -u | wc -l)
+            if [ "$distinct" -ne 1 ]; then
+              failed="$failed $game"
+            fi
+          done
+
+          if [ -n "$failed" ]; then
+            echo
+            echo "Platforms disagree for:$failed"
+            echo
+            echo "This is a real result, not necessarily a bug to paper over."
+            echo "Snake is integer-only and must agree everywhere; if it does"
+            echo "not, the rules depend on something they should not."
+            echo "Breakout is f32, where cross-target differences are allowed."
+            echo "If Breakout is the one that differs, the honest fix is to"
+            echo "document that its replays are portable only within a target,"
+            echo "not to force the digests to match."
+            exit 1
+          fi
+          echo
+          echo "All platforms agree."
+
   # The games are playable in a browser, which only works because their rules
   # crates have no engine dependency. This job keeps that true: a change that
   # quietly makes a game unbuildable for wasm fails here rather than at deploy.

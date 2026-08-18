@@ -98,3 +98,30 @@ reachable only through full games that never asserted *how* the ball bounced.
 The 24 that remain are exact-boundary comparisons and layout constants whose
 mutations are physically indistinguishable without pinning float literals, which
 would trade readability for a number.
+
+## Is it deterministic across machines?
+
+The library steps a fixed timestep and reads no clock, so the same inputs give
+the same game — on one machine. That is what
+`identical_input_produces_bit_identical_physics` asserts, and it is the weaker
+half of the claim. Every position and velocity here is `f32`, and floating point
+is permitted to differ between targets once a compiler contracts a multiply-add
+or picks a different instruction sequence, so "reproducible" needs testing
+*across* machines before it can be relied on for replays or lockstep.
+
+`cargo run -p breakout-lib --example state-hash` plays 20 000 steps under a
+fixed policy and prints a digest of the final state, hashing the *bit patterns*
+of the floats rather than their printed values. `snake-lib` has the same probe,
+as the integer-only control: if the two ever disagree in different ways, that
+separates a floating-point property from a plain bug.
+
+CI runs both on Linux, macOS and Windows and fails if the three disagree. So
+far they do not, and the digest is also unchanged between debug and release —
+20 000 steps of physics through two very different optimisation pipelines. That
+is expected rather than lucky: Rust does not enable fast-math or contract
+multiply-adds by default, so `f32` arithmetic follows IEEE-754 exactly.
+
+If that ever stops holding on some target, the honest response is to document
+that Breakout replays are portable within a target rather than to force the
+digests to agree — the same principle that made the `spatial-partitioning`
+benchmark worth running when it falsified its own demo's documentation.

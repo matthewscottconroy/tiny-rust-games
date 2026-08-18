@@ -120,6 +120,12 @@ pull request. It enforces, across every crate:
   silently updated;
 - that all three games still build for `wasm32-unknown-unknown`;
 - that the generated catalogue is not stale;
+- that Linux, macOS and Windows produce **identical game state** from identical
+  inputs. Both rules crates ship a `state-hash` example that digests the bit
+  patterns of a finished game; CI compares the three platforms and fails if they
+  disagree. Snake is integer-only and must agree; Breakout is `f32` throughout,
+  where cross-target differences are permitted, which is exactly why it is
+  measured rather than assumed;
 - that every Godot project actually **loads** and registers its Rust classes.
   Compiling proves less than it looks: a `.gdextension` naming a library that
   does not exist, or a scene referencing an unregistered class, compiles fine
