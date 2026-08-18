@@ -25,6 +25,15 @@ cd tiny-rust-games
 just install-hooks     # or: git config core.hooksPath .githooks
 ```
 
+```bash
+just doctor            # check the toolchain, system libraries and hooks
+```
+
+`just doctor` is worth running first. It builds nothing and takes about a
+second, and it catches the setup problems that are confusing the first time —
+most of all the missing wayland/alsa/udev *headers*, which surface as a
+`wayland-sys` build-script panic that reads like a Rust error and is not.
+
 **Run `just install-hooks` before your first commit.** Git ignores `.githooks/`
 until told about it, so a fresh clone has no hooks and you will find out what CI
 thinks several minutes later than you needed to.

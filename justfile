@@ -149,6 +149,10 @@ web-serve:
     python3 tools/catalogue.py
     tools/build-web.sh --serve
 
+# Check this machine can build what the repository needs.
+doctor:
+    bash tools/doctor.sh
+
 # Regenerate web/catalogue.html from the demos' own module docs.
 catalogue:
     python3 tools/catalogue.py

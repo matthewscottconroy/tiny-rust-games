@@ -217,7 +217,8 @@ sudo dnf install -y alsa-lib-devel systemd-devel wayland-devel libxkbcommon-deve
 
 Missing wayland headers surface as a `wayland-sys` build-script panic reading
 `Package 'wayland-client' was not found`, which is easy to mistake for a Rust
-problem.
+problem. `just doctor` checks for all of them, plus the toolchain, the wasm
+target and the git hooks, without building anything.
 
 If a bracket-lib demo fails while building its transitive `expat-sys`
 dependency under CMake ≥ 4.0, build with `CMAKE_POLICY_VERSION_MINIMUM=3.5`.
