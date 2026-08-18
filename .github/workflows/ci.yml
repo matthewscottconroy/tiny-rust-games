@@ -34,6 +34,7 @@ jobs:
             tic-tac-toe/*/Cargo.toml \
             snake/snake-lib/Cargo.toml \
             snake/snake-godot/Cargo.toml \
+            snake/snake-lockstep/Cargo.toml \
             breakout/breakout-lib/Cargo.toml \
             breakout/breakout-godot/Cargo.toml; do
             if ! cargo fmt --manifest-path "$manifest" --all --check; then
@@ -179,6 +180,7 @@ jobs:
             tic-tac-toe/tic-tac-toe-cli/Cargo.toml \
             tic-tac-toe/tic-tac-toe-brackets/Cargo.toml \
             snake/snake-lib/Cargo.toml \
+            snake/snake-lockstep/Cargo.toml \
             breakout/breakout-lib/Cargo.toml \
             tech-demos/brackets/*/Cargo.toml; do
             echo "::group::$manifest"

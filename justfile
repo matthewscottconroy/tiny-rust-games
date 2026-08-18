@@ -25,7 +25,8 @@ fmt:
     cargo fmt --manifest-path {{bevy_manifest}} --all
     @for m in tech-demos/godot/*/Cargo.toml tech-demos/brackets/*/Cargo.toml tic-tac-toe/*/Cargo.toml \
              snake/snake-lib/Cargo.toml snake/snake-godot/Cargo.toml \
-             breakout/breakout-lib/Cargo.toml breakout/breakout-godot/Cargo.toml; do \
+             breakout/breakout-lib/Cargo.toml breakout/breakout-godot/Cargo.toml \
+             snake/snake-lockstep/Cargo.toml; do \
         cargo fmt --manifest-path "$m" --all; \
     done
 
@@ -34,7 +35,8 @@ fmt-check:
     @failed=""; \
     for m in {{bevy_manifest}} tech-demos/godot/*/Cargo.toml tech-demos/brackets/*/Cargo.toml \
              tic-tac-toe/*/Cargo.toml snake/snake-lib/Cargo.toml snake/snake-godot/Cargo.toml \
-             breakout/breakout-lib/Cargo.toml breakout/breakout-godot/Cargo.toml; do \
+             breakout/breakout-lib/Cargo.toml breakout/breakout-godot/Cargo.toml \
+             snake/snake-lockstep/Cargo.toml; do \
         cargo fmt --manifest-path "$m" --all --check >/dev/null 2>&1 || failed="$failed $m"; \
     done; \
     if [ -n "$failed" ]; then echo "Unformatted:$failed"; echo "Run 'just fmt'."; exit 1; fi; \
@@ -61,7 +63,7 @@ clippy-misc:
     @failed=""; \
     for m in tic-tac-toe/tic-tac-toe-lib/Cargo.toml tic-tac-toe/tic-tac-toe-cli/Cargo.toml \
              tic-tac-toe/tic-tac-toe-brackets/Cargo.toml snake/snake-lib/Cargo.toml \
-             breakout/breakout-lib/Cargo.toml \
+             snake/snake-lockstep/Cargo.toml breakout/breakout-lib/Cargo.toml \
              tech-demos/brackets/*/Cargo.toml; do \
         CMAKE_POLICY_VERSION_MINIMUM=3.5 cargo clippy --locked --manifest-path "$m" --all-targets -- -D warnings \
             || failed="$failed $m"; \
@@ -89,7 +91,7 @@ test-misc:
     @failed=""; \
     for m in tic-tac-toe/tic-tac-toe-lib/Cargo.toml tic-tac-toe/tic-tac-toe-cli/Cargo.toml \
              tic-tac-toe/tic-tac-toe-brackets/Cargo.toml snake/snake-lib/Cargo.toml \
-             breakout/breakout-lib/Cargo.toml \
+             snake/snake-lockstep/Cargo.toml breakout/breakout-lib/Cargo.toml \
              tech-demos/brackets/*/Cargo.toml; do \
         CMAKE_POLICY_VERSION_MINIMUM=3.5 cargo test --locked --manifest-path "$m" \
             || failed="$failed $m"; \

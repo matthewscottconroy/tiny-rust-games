@@ -33,7 +33,7 @@ games.
 | [`tech-demos/bevy/`](tech-demos/bevy/) | 82 [Bevy](https://bevyengine.org/) `0.18` demos, each isolating one engine concept or gameplay system. A single Cargo workspace — see the [Bevy demo index](tech-demos/bevy/README.md). |
 | [`tech-demos/godot/`](tech-demos/godot/) | 67 [Godot](https://godotengine.org/) `4.3` demos with game logic in Rust via [gdext](https://github.com/godot-rust/gdext) `0.5` — see the [Godot demo index](tech-demos/godot/README.md). |
 | [`tech-demos/brackets/`](tech-demos/brackets/) | A [bracket-lib](https://github.com/amethyst/bracket-lib) mouse-control demo. |
-| [`snake/`](snake/) | The second game: an engine-agnostic `snake-lib` with `-bevy` and `-godot` front-ends. Where tic-tac-toe proves the boundary for turn-based play, this proves it for **real-time** — the library owns the rules, never the clock. |
+| [`snake/`](snake/) | The second game: an engine-agnostic `snake-lib` with `-bevy` and `-godot` front-ends. Where tic-tac-toe proves the boundary for turn-based play, this proves it for **real-time** — the library owns the rules, never the clock. `snake-lockstep` adds two-player netcode on top, which only works because the rules are deterministic. |
 | [`breakout/`](breakout/) | The third game: continuous physics on a fixed timestep, with `-bevy` and `-godot` front-ends. Chosen because it looked like the one that would break the pattern — it did not, but it revealed that continuous state needs interpolated *rendering*, which discrete state does not. |
 | [`tic-tac-toe/`](tic-tac-toe/) | The reference "well-known game": an engine-agnostic `tic-tac-toe-lib` core with **four** front-ends — `-cli`, `-brackets`, `-bevy`, and `-godot` (goals #2 and #4 in practice). |
 
@@ -51,6 +51,16 @@ snake moves because neither one decides. Because nothing else enters a game,
 [`snake-lib`](snake/) can record one: a replay is a board size, a seed and the
 turns queued on each tick, which is a few hundred bytes of readable text that
 reproduces a death exactly.
+
+Determinism turns out to be load-bearing rather than merely tidy.
+[`snake-lockstep`](snake/snake-lockstep/) is two-player Snake where nothing
+about the game crosses the wire — each peer simulates both boards and the peers
+exchange only inputs, nine bytes for a turn. That is only possible because
+`step()` reads no clock, the RNG is seeded and part of the state, and `Ticker`
+counts whole microseconds instead of accumulating `f32`. Peers compare
+checksums, because in lockstep there is no recovery from divergence, only
+detection — and silent divergence is far worse, since both players keep playing
+different games.
 
 Breakout is the case that was supposed to break this. Floating-point positions,
 floating-point velocities, and two engines that ship physics of their own. It

@@ -1,0 +1,14 @@
+[package]
+name = "snake-lockstep"
+version = "0.1.0"
+edition = "2024"
+license = "MIT"
+repository = "https://github.com/matthewscottconroy/tiny-rust-games"
+description = "Two-player Snake over lockstep networking, built on the deterministic engine-agnostic rules"
+
+[dependencies]
+snake-lib = { path = "../snake-lib" }
+
+# Public items must carry `///` docs; CI runs clippy with `-D warnings`.
+[lints.rust]
+missing_docs = "warn"

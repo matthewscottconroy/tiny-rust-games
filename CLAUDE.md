@@ -37,7 +37,7 @@ a real-time game, copy that split.
 | `tech-demos/godot/` | 67 **standalone crates** (see below), Rust logic via gdext. |
 | `tech-demos/brackets/` | bracket-lib demos. |
 | `tic-tac-toe/` | Engine-agnostic `-lib` core with `-cli`, `-brackets`, `-bevy`, `-godot` frontends. |
-| `snake/` | The real-time counterpart: `snake-lib` + `-bevy` + `-godot`. Also replays. |
+| `snake/` | The real-time counterpart: `snake-lib` + `-bevy` + `-godot`. Also replays and `snake-lockstep` (two-player netcode). |
 | `breakout/` | Continuous physics on a fixed timestep: `breakout-lib` + `-bevy` + `-godot`. |
 
 Read the conventions doc for the engine you are touching **before** writing a
