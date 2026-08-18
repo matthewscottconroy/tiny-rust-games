@@ -43,10 +43,17 @@
 //! turn 5 down
 //! turn 12 left
 //! ```
+//!
+//! A replay is read from outside the program, so [`Replay::from_text`] treats
+//! every field as untrusted: `board` must lie within
+//! [`MIN_BOARD_SIZE`]..=[`MAX_BOARD_SIZE`], turns must be in ascending tick
+//! order, and anything else is a [`ReplayError`] rather than a panic. The rule
+//! is that whatever the parser accepts must be playable — see
+//! `tests/replay_fuzz.rs`, which exists to keep that true.
 
 use core::fmt::Write as _;
 
-use crate::{Direction, SnakeGame};
+use crate::{Direction, MAX_BOARD_SIZE, MIN_BOARD_SIZE, SnakeGame};
 
 /// Why a replay could not be parsed.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -64,6 +71,14 @@ pub enum ReplayError {
     },
     /// The file parsed but never declared a board size.
     MissingBoard,
+    /// The declared board is outside [`MIN_BOARD_SIZE`]..=[`MAX_BOARD_SIZE`]
+    /// and cannot be played.
+    InvalidBoard {
+        /// The declared width.
+        width: i32,
+        /// The declared height.
+        height: i32,
+    },
     /// Turns must be recorded in tick order; this one went backwards.
     OutOfOrderTurn {
         /// The tick that appeared after a later one.
@@ -78,6 +93,11 @@ impl core::fmt::Display for ReplayError {
             Self::UnsupportedVersion(v) => write!(f, "unsupported replay version {v}"),
             Self::BadLine { line, text } => write!(f, "line {line}: cannot parse {text:?}"),
             Self::MissingBoard => write!(f, "replay declares no board size"),
+            Self::InvalidBoard { width, height } => write!(
+                f,
+                "replay declares a {width}x{height} board, but the limits are \
+                 {MIN_BOARD_SIZE}x{MIN_BOARD_SIZE} to {MAX_BOARD_SIZE}x{MAX_BOARD_SIZE}"
+            ),
             Self::OutOfOrderTurn { tick } => {
                 write!(f, "turn at tick {tick} is out of order")
             }
@@ -102,7 +122,20 @@ pub struct Replay {
 
 impl Replay {
     /// Starts an empty recording for a game of this shape.
+    ///
+    /// # Panics
+    /// Panics on a board smaller than [`MIN_BOARD_SIZE`] square, matching
+    /// [`SnakeGame::new`]. These are your own numbers, so a mistake here is a
+    /// bug rather than bad input; [`from_text`](Self::from_text) returns
+    /// [`ReplayError::InvalidBoard`] instead, because its numbers come from a
+    /// file someone else wrote.
     pub fn recording(width: i32, height: i32, seed: u64) -> Self {
+        assert!(
+            (MIN_BOARD_SIZE..=MAX_BOARD_SIZE).contains(&width)
+                && (MIN_BOARD_SIZE..=MAX_BOARD_SIZE).contains(&height),
+            "board must be {MIN_BOARD_SIZE}x{MIN_BOARD_SIZE} to \
+             {MAX_BOARD_SIZE}x{MAX_BOARD_SIZE}, got {width}x{height}"
+        );
         Self {
             width,
             height,
@@ -261,6 +294,16 @@ impl Replay {
         }
 
         let (width, height) = board.ok_or(ReplayError::MissingBoard)?;
+        // A replay arrives from outside the program — a bug report, a file on
+        // disk, a paste into an issue — so a board `SnakeGame::new` would
+        // reject has to be an error here. Accepting it and panicking later, at
+        // the first `play`, turns someone else's malformed file into a crash in
+        // your process, a long way from the line that actually caused it.
+        if !(MIN_BOARD_SIZE..=MAX_BOARD_SIZE).contains(&width)
+            || !(MIN_BOARD_SIZE..=MAX_BOARD_SIZE).contains(&height)
+        {
+            return Err(ReplayError::InvalidBoard { width, height });
+        }
         Ok(Self {
             width,
             height,

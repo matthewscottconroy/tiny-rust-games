@@ -312,6 +312,23 @@ pub struct SnakeGame {
     rng: Rng,
 }
 
+/// The smallest playable board edge, in cells.
+///
+/// A 1-wide board has no room for the snake to turn, and a 0-wide one has no
+/// cells at all. [`Replay::from_text`](crate::Replay::from_text) checks incoming
+/// files against this rather than letting [`SnakeGame::new`] panic on them.
+pub const MIN_BOARD_SIZE: i32 = 2;
+
+/// The largest board edge, in cells.
+///
+/// Nothing about Snake needs an upper bound, but food placement counts free
+/// cells as `width * height` in `i32`. A 46_341-square board overflows that and
+/// panics, so an unbounded edge turns a plausible-looking number in a replay
+/// file into a crash. The cap keeps the product comfortably inside `i32` and
+/// keeps the O(board) food scan quick; it is some three orders of magnitude
+/// larger than any board here (the demos use 24x18).
+pub const MAX_BOARD_SIZE: i32 = 4096;
+
 impl SnakeGame {
     /// Starts a game on a `width`x`height` board.
     ///
@@ -323,8 +340,12 @@ impl SnakeGame {
     /// Panics if either dimension is less than 2.
     pub fn new(width: i32, height: i32, seed: u64) -> Self {
         assert!(
-            width >= 2 && height >= 2,
-            "board must be at least 2x2, got {width}x{height}"
+            width >= MIN_BOARD_SIZE && height >= MIN_BOARD_SIZE,
+            "board must be at least {MIN_BOARD_SIZE}x{MIN_BOARD_SIZE}, got {width}x{height}"
+        );
+        assert!(
+            width <= MAX_BOARD_SIZE && height <= MAX_BOARD_SIZE,
+            "board must be at most {MAX_BOARD_SIZE}x{MAX_BOARD_SIZE}, got {width}x{height}"
         );
         let mut body = VecDeque::new();
         body.push_back(Coord::new(width / 2, height / 2));

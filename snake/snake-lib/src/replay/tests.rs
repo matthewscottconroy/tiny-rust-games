@@ -308,3 +308,65 @@ fn a_hand_written_file_may_repeat_a_tick_and_the_last_wins() {
     }
     assert_eq!(played.direction(), direct.direction());
 }
+
+// ── Hostile input ────────────────────────────────────────────────────────────
+
+#[test]
+fn a_board_too_small_to_play_is_rejected_rather_than_panicking() {
+    // Found by fuzzing. `from_text` used to accept any i32 here, so a corrupt
+    // or hostile file parsed cleanly and then panicked inside `SnakeGame::new`
+    // at the first `play` — turning someone else's malformed bug report into a
+    // crash in the process that opened it.
+    for (w, h) in [(0, 0), (1, 1), (-5, -5), (1, 20), (20, 0)] {
+        let text = format!("snake-replay 1\nboard {w} {h}\nseed 1\n");
+        assert_eq!(
+            Replay::from_text(&text),
+            Err(ReplayError::InvalidBoard {
+                width: w,
+                height: h
+            }),
+            "{w}x{h} should be refused"
+        );
+    }
+}
+
+#[test]
+fn the_smallest_legal_board_is_still_accepted() {
+    // The boundary itself must stay playable, or the check is too strict.
+    let text = format!("snake-replay 1\nboard {MIN_BOARD_SIZE} {MIN_BOARD_SIZE}\nseed 1\n");
+    let replay = Replay::from_text(&text).expect("the minimum board is legal");
+    assert_eq!(replay.width(), MIN_BOARD_SIZE);
+    let _ = replay.play(4);
+}
+
+#[test]
+fn an_invalid_board_explains_itself() {
+    let err = Replay::from_text("snake-replay 1\nboard 1 1\nseed 0\n").unwrap_err();
+    let text = err.to_string();
+    assert!(text.contains("1x1"), "{text}");
+    assert!(text.contains("limits"), "{text}");
+}
+
+#[test]
+fn a_board_too_large_to_play_is_rejected_rather_than_panicking() {
+    // The upper bound exists for a different reason from the lower one: a
+    // board of 46_341 squared overflows the `width * height` that food
+    // placement counts with, so this used to be an arithmetic panic rather
+    // than a refusal.
+    let too_big = MAX_BOARD_SIZE + 1;
+    let text = format!("snake-replay 1\nboard {too_big} 10\nseed 1\n");
+    assert_eq!(
+        Replay::from_text(&text),
+        Err(ReplayError::InvalidBoard {
+            width: too_big,
+            height: 10
+        })
+    );
+}
+
+#[test]
+fn the_largest_legal_board_is_still_accepted() {
+    let text = format!("snake-replay 1\nboard {MAX_BOARD_SIZE} {MIN_BOARD_SIZE}\nseed 1\n");
+    let replay = Replay::from_text(&text).expect("the maximum board is legal");
+    assert_eq!(replay.width(), MAX_BOARD_SIZE);
+}

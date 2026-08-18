@@ -14,3 +14,6 @@ description = "Engine-agnostic Breakout rules: continuous physics on a fixed tim
 # Public items must carry `///` docs; CI runs clippy with `-D warnings`.
 [lints.rust]
 missing_docs = "warn"
+
+[dev-dependencies]
+proptest = "1"
