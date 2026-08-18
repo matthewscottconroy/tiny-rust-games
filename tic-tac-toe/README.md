@@ -11,8 +11,36 @@ independent of any game library.
 | `tic-tac-toe-brackets` | A mouse-driven version rendered with [bracket-lib](https://github.com/amethyst/bracket-lib). |
 | `tic-tac-toe-bevy` | The same game in [Bevy](https://bevyengine.org/), driven by ECS systems. |
 | `tic-tac-toe-godot` | The same game in [Godot](https://godotengine.org/), driven by scene-tree callbacks. |
+| `tic-tac-toe-web` | The same game with **no engine at all**: a 2D canvas and a click handler, via `wasm-bindgen`. |
 
-Four frontends over one set of rules. They span three genuinely different
+## The frontend with no engine
+
+`tic-tac-toe-web` is the one that makes the argument hardest to wave away. A
+rules crate that works under four engines might just be a crate that abstracts
+over four engines. This one works under *none*: it draws to a raw
+`CanvasRenderingContext2d` and installs a single click listener, and
+`tic-tac-toe-lib` did not change by a line to allow it.
+
+It also puts a number on what an engine costs. The same game, the same rules:
+
+| Build | WebAssembly shipped |
+|-------|--------------------|
+| `tic-tac-toe-bevy` | ~25 MB |
+| `tic-tac-toe-web` | 28 KB |
+
+That is not an argument against Bevy — the 25 MB buys an ECS, a renderer, asset
+loading, input abstraction and a great deal more, and Snake and Breakout use
+things this page has no equivalent for. It is an argument for knowing which one
+a given game actually needs, which you can only weigh if the rules are not
+welded to either answer.
+
+Note what *is* absent from `tic-tac-toe-web`: there is no game loop. A
+turn-based game does not need one — the browser calls the listener when
+something is clicked and nothing changes in between. Snake and Breakout would
+need `requestAnimationFrame` and a `Ticker`. The shape of the frontend follows
+from the shape of the game, not from the engine.
+
+Five frontends over one set of rules. They span three genuinely different
 architectures — a blocking `read_line` loop, an ECS where systems run every
 frame, and a scene tree that calls you back — which is the point: if the
 boundary were wrong, one of them would have forced a rule out of the library.

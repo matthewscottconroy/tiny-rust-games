@@ -35,12 +35,21 @@ games.
 | [`tech-demos/brackets/`](tech-demos/brackets/) | A [bracket-lib](https://github.com/amethyst/bracket-lib) mouse-control demo. |
 | [`snake/`](snake/) | The second game: an engine-agnostic `snake-lib` with `-bevy` and `-godot` front-ends. Where tic-tac-toe proves the boundary for turn-based play, this proves it for **real-time** — the library owns the rules, never the clock. `snake-lockstep` adds two-player netcode on top, which only works because the rules are deterministic. |
 | [`breakout/`](breakout/) | The third game: continuous physics on a fixed timestep, with `-bevy` and `-godot` front-ends. Chosen because it looked like the one that would break the pattern — it did not, but it revealed that continuous state needs interpolated *rendering*, which discrete state does not. |
-| [`tic-tac-toe/`](tic-tac-toe/) | The reference "well-known game": an engine-agnostic `tic-tac-toe-lib` core with **four** front-ends — `-cli`, `-brackets`, `-bevy`, and `-godot` (goals #2 and #4 in practice). |
+| [`tic-tac-toe/`](tic-tac-toe/) | The reference "well-known game": an engine-agnostic `tic-tac-toe-lib` core with **five** front-ends — `-cli`, `-brackets`, `-bevy`, `-godot`, and `-web`, the last of which uses no game engine at all (goals #2 and #4 in practice). |
 
 The same tic-tac-toe rules drive a terminal loop, an ASCII console, Bevy's ECS,
 and Godot's scene tree without any frontend containing a rule of the game — that
 is goal #4 tested against architectures that genuinely differ, rather than
 against two variations on a terminal.
+
+The fifth frontend uses **no engine at all**: `tic-tac-toe-web` draws to a raw
+2D canvas through `wasm-bindgen`, and the rules crate did not change to allow
+it. A library that works under four engines might merely be one that abstracts
+over four engines; one that also works with none is a library that genuinely
+does not know what an engine is. It is also a legible price list — the same
+game, the same rules, is **28 KB** of WebAssembly without an engine and roughly
+**25 MB** with one. Both are the right answer to different questions, and you
+can [play them side by side](web/index.html).
 
 Snake takes it further. A turn-based game only ever needs the library when the
 player acts; a real-time one moves on its own, so *something* must own the

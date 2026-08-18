@@ -1,0 +1,29 @@
+[package]
+name = "tic-tac-toe-web"
+version = "0.1.0"
+edition = "2024"
+license = "MIT"
+repository = "https://github.com/matthewscottconroy/tiny-rust-games"
+description = "Tic-tac-toe drawn on a canvas with no game engine at all, over the shared engine-agnostic rules"
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+tic-tac-toe-lib = { path = "../tic-tac-toe-lib" }
+wasm-bindgen = "0.2"
+
+[dependencies.web-sys]
+version = "0.3"
+features = [
+    "CanvasRenderingContext2d",
+    "Document",
+    "Element",
+    "HtmlCanvasElement",
+    "MouseEvent",
+    "Window",
+]
+
+# Public items must carry `///` docs; CI runs clippy with `-D warnings`.
+[lints.rust]
+missing_docs = "warn"

@@ -179,6 +179,7 @@ jobs:
             tic-tac-toe/tic-tac-toe-lib/Cargo.toml \
             tic-tac-toe/tic-tac-toe-cli/Cargo.toml \
             tic-tac-toe/tic-tac-toe-brackets/Cargo.toml \
+            tic-tac-toe/tic-tac-toe-web/Cargo.toml \
             snake/snake-lib/Cargo.toml \
             snake/snake-lockstep/Cargo.toml \
             breakout/breakout-lib/Cargo.toml \
@@ -324,6 +325,11 @@ jobs:
           cargo build --locked --target wasm32-unknown-unknown
           --manifest-path tech-demos/bevy/Cargo.toml
           -p snake-bevy -p tic-tac-toe-bevy -p breakout-bevy
+
+      - name: The engine-free frontend also builds for wasm
+        run: |
+          cargo build --locked --target wasm32-unknown-unknown --release \
+            --manifest-path tic-tac-toe/tic-tac-toe-web/Cargo.toml
 
   # The catalogue is generated from each demo's own module docs. Regenerating
   # and diffing catches a demo added without refreshing it, which is the only

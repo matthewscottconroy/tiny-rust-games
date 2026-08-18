@@ -36,7 +36,7 @@ a real-time game, copy that split.
 | `tech-demos/bevy/` | One Cargo **workspace**, 82 demos + `_template`. Bevy compiles once. |
 | `tech-demos/godot/` | 67 **standalone crates** (see below), Rust logic via gdext. |
 | `tech-demos/brackets/` | bracket-lib demos. |
-| `tic-tac-toe/` | Engine-agnostic `-lib` core with `-cli`, `-brackets`, `-bevy`, `-godot` frontends. |
+| `tic-tac-toe/` | Engine-agnostic `-lib` core with `-cli`, `-brackets`, `-bevy`, `-godot`, `-web` frontends. `-web` uses no engine: raw canvas via wasm-bindgen. |
 | `snake/` | The real-time counterpart: `snake-lib` + `-bevy` + `-godot`. Also replays and `snake-lockstep` (two-player netcode). |
 | `breakout/` | Continuous physics on a fixed timestep: `breakout-lib` + `-bevy` + `-godot`. |
 

@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tic-Tac-Toe with no engine — tiny-rust-games</title>
+<style>
+  :root { --bg: #14161a; --text: #e8eaed; --dim: #9aa0a6; --accent: #a3be8c; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text); min-height: 100vh;
+         display: flex; flex-direction: column; align-items: center;
+         font: 15px/1.5 ui-sans-serif, system-ui, -apple-system, sans-serif; }
+  header { width: 100%; max-width: 900px; padding: .9rem 1.5rem .4rem;
+           display: flex; align-items: baseline; gap: 1rem; flex-wrap: wrap; }
+  h1 { font-size: 1.2rem; margin: 0; }
+  a { color: var(--accent); }
+  .hint { color: var(--dim); font-size: .9rem; }
+  canvas { display: block; margin: .5rem auto; border-radius: 8px; max-width: 100%; }
+  #status { color: var(--text); font-size: 1.05rem; min-height: 1.6em; }
+  footer { color: var(--dim); font-size: .85rem; padding: 0 1.5rem 2rem;
+           max-width: 640px; }
+  code { color: var(--text); }
+</style>
+</head>
+<body>
+<header>
+  <h1>Tic-Tac-Toe, with no engine</h1>
+  <span class="hint">Click a cell · click again after a result to restart</span>
+  <span style="flex:1"></span>
+  <a href="../">← all games</a>
+</header>
+
+<canvas id="board"></canvas>
+<p id="status">Loading…</p>
+
+<footer>
+  This is the same <code>tic-tac-toe-lib</code> that drives the terminal, the
+  bracket-lib console, Bevy's ECS and Godot's scene tree — here with no game
+  engine at all, drawing to a 2D canvas through <code>wasm-bindgen</code>. The
+  rules crate is unchanged and this page contains no rule of the game: whether a
+  square is playable, who has won and whose turn it is are all answers the
+  library gives.
+  <br><br>
+  The <a href="../tic-tac-toe/">Bevy build of this same game</a> is next door.
+  Comparing the two downloads is the point: an engine buys you an ECS, a
+  renderer, asset loading and an input abstraction, and it is worth having when
+  you need them. When you do not, this is what the same game costs.
+</footer>
+
+<script type="module">
+  import init from "./tic_tac_toe_web.js";
+  const status = document.getElementById("status");
+  try {
+    await init();
+  } catch (err) {
+    status.textContent = "This game could not start: " + String(err);
+  }
+</script>
+</body>
+</html>

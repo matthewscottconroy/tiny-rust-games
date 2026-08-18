@@ -2,10 +2,15 @@
 #
 # Build the browser-playable games into web/dist/.
 #
-# Only the Bevy frontends are built: Bevy targets wasm, while gdext and
-# bracket-lib do not, and the terminal frontend has nothing to render into.
-# That is the point of the split — the same rules crate compiles for the web
-# because it never depended on an engine in the first place.
+# The Bevy frontends are built here because Bevy targets wasm, while gdext and
+# bracket-lib do not and the terminal frontend has nothing to render into. That
+# is the point of the split — the same rules crate compiles for the web because
+# it never depended on an engine in the first place.
+#
+# `tic-tac-toe-web` is built the same way but is not a Bevy crate at all: it is
+# the same rules drawn on a raw canvas with no engine. It ships alongside the
+# Bevy build of the same game so the two can be compared, and the comparison is
+# stark — tens of kilobytes against tens of megabytes.
 #
 #   tools/build-web.sh          # build everything into web/dist
 #   tools/build-web.sh --serve  # ...then serve it on http://localhost:8080
@@ -50,6 +55,13 @@ for entry in "${games[@]}"; do
     --manifest-path "$manifest" -p "${entry%%:*}"
 done
 
+# The engine-free frontend: its own crate, its own target dir, ordinary release
+# profile. It has no Bevy in it, so none of the fat-LTO memory caution above
+# applies and it builds in seconds.
+echo "==> building tic-tac-toe-web (no engine) for wasm32"
+cargo build --locked --target wasm32-unknown-unknown --release \
+  --manifest-path tic-tac-toe/tic-tac-toe-web/Cargo.toml
+
 rm -rf "$dist"
 mkdir -p "$dist"
 cp web/index.html "$dist/"
@@ -83,6 +95,23 @@ for entry in "${games[@]}"; do
   echo "    $slug: $size"
 done
 
+# --- The engine-free frontend ------------------------------------------------
+#
+# Deliberately published next to the Bevy build of the same game. Both play the
+# same tic-tac-toe from the same rules crate; one carries a whole engine and one
+# carries a canvas and a click handler.
+echo "==> tic-tac-toe-no-engine"
+mkdir -p "$dist/tic-tac-toe-no-engine"
+wasm-bindgen --no-typescript --target web \
+  --out-dir "$dist/tic-tac-toe-no-engine" --out-name tic_tac_toe_web \
+  "tic-tac-toe/tic-tac-toe-web/target/wasm32-unknown-unknown/release/tic_tac_toe_web.wasm"
+if command -v wasm-opt >/dev/null; then
+  wasm-opt -Os "$dist/tic-tac-toe-no-engine/tic_tac_toe_web_bg.wasm" \
+    -o "$dist/tic-tac-toe-no-engine/tic_tac_toe_web_bg.wasm"
+fi
+cp web/no-engine.html "$dist/tic-tac-toe-no-engine/index.html"
+echo "    tic-tac-toe-no-engine: $(du -h "$dist/tic-tac-toe-no-engine/tic_tac_toe_web_bg.wasm" | cut -f1)"
+
 # --- API documentation -------------------------------------------------------
 #
 # Every demo carries module-level rustdoc and `///` docs on every public item
@@ -106,7 +135,9 @@ else
            breakout/breakout-lib/Cargo.toml \
            snake/snake-godot/Cargo.toml \
            breakout/breakout-godot/Cargo.toml \
-           tic-tac-toe/tic-tac-toe-godot/Cargo.toml; do
+           tic-tac-toe/tic-tac-toe-godot/Cargo.toml \
+           tic-tac-toe/tic-tac-toe-web/Cargo.toml \
+           snake/snake-lockstep/Cargo.toml; do
     CARGO_TARGET_DIR="$doc_target" cargo doc --locked --no-deps \
       --manifest-path "$m" --quiet
   done
