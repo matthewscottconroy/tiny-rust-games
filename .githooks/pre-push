@@ -15,6 +15,21 @@ set -uo pipefail
 repo_root=$(git rev-parse --show-toplevel)
 cd "$repo_root" || exit 1
 
+# Per-clone environment, if there is one. This file lives inside .git, so it is
+# never committed and never shared — which is exactly what makes it the right
+# place for settings that are true of one machine rather than of the project: a
+# pkg-config shim for a distro that packages a library differently, a toolchain
+# path, a proxy. Most clones will not have one.
+#
+# Without this, the only way to give the hook an environment is to remember to
+# prefix every `git push`, which is precisely the kind of thing nobody
+# remembers — and the failure looks like a code failure.
+hooks_env="$(git rev-parse --git-common-dir 2>/dev/null || echo .git)/hooks-env"
+if [ -f "$hooks_env" ]; then
+  # shellcheck disable=SC1090
+  . "$hooks_env"
+fi
+
 # bracket-lib's bundled expat-sys fails under CMake >= 4.0 without this.
 export CMAKE_POLICY_VERSION_MINIMUM=3.5
 # gdext compiles once for all Godot crates instead of once each.

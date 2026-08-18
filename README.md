@@ -194,6 +194,10 @@ push actually touches. It falls back to the whole suite when a shared file
 changes (`tech-demos/bevy/Cargo.toml`, the workflow, the justfile, or
 `tic-tac-toe-lib`), since those affect everything.
 
+If a machine needs extra environment to build, `.git/hooks-env` is sourced by
+pre-push when it exists. It is inside `.git`, so it is never committed — the
+right place for a setting that belongs to one machine rather than the project.
+
 Both are bypassable with `--no-verify`, and neither replaces CI — they just
 stop the cheap mistakes from getting that far.
 

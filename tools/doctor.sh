@@ -115,6 +115,10 @@ fi
 
 echo
 echo "Repository setup"
+env_file="$(git rev-parse --git-common-dir 2>/dev/null || echo .git)/hooks-env"
+if [ -f "$env_file" ]; then
+  ok "hooks-env present (extra build environment for this clone)"
+fi
 hooks=$(git config core.hooksPath 2>/dev/null || true)
 if [ "$hooks" = ".githooks" ]; then
   ok "git hooks installed"

@@ -34,6 +34,19 @@ second, and it catches the setup problems that are confusing the first time —
 most of all the missing wayland/alsa/udev *headers*, which surface as a
 `wayland-sys` build-script panic that reads like a Rust error and is not.
 
+If your machine needs something unusual to build — a pkg-config shim for a
+library your distro packages differently, a toolchain path, a proxy — put it in
+`.git/hooks-env` and the hooks will source it:
+
+```bash
+echo 'export PKG_CONFIG_PATH=/path/to/shim/pkgconfig' > .git/hooks-env
+```
+
+That file lives inside `.git`, so it is never committed and never shared, which
+is what makes it the right home for a setting that is true of one machine rather
+than of the project. The alternative is remembering to prefix every `git push`,
+which nobody does — and the resulting failure looks like a code failure.
+
 **Run `just install-hooks` before your first commit.** Git ignores `.githooks/`
 until told about it, so a fresh clone has no hooks and you will find out what CI
 thinks several minutes later than you needed to.
