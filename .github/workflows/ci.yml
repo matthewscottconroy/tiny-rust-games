@@ -333,6 +333,7 @@ jobs:
       - uses: actions/checkout@v4
       - run: python3 tools/catalogue.py --check
       - run: python3 tools/parity.py --check
+      - run: python3 tools/learning-path.py --check
 
   # CI compiled the Godot demos but never loaded one, which left a whole class
   # of breakage invisible: a .gdextension naming a library that does not exist,

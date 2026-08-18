@@ -21,7 +21,10 @@ Build the site with `just web`, preview it with `just web-serve`, and browse all
 concept, and produced from each demo's own module docs so it cannot drift.
 [`docs/PARITY.md`](docs/PARITY.md) is generated the same way and answers the
 other question: which concepts exist in which engine, and so what is worth
-porting next.
+porting next. If you would rather be told where to start than search,
+[`docs/LEARNING-PATH.md`](docs/LEARNING-PATH.md) is a reading order — 47 demos
+in ten stages, each assuming only what came before, ending at the three
+games.
 
 ## Repository layout
 
@@ -77,6 +80,7 @@ just web           # build web/dist (games + catalogue)
 just web-serve     # ...and serve it on localhost:8080
 just catalogue     # regenerate the catalogue only
 just parity        # regenerate docs/PARITY.md (cross-engine coverage)
+just generated     # regenerate catalogue, parity and learning path
 just screenshots   # refresh docs/images from the web build
 ```
 
@@ -123,8 +127,9 @@ pull request. It enforces, across every crate:
 - `--locked`, so the committed `Cargo.lock` files are verified rather than
   silently updated;
 - that all three games still build for `wasm32-unknown-unknown`;
-- that the generated catalogue and [parity matrix](docs/PARITY.md) are not
-  stale;
+- that the generated catalogue, [parity matrix](docs/PARITY.md) and
+  [learning path](docs/LEARNING-PATH.md) are not stale — the last also fails if
+  it names a demo that no longer exists;
 - that Linux, macOS and Windows produce **identical game state** from identical
   inputs. Both rules crates ship a `state-hash` example that digests the bit
   patterns of a finished game; CI compares the three platforms and fails if they

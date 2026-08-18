@@ -157,8 +157,12 @@ catalogue:
 parity:
     python3 tools/parity.py
 
+# Regenerate docs/LEARNING-PATH.md: a reading order through the demos.
+learning-path:
+    python3 tools/learning-path.py
+
 # Regenerate everything that is generated from the demos.
-generated: catalogue parity
+generated: catalogue parity learning-path
 
 # Refresh docs/images/*.png from the web build (needs Chrome).
 screenshots: web

@@ -3,6 +3,12 @@
 Thanks for looking. This repository is a teaching resource first, so the bar for
 a change is "would someone learn from reading this?" rather than "does it work?"
 
+## New here?
+
+[`docs/LEARNING-PATH.md`](docs/LEARNING-PATH.md) is a reading order through the
+demos, ending at the three games. It is the fastest way to understand what this
+repository is arguing before you change any of it.
+
 ## Looking for something to work on
 
 [`docs/PARITY.md`](docs/PARITY.md) lists every concept and which engines
