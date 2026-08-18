@@ -70,3 +70,7 @@ web/dist/
 
 # rustdoc build directory used by tools/build-web.sh
 target-doc/
+
+# Python bytecode from tools/ (parity.py imports catalogue.py)
+__pycache__/
+*.pyc

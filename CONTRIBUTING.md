@@ -3,6 +3,14 @@
 Thanks for looking. This repository is a teaching resource first, so the bar for
 a change is "would someone learn from reading this?" rather than "does it work?"
 
+## Looking for something to work on
+
+[`docs/PARITY.md`](docs/PARITY.md) lists every concept and which engines
+demonstrate it. A concept with a Bevy demo and no Godot one (or the reverse) is
+the easiest useful contribution available: the hard part — deciding what is
+worth teaching and how to frame it — is already done, and porting it is also the
+most direct way to test goal #2. That file is generated, so it is never stale.
+
 ## Get set up
 
 ```bash

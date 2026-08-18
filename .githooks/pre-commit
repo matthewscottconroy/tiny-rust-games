@@ -62,7 +62,7 @@ fi
 artifacts=()
 for path in "${staged[@]}"; do
   case $path in
-    */target/*|target/*|*/.shared-target/*|*.rlib|*.rmeta|*.so|*.dll|*.dylib|*.profraw)
+    */target/*|target/*|*/.shared-target/*|*.rlib|*.rmeta|*.so|*.dll|*.dylib|*.profraw|*.pyc|*/__pycache__/*)
       artifacts+=("$path") ;;
   esac
 done

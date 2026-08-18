@@ -327,11 +327,12 @@ jobs:
   # and diffing catches a demo added without refreshing it, which is the only
   # way the page can go stale.
   catalogue:
-    name: Demo catalogue is current
+    name: Generated docs are current
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - run: python3 tools/catalogue.py --check
+      - run: python3 tools/parity.py --check
 
   # CI compiled the Godot demos but never loaded one, which left a whole class
   # of breakage invisible: a .gdextension naming a library that does not exist,

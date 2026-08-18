@@ -19,6 +19,9 @@ because their rules crates never depended on an engine.
 Build the site with `just web`, preview it with `just web-serve`, and browse all
 151 demos in the [generated catalogue](web/catalogue.html) — searchable by
 concept, and produced from each demo's own module docs so it cannot drift.
+[`docs/PARITY.md`](docs/PARITY.md) is generated the same way and answers the
+other question: which concepts exist in which engine, and so what is worth
+porting next.
 
 ## Repository layout
 
@@ -73,6 +76,7 @@ plus the module rustdoc.
 just web           # build web/dist (games + catalogue)
 just web-serve     # ...and serve it on localhost:8080
 just catalogue     # regenerate the catalogue only
+just parity        # regenerate docs/PARITY.md (cross-engine coverage)
 just screenshots   # refresh docs/images from the web build
 ```
 
@@ -119,7 +123,8 @@ pull request. It enforces, across every crate:
 - `--locked`, so the committed `Cargo.lock` files are verified rather than
   silently updated;
 - that all three games still build for `wasm32-unknown-unknown`;
-- that the generated catalogue is not stale;
+- that the generated catalogue and [parity matrix](docs/PARITY.md) are not
+  stale;
 - that Linux, macOS and Windows produce **identical game state** from identical
   inputs. Both rules crates ship a `state-hash` example that digests the bit
   patterns of a finished game; CI compares the three platforms and fails if they

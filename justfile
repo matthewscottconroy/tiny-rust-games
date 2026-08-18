@@ -153,6 +153,13 @@ web-serve:
 catalogue:
     python3 tools/catalogue.py
 
+# Regenerate docs/PARITY.md: which concepts exist in which engine.
+parity:
+    python3 tools/parity.py
+
+# Regenerate everything that is generated from the demos.
+generated: catalogue parity
+
 # Refresh docs/images/*.png from the web build (needs Chrome).
 screenshots: web
     tools/screenshot.sh
