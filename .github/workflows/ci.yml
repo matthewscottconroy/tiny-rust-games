@@ -244,7 +244,7 @@ jobs:
           grep -E '^(snake|breakout) ' "full-${{ matrix.os }}.txt" > "digest-${{ matrix.os }}.txt"
           cat "digest-${{ matrix.os }}.txt"
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: digest-${{ matrix.os }}
           path: digest-${{ matrix.os }}.txt
