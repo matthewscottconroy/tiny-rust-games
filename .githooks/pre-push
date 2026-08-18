@@ -104,7 +104,8 @@ else
       tic-tac-toe/tic-tac-toe-bevy) bevy_pkgs+=("tic-tac-toe-bevy") ;;
       snake/snake-bevy)             bevy_pkgs+=("snake-bevy") ;;
       breakout/breakout-bevy)       bevy_pkgs+=("breakout-bevy") ;;
-      tech-demos/godot/*|tic-tac-toe/tic-tac-toe-godot) godot_manifests+=("$dir/Cargo.toml") ;;
+      tech-demos/godot/*|tic-tac-toe/tic-tac-toe-godot|snake/snake-godot|breakout/breakout-godot)
+                                    godot_manifests+=("$dir/Cargo.toml") ;;
       *)                            misc_manifests+=("$dir/Cargo.toml") ;;
     esac
   done

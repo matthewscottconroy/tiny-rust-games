@@ -1,0 +1,20 @@
+; Godot Project, Format=3
+
+[application]
+
+run/main_scene="res://scenes/main.tscn"
+config/name="Breakout (Godot)"
+config/features=PackedStringArray("4.3")
+
+[display]
+
+window/size/viewport_width=800
+window/size/viewport_height=660
+
+[physics]
+
+; The library simulates at a fixed 120 Hz (breakout_lib::STEPS_PER_SECOND).
+; Setting Godot's own fixed-step rate to match lets `_physics_process` be the
+; accumulator, exactly as the Bevy frontend lets `FixedUpdate` be one. Neither
+; frontend hand-rolls the loop, and neither one decides the rate.
+common/physics_ticks_per_second=120

@@ -1,0 +1,15 @@
+[package]
+name = "breakout-godot"
+version = "0.1.0"
+edition = "2024"
+license = "MIT"
+repository = "https://github.com/matthewscottconroy/tiny-rust-games"
+description = "Breakout rendered with Godot's scene tree, over the shared engine-agnostic rules"
+
+[lib]
+name = "breakout_godot"
+crate-type = ["cdylib", "lib"]
+
+[dependencies]
+godot = "0.5"
+breakout-lib = { path = "../breakout-lib" }

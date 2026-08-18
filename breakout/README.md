@@ -1,13 +1,14 @@
 # Breakout
 
-Breakout implemented once as an engine-agnostic library, with a Bevy frontend.
-It is the third demonstration of goal #4, and it was chosen because it looked
-like the one that would break the pattern.
+Breakout implemented once as an engine-agnostic library, with Bevy and Godot
+frontends. It is the third demonstration of goal #4, and it was chosen because
+it looked like the one that would break the pattern.
 
 | Crate | What it is |
 |-------|------------|
 | `breakout-lib` | The rules: continuous ball physics, paddle, brick collision, lives. No dependencies, no clock. |
 | `breakout-bevy` | The game in [Bevy](https://bevyengine.org/), stepped from `FixedUpdate`. |
+| `breakout-godot` | The game in [Godot](https://godotengine.org/), stepped from `_physics_process`. |
 
 ## Why this game
 
@@ -19,6 +20,28 @@ Breakout has a ball at a floating-point position moving at a floating-point
 velocity, bouncing off things. Both Bevy and Godot ship physics engines, and the
 obvious move is to use one — at which point the rules live in the engine and
 goal #4 is finished.
+
+The Godot frontend is where that temptation is strongest, because Godot's
+physics is not a library you opt into but part of the scene tree you are already
+using: `CharacterBody2D`, collision shapes, a solver, all of it one node away.
+`breakout-godot` declines all of it and uses Godot for a window, a draw call and
+an input event. If it had not, the two frontends would be free to disagree about
+how a ball bounces, and neither could be called the game.
+
+## Two engines, the same shape
+
+Neither frontend hand-rolls an accumulator, because both engines already ship a
+fixed-timestep scheduler. Each is simply told to run at the library's rate:
+
+| | Bevy | Godot |
+|---|---|---|
+| fixed step | `FixedUpdate` + `Time<Fixed>::from_hz` | `_physics_process` + `physics_ticks_per_second` |
+| interpolation | `Time<Fixed>::overstep_fraction()` | `Engine::get_physics_interpolation_fraction()` |
+| y axis | up and centred — needs a flip | down from the top-left — matches the library |
+
+The y-axis row is the only place the two genuinely differ, and it is a rendering
+detail rather than a rule. That is the whole argument in one table: what changes
+between engines is how you draw and how you are called, not what the game *is*.
 
 ## The pattern holds, on one condition
 

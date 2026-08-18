@@ -35,6 +35,7 @@ filter=${1:-}
 projects=()
 for p in tech-demos/godot/*/project.godot \
          snake/snake-godot/project.godot \
+         breakout/breakout-godot/project.godot \
          tic-tac-toe/tic-tac-toe-godot/project.godot; do
   [ -f "$p" ] || continue
   dir=$(dirname "$p")

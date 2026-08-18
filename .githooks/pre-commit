@@ -110,7 +110,8 @@ fi
 #     different ones once; one `cargo update` in a single crate does it.
 if staged_has '*Cargo.lock'; then
   versions=$(for f in tech-demos/godot/*/Cargo.lock tic-tac-toe/tic-tac-toe-godot/Cargo.lock \
-                      snake/snake-godot/Cargo.lock; do
+                      snake/snake-godot/Cargo.lock \
+                      breakout/breakout-godot/Cargo.lock; do
                [ -f "$f" ] && awk '/^name = "godot"$/{getline; print $3}' "$f"
              done | sort -u)
   if [ "$(wc -l <<<"$versions")" -gt 1 ]; then
@@ -127,9 +128,10 @@ for path in "${staged[@]}"; do
   # Either side of the pair can break the match, so trigger on both.
   case $path in
     tech-demos/godot/*/Cargo.toml|tic-tac-toe/tic-tac-toe-godot/Cargo.toml) ;;
-    snake/snake-godot/Cargo.toml) ;;
+    snake/snake-godot/Cargo.toml|breakout/breakout-godot/Cargo.toml) ;;
     tech-demos/godot/*.gdextension|tech-demos/godot/*/*.gdextension) ;;
     tic-tac-toe/tic-tac-toe-godot/*.gdextension|snake/snake-godot/*.gdextension) ;;
+    breakout/breakout-godot/*.gdextension) ;;
     *) continue ;;
   esac
   dir=$(dirname "$path")

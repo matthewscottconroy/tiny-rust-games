@@ -105,6 +105,7 @@ else
            tic-tac-toe/tic-tac-toe-lib/Cargo.toml \
            breakout/breakout-lib/Cargo.toml \
            snake/snake-godot/Cargo.toml \
+           breakout/breakout-godot/Cargo.toml \
            tic-tac-toe/tic-tac-toe-godot/Cargo.toml; do
     CARGO_TARGET_DIR="$doc_target" cargo doc --locked --no-deps \
       --manifest-path "$m" --quiet

@@ -28,7 +28,7 @@ concept, and produced from each demo's own module docs so it cannot drift.
 | [`tech-demos/godot/`](tech-demos/godot/) | 67 [Godot](https://godotengine.org/) `4.3` demos with game logic in Rust via [gdext](https://github.com/godot-rust/gdext) `0.5` — see the [Godot demo index](tech-demos/godot/README.md). |
 | [`tech-demos/brackets/`](tech-demos/brackets/) | A [bracket-lib](https://github.com/amethyst/bracket-lib) mouse-control demo. |
 | [`snake/`](snake/) | The second game: an engine-agnostic `snake-lib` with `-bevy` and `-godot` front-ends. Where tic-tac-toe proves the boundary for turn-based play, this proves it for **real-time** — the library owns the rules, never the clock. |
-| [`breakout/`](breakout/) | The third game: continuous physics on a fixed timestep. Chosen because it looked like the one that would break the pattern — it did not, but it revealed that continuous state needs interpolated *rendering*, which discrete state does not. |
+| [`breakout/`](breakout/) | The third game: continuous physics on a fixed timestep, with `-bevy` and `-godot` front-ends. Chosen because it looked like the one that would break the pattern — it did not, but it revealed that continuous state needs interpolated *rendering*, which discrete state does not. |
 | [`tic-tac-toe/`](tic-tac-toe/) | The reference "well-known game": an engine-agnostic `tic-tac-toe-lib` core with **four** front-ends — `-cli`, `-brackets`, `-bevy`, and `-godot` (goals #2 and #4 in practice). |
 
 The same tic-tac-toe rules drive a terminal loop, an ASCII console, Bevy's ECS,
@@ -134,7 +134,7 @@ pull request. It enforces, across every crate:
   errors and then exits 0 anyway.
 
 The Bevy workspace is checked on Linux, macOS and Windows. The Godot suite is
-Linux-only on purpose: it is 70 crates, and gdext's behaviour does not vary by
+Linux-only on purpose: it is 71 crates, and gdext's behaviour does not vary by
 host in a way that would justify tripling that.
 
 ## Git hooks

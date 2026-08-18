@@ -38,7 +38,7 @@ a real-time game, copy that split.
 | `tech-demos/brackets/` | bracket-lib demos. |
 | `tic-tac-toe/` | Engine-agnostic `-lib` core with `-cli`, `-brackets`, `-bevy`, `-godot` frontends. |
 | `snake/` | The real-time counterpart: `snake-lib` + `-bevy` + `-godot`. Also replays. |
-| `breakout/` | Continuous physics on a fixed timestep: `breakout-lib` + `-bevy`. |
+| `breakout/` | Continuous physics on a fixed timestep: `breakout-lib` + `-bevy` + `-godot`. |
 
 Read the conventions doc for the engine you are touching **before** writing a
 demo — they are prescriptive, not advisory:
@@ -60,9 +60,9 @@ resolves the compiled library through `res://target/debug/lib*.so`, where
 `res://` is the crate's own directory. A shared workspace `target/` would put
 the binary where Godot cannot find it. Do not "fix" this by merging them.
 
-The cost is 70 separate `Cargo.lock` files — the 67 demos, `_template`, and
-the two game frontends (`tic-tac-toe-godot`, `snake-godot`), which the
-pre-commit hook checks as a single set. They must all pin the **same**
+The cost is 71 separate `Cargo.lock` files — the 67 demos, `_template`, and
+the three game frontends (`tic-tac-toe-godot`, `snake-godot`,
+`breakout-godot`), which the pre-commit hook checks as a single set. They must all pin the **same**
 `godot` version — running `cargo update` in one crate alone is exactly how
 they drifted to three different versions once before. Update all of them or
 none.

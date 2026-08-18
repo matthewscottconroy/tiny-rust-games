@@ -25,7 +25,7 @@ fmt:
     cargo fmt --manifest-path {{bevy_manifest}} --all
     @for m in tech-demos/godot/*/Cargo.toml tech-demos/brackets/*/Cargo.toml tic-tac-toe/*/Cargo.toml \
              snake/snake-lib/Cargo.toml snake/snake-godot/Cargo.toml \
-             breakout/breakout-lib/Cargo.toml; do \
+             breakout/breakout-lib/Cargo.toml breakout/breakout-godot/Cargo.toml; do \
         cargo fmt --manifest-path "$m" --all; \
     done
 
@@ -34,7 +34,7 @@ fmt-check:
     @failed=""; \
     for m in {{bevy_manifest}} tech-demos/godot/*/Cargo.toml tech-demos/brackets/*/Cargo.toml \
              tic-tac-toe/*/Cargo.toml snake/snake-lib/Cargo.toml snake/snake-godot/Cargo.toml \
-             breakout/breakout-lib/Cargo.toml; do \
+             breakout/breakout-lib/Cargo.toml breakout/breakout-godot/Cargo.toml; do \
         cargo fmt --manifest-path "$m" --all --check >/dev/null 2>&1 || failed="$failed $m"; \
     done; \
     if [ -n "$failed" ]; then echo "Unformatted:$failed"; echo "Run 'just fmt'."; exit 1; fi; \
@@ -50,7 +50,8 @@ clippy-bevy:
 
 clippy-godot:
     @failed=""; \
-    for m in tech-demos/godot/*/Cargo.toml tic-tac-toe/tic-tac-toe-godot/Cargo.toml snake/snake-godot/Cargo.toml; do \
+    for m in tech-demos/godot/*/Cargo.toml tic-tac-toe/tic-tac-toe-godot/Cargo.toml \
+             snake/snake-godot/Cargo.toml breakout/breakout-godot/Cargo.toml; do \
         CARGO_TARGET_DIR={{godot_target}} cargo clippy --locked --manifest-path "$m" --all-targets -- -D warnings \
             || failed="$failed $(basename $(dirname $m))"; \
     done; \
@@ -77,7 +78,8 @@ test-bevy:
 
 test-godot:
     @failed=""; \
-    for m in tech-demos/godot/*/Cargo.toml tic-tac-toe/tic-tac-toe-godot/Cargo.toml snake/snake-godot/Cargo.toml; do \
+    for m in tech-demos/godot/*/Cargo.toml tic-tac-toe/tic-tac-toe-godot/Cargo.toml \
+             snake/snake-godot/Cargo.toml breakout/breakout-godot/Cargo.toml; do \
         CARGO_TARGET_DIR={{godot_target}} cargo test --locked --manifest-path "$m" \
             || failed="$failed $(basename $(dirname $m))"; \
     done; \
@@ -178,9 +180,11 @@ uninstall-hooks:
 # Re-pin every Godot crate to the same dependency versions.
 sync-godot-locks:
     @for m in tech-demos/godot/*/Cargo.toml tic-tac-toe/tic-tac-toe-godot/Cargo.toml \
-             snake/snake-godot/Cargo.toml; do cargo update --manifest-path "$m" -q; done
+             snake/snake-godot/Cargo.toml breakout/breakout-godot/Cargo.toml; do \
+        cargo update --manifest-path "$m" -q; \
+    done
     @echo "godot versions now pinned at:"
     @for f in tech-demos/godot/*/Cargo.lock tic-tac-toe/tic-tac-toe-godot/Cargo.lock \
-             snake/snake-godot/Cargo.lock; do \
+             snake/snake-godot/Cargo.lock breakout/breakout-godot/Cargo.lock; do \
         awk '/^name = "godot"$/{getline; print $3}' "$f"; \
     done | sort -u
