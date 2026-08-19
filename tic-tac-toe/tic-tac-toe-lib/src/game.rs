@@ -4,6 +4,8 @@
 //! only way to mutate the board, and [`TicTacToeGame::status`] is the only
 //! thing a frontend needs to render an outcome.
 
+use alloc::{string::String, string::ToString as _, vec::Vec};
+
 use crate::EMPTY_SYMBOL;
 use crate::board::Board;
 use crate::error::MoveError;

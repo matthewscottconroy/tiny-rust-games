@@ -723,3 +723,42 @@ fn an_infinite_delta_is_absorbed_rather_than_exploding() {
     assert_eq!(t.accumulate(f32::INFINITY), Ticker::MAX_STEPS_PER_CALL);
     assert_eq!(t.alpha(), 0.0);
 }
+
+// ── no_std ───────────────────────────────────────────────────────────────────
+
+#[test]
+fn rounding_matches_the_std_implementation_it_replaced() {
+    // `f32::round` is a libm intrinsic and so unavailable under no_std. The
+    // replacement must be exactly equivalent over the domain callers use, or
+    // the ticker's timing changes on a target nobody tests interactively.
+    //
+    // Tests build with std, so the original is right here to compare against.
+    let cases = [
+        0.0f32,
+        0.4,
+        0.5,
+        0.6,
+        1.0,
+        1.4999,
+        1.5,
+        2.5,
+        999.49,
+        999.5,
+        16_666.6,
+        1_000_000.0,
+        33_333.33,
+        8_333.0,
+    ];
+    for value in cases {
+        assert_eq!(
+            round_to_u64(value),
+            value.round() as u64,
+            "disagreed on {value}"
+        );
+    }
+    // And the saturating behaviour the callers document.
+    assert_eq!(round_to_u64(f32::NAN), 0);
+    assert_eq!(round_to_u64(-1.0), 0);
+    assert_eq!(round_to_u64(f32::NEG_INFINITY), 0);
+    assert_eq!(round_to_u64(f32::INFINITY), u64::MAX);
+}

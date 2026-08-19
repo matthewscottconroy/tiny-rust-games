@@ -34,6 +34,21 @@
 //! assert_eq!(game.winner().map(Player::symbol), Some('X'));
 //! ```
 
+#![cfg_attr(not(test), no_std)]
+
+// These rules need no engine, no clock and no operating system: the crate
+// builds for a bare-metal Cortex-M4, which CI checks. `alloc` is still
+// required, because a board is a `Vec` of rows and a player has a `String`
+// name — refusing allocation too would mean a fixed-size board, which is a
+// worse teaching example than a heap allocation is a cost.
+//
+// `breakout-lib` deliberately does *not* do this. It needs `f32::sqrt` to keep
+// the ball's speed constant, and square root is a libm intrinsic that `core`
+// does not provide, so `no_std` there would mean taking a dependency to gain
+// nothing a browser or a desktop cares about. Discrete games get this for free;
+// continuous physics does not.
+extern crate alloc;
+
 mod board;
 mod error;
 mod game;

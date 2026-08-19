@@ -197,6 +197,41 @@ jobs:
             exit 1
           fi
 
+  # Two of the rules crates claim `no-std` in their package metadata. That
+  # claim was false for a year: snake-lib advertised `no-std-compatible` while
+  # using std::collections::VecDeque and std::error::Error, and nothing checked
+  # it — the same shape as a performance claim with no benchmark behind it.
+  #
+  # Building for a bare-metal Cortex-M4 is the check. It is also the strongest
+  # statement of the repository's central claim: the same rules that drive
+  # Bevy, Godot and a browser need no engine, no clock and no operating system.
+  #
+  # breakout-lib is deliberately absent. It needs f32::sqrt to hold the ball's
+  # speed constant, and square root is a libm intrinsic core does not provide,
+  # so no_std there would mean a dependency bought for nothing.
+  no-std:
+    name: The rules crates build without an OS
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: thumbv7em-none-eabihf
+
+      - uses: Swatinem/rust-cache@v2
+
+      - name: Build for bare metal
+        run: |
+          set -euo pipefail
+          for manifest in tic-tac-toe/tic-tac-toe-lib/Cargo.toml \
+                          snake/snake-lib/Cargo.toml; do
+            echo "::group::$manifest"
+            cargo build --locked --manifest-path "$manifest" \
+              --target thumbv7em-none-eabihf
+            echo "::endgroup::"
+          done
+
   # The three rules crates promise reproducibility: the same inputs give the
   # same game, which is what makes replays and lockstep possible. Every test
   # asserting that runs on one machine, where it is nearly free. This job asks

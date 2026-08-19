@@ -5,6 +5,8 @@
 //!
 //! [`TicTacToeGame::turn_history`]: crate::TicTacToeGame::turn_history
 
+use alloc::string::String;
+
 /// One participant: a display name and the symbol they place.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Player {

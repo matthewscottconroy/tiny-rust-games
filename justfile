@@ -153,6 +153,13 @@ web-serve:
     python3 tools/catalogue.py
     tools/build-web.sh --serve
 
+# Build the no_std rules crates for a bare-metal target.
+no-std:
+    @rustup target list --installed | grep -q thumbv7em-none-eabihf \
+        || echo "run: rustup target add thumbv7em-none-eabihf"
+    cargo build --locked --manifest-path tic-tac-toe/tic-tac-toe-lib/Cargo.toml --target thumbv7em-none-eabihf
+    cargo build --locked --manifest-path snake/snake-lib/Cargo.toml --target thumbv7em-none-eabihf
+
 # Load every page in web/dist in a real browser and check it works.
 smoke:
     python3 tools/smoke-web.py

@@ -1,6 +1,6 @@
 //! Why a move can be rejected.
 
-use std::fmt;
+use core::fmt;
 
 /// Why a call to [`TicTacToeGame::take_turn`](crate::TicTacToeGame::take_turn) was rejected.
 ///
@@ -40,7 +40,7 @@ impl fmt::Display for MoveError {
     }
 }
 
-impl std::error::Error for MoveError {}
+impl core::error::Error for MoveError {}
 
 #[cfg(test)]
 mod tests {
@@ -66,7 +66,7 @@ mod tests {
     #[test]
     fn is_a_std_error() {
         // Frontends propagate this with `?`, so the trait impl must hold.
-        fn assert_error<E: std::error::Error>(_: &E) {}
+        fn assert_error<E: core::error::Error>(_: &E) {}
         assert_error(&MoveError::GameOver);
     }
 }

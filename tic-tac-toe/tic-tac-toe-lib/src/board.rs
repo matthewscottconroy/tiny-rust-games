@@ -3,7 +3,9 @@
 //! [`Board`] knows nothing about turns or winning — it only stores symbols and
 //! answers questions about its own shape. The rules live in [`crate::game`].
 
-use std::fmt;
+use alloc::{string::String, vec, vec::Vec};
+
+use core::fmt;
 
 use crate::EMPTY_SYMBOL;
 

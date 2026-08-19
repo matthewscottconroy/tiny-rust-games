@@ -155,6 +155,12 @@ pull request. It enforces, across every crate:
 - that the generated catalogue, [parity matrix](docs/PARITY.md) and
   [learning path](docs/LEARNING-PATH.md) are not stale — the last also fails if
   it names a demo that no longer exists;
+- that `tic-tac-toe-lib` and `snake-lib` build for a **bare-metal Cortex-M4**.
+  `snake-lib` advertised `no-std-compatible` in its metadata while using
+  `std::collections::VecDeque`, which nothing checked; the claim is now true and
+  tested. `breakout-lib` is excluded on purpose — it needs `f32::sqrt`, a libm
+  intrinsic `core` does not provide, so discrete games get this for free and
+  continuous physics does not;
 - that Linux, macOS and Windows produce **identical game state** from identical
   inputs. Both rules crates ship a `state-hash` example that digests the bit
   patterns of a finished game; CI compares the three platforms and fails if they

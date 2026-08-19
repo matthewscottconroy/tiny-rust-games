@@ -51,6 +51,8 @@
 //! is that whatever the parser accepts must be playable — see
 //! `tests/replay_fuzz.rs`, which exists to keep that true.
 
+use alloc::string::{String, ToString as _};
+use alloc::vec::Vec;
 use core::fmt::Write as _;
 
 use crate::{Direction, MAX_BOARD_SIZE, MIN_BOARD_SIZE, SnakeGame};
@@ -105,7 +107,7 @@ impl core::fmt::Display for ReplayError {
     }
 }
 
-impl std::error::Error for ReplayError {}
+impl core::error::Error for ReplayError {}
 
 /// The format version this build writes.
 pub const REPLAY_VERSION: u32 = 1;

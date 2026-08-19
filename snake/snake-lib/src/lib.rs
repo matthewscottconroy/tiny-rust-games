@@ -53,10 +53,26 @@
 //! [`step`](SnakeGame::step) commits it, validating against the direction
 //! actually travelled rather than the last one requested.
 
+#![cfg_attr(not(test), no_std)]
+
+// The rules depend on nothing — not an engine, not a clock, and now not an
+// operating system either. `Cargo.toml` has advertised `no-std-compatible`
+// since this crate was written, which was simply untrue: it used
+// `std::collections::VecDeque` and `std::error::Error`. Making the claim true
+// is the smallest honest fix, and it is a real one — the same rules that drive
+// Bevy, Godot and a browser now build for a bare-metal Cortex-M4, which CI
+// checks on every push.
+//
+// `alloc` is still required. A snake grows, so its body is a heap-allocated
+// deque; refusing allocation as well would mean a fixed-capacity board and a
+// worse teaching example. `core::error::Error` (stable since Rust 1.81) is what
+// lets `ReplayError` keep its trait impl without `std`.
+extern crate alloc;
+
 mod replay;
 pub use replay::{REPLAY_VERSION, Replay, ReplayError};
 
-use std::collections::VecDeque;
+use alloc::collections::VecDeque;
 
 /// A cell on the board, `(0, 0)` at the top-left.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
@@ -155,6 +171,20 @@ pub enum StepOutcome {
 /// Microseconds in one second, the unit [`Ticker`] counts in.
 pub const MICROS_PER_SECOND: u64 = 1_000_000;
 
+/// Rounds a non-negative `f32` to the nearest integer, half away from zero.
+///
+/// `f32::round` lives in `std`: float rounding is a libm intrinsic, and a
+/// `no_std` build has no libm unless it takes a dependency for one. This crate
+/// has no dependencies and is not about to gain one for a single addition.
+///
+/// For non-negative inputs `floor(x + 0.5)` *is* round-half-away-from-zero, and
+/// the `as` cast truncates toward zero, which is `floor` here. The saturating
+/// behaviour the callers rely on survives unchanged: NaN and negatives still
+/// become 0, and `+inf` still becomes `u64::MAX`.
+fn round_to_u64(value: f32) -> u64 {
+    (value + 0.5) as u64
+}
+
 /// Converts a duration in seconds to whole microseconds.
 ///
 /// Rounds rather than truncates, which matters more than it looks: `0.01f32` is
@@ -168,7 +198,7 @@ pub fn seconds_to_micros(seconds: f32) -> u64 {
     // which the ticker's step cap absorbs. An explicit check here would be a
     // branch whose two arms behave identically — mutation testing found exactly
     // that and it was right.
-    (seconds * MICROS_PER_SECOND as f32).round() as u64
+    round_to_u64(seconds * MICROS_PER_SECOND as f32)
 }
 
 /// Converts elapsed real time into whole simulation steps.
@@ -208,7 +238,7 @@ impl Ticker {
             steps_per_second > 0.0 && steps_per_second.is_finite(),
             "steps_per_second must be positive and finite, got {steps_per_second}"
         );
-        let micros_per_step = (MICROS_PER_SECOND as f32 / steps_per_second).round() as u64;
+        let micros_per_step = round_to_u64(MICROS_PER_SECOND as f32 / steps_per_second);
         assert!(
             micros_per_step > 0,
             "steps_per_second {steps_per_second} is faster than one step per microsecond"
