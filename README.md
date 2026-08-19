@@ -71,6 +71,13 @@ checksums, because in lockstep there is no recovery from divergence, only
 detection — and silent divergence is far worse, since both players keep playing
 different games.
 
+Sound arrived later and needed no change to any rules crate, which is the
+better test of a boundary: `breakout-lib`'s `step()` already returned a
+`StepOutcome` naming the wall, the paddle, the brick and the lost life, so the
+frontend only had to decide what each one sounds like. A boundary that survives
+the features it was drawn around proves little; one that survives a feature
+nobody had in mind proves something.
+
 Breakout is the case that was supposed to break this. Floating-point positions,
 floating-point velocities, and two engines that ship physics of their own. It
 holds — on the condition that `step()` advances a **fixed** timestep rather than

@@ -165,3 +165,30 @@ normal vision and under simulated protanopia, deuteranopia and tritanopia, and
 CI fails if one drops below ΔE 25. Snake failed it worse: its food was red on a
 green snake, ΔE 98 to ordinary vision and **10.9** under deuteranopia, so the
 food was invisible to roughly one man in twelve. It is magenta now.
+
+## Sound, and what it proved
+
+`breakout-bevy` plays a note for each thing that happens: a wall, the paddle, a
+brick chipped, a brick broken, a life lost. **`breakout-lib` did not change by a
+line to allow it.**
+
+That is the test of an engine-agnostic boundary worth having. Anyone can draw a
+boundary that survives the features it was drawn around; this one survived a
+feature nobody had in mind when it was drawn, because `step()` already returned
+a `StepOutcome` naming exactly what happened. The frontend decides what a bounce
+*sounds* like — an effect — while what counts as a bounce stays a rule.
+
+Two details are worth copying:
+
+- **The sound comes from the library's report, not from the state.** `advance`
+  forwards the `StepOutcome` it received; nothing re-derives "did that hit a
+  brick?" by diffing positions. Re-deriving is how a frontend ends up with its
+  own quietly different idea of the rules.
+- **Tones are synthesised, not loaded.** A sine wave with a linear fade is a few
+  lines, and it means no asset files to ship, to license, or to fail to fetch in
+  a browser. The fade is not decoration: without it the sample stops mid-wave
+  and clicks, which a test asserts.
+
+The ordering is a design decision rather than something the engine imposes, so
+it is tested: a step that both breaks a brick and loses a life plays the *loss*,
+because that is the one the player must hear.
