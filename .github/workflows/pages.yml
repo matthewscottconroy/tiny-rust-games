@@ -68,6 +68,15 @@ jobs:
       - name: Build the site
         run: tools/build-web.sh
 
+      # Compiling and bundling prove nothing about whether a page works. Two
+      # user-visible breakages have shipped from this pipeline — a canvas
+      # squeezed by a stylesheet so the play field rendered at the wrong size,
+      # and text in a font that could not draw it — and the whole Rust test
+      # suite was green for both. This loads every page in a real browser
+      # before any of it is published.
+      - name: Every published page loads and renders
+        run: python3 tools/smoke-web.py
+
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:

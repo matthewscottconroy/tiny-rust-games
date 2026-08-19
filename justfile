@@ -153,6 +153,10 @@ web-serve:
     python3 tools/catalogue.py
     tools/build-web.sh --serve
 
+# Load every page in web/dist in a real browser and check it works.
+smoke:
+    python3 tools/smoke-web.py
+
 # Fail if paired cross-engine demos lose their cross-links or drift apart.
 check-pairs:
     python3 tools/check-paired-demos.py

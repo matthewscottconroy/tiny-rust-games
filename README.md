@@ -112,6 +112,12 @@ Each game is roughly 25 MB of WebAssembly after optimisation, which is ordinary
 for Bevy; the `wasm-release` profile in the workspace manifest is what gets it
 there from 85 MB.
 
+Before anything is published, `tools/smoke-web.py` loads every page in headless
+Chrome and checks it actually works: the module started, a canvas exists at the
+resolution the game asked for, something was drawn, and the layout does not
+overflow. Compiling proves none of that — a canvas squeezed by a stylesheet and
+a font that could not draw its own HUD both shipped past a green test suite.
+
 [`.github/workflows/pages.yml`](.github/workflows/pages.yml) publishes this to
 GitHub Pages on every push to `main`. It needs Pages enabled for the repository
 with **GitHub Actions** as the source.
