@@ -153,6 +153,10 @@ web-serve:
     python3 tools/catalogue.py
     tools/build-web.sh --serve
 
+# Fail if paired cross-engine demos lose their cross-links or drift apart.
+check-pairs:
+    python3 tools/check-paired-demos.py
+
 # Fail if a Bevy demo draws text its ASCII-only font cannot render.
 check-fonts:
     python3 tools/check-font-coverage.py

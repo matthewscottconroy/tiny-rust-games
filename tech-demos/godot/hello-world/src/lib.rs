@@ -3,6 +3,8 @@
 //! Teaches: extension library declaration, a single Node2D subclass, an
 //! `#[export]` field visible in the Godot inspector, the `ready()` lifecycle
 //! hook, and how to reach a child node from Rust.
+//!
+//! Counterpart: tech-demos/bevy/hello-world — the same concept in Bevy.
 
 use godot::classes::Label;
 use godot::prelude::*;

@@ -3,6 +3,8 @@
 //!
 //! Teaches: a `Camera2D` that lerps toward a target found by group lookup, with a dead
 //! zone so small movements do not jitter the view.
+//!
+//! Counterpart: tech-demos/bevy/camera-follow — the same concept in Bevy.
 
 use godot::classes::{Camera2D, ICamera2D};
 use godot::prelude::*;

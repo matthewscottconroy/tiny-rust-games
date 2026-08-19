@@ -10,6 +10,8 @@
 //! nodes are simply shown/hidden and their process mode toggled.
 //!
 //! Concept: object-pooling
+//!
+//! Counterpart: tech-demos/bevy/object-pooling — the same concept in Bevy.
 
 use godot::classes::{INode2D, Label, Node, Node2D, Sprite2D};
 use godot::prelude::*;

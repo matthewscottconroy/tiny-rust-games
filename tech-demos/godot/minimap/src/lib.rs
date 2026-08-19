@@ -10,6 +10,8 @@
 //! the top-right corner of the screen.
 //!
 //! **Controls:** WASD — move player;  minimap updates automatically.
+//!
+//! Counterpart: tech-demos/bevy/minimap — the same concept in Bevy.
 
 use godot::classes::{INode2D, Input, Label, Node2D};
 use godot::prelude::*;

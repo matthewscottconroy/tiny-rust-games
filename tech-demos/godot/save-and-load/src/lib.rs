@@ -8,6 +8,8 @@
 //! `FileAccess`, with no external crate dependency.
 //!
 //! Concept: save-load
+//!
+//! Counterpart: tech-demos/bevy/save-load — the same concept in Bevy.
 
 use godot::classes::{FileAccess, INode, Label, Node, file_access};
 use godot::prelude::*;

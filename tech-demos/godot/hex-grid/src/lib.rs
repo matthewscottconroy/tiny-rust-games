@@ -7,6 +7,8 @@
 //! - Detecting which hex was clicked with `pixel_to_axial` + rounding.
 //!
 //! **Controls:** left-click — select hex;  R — reset.
+//!
+//! Counterpart: tech-demos/bevy/hex-grid — the same concept in Bevy.
 
 use godot::classes::{INode2D, Input, InputEvent, InputEventMouseButton, Label, Node2D};
 use godot::global::MouseButton;

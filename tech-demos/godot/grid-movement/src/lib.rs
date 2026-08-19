@@ -3,6 +3,8 @@
 //!
 //! Teaches: queueing direction input in a `VecDeque` and lerping between grid cells so
 //! movement snaps without feeling instant.
+//!
+//! Counterpart: tech-demos/bevy/grid-movement — the same concept in Bevy.
 
 use std::collections::VecDeque;
 

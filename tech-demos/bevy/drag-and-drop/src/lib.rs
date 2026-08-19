@@ -21,6 +21,8 @@
 //!     .add_plugins(DragAndDropPlugin)
 //!     .run();
 //! ```
+//!
+//! Counterpart: tech-demos/godot/drag-and-drop-ui — the same concept in Godot.
 
 use bevy::prelude::*;
 use bevy::window::PrimaryWindow;

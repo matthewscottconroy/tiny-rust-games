@@ -26,6 +26,8 @@
 //!     .add_plugins(HexGridPlugin)
 //!     .run();
 //! ```
+//!
+//! Counterpart: tech-demos/godot/hex-grid — the same concept in Godot.
 
 use bevy::prelude::*;
 

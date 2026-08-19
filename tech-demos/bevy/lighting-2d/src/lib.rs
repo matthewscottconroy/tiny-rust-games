@@ -29,6 +29,8 @@
 //!     .add_plugins(Lighting2dPlugin)
 //!     .run();
 //! ```
+//!
+//! Counterpart: tech-demos/godot/lighting-2d — the same concept in Godot.
 
 use bevy::prelude::*;
 

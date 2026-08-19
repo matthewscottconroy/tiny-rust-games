@@ -29,6 +29,8 @@
 //!     .add_plugins(AbilityCooldownsPlugin)
 //!     .run();
 //! ```
+//!
+//! Counterpart: tech-demos/godot/ability-cooldowns — the same concept in Godot.
 
 use bevy::prelude::*;
 

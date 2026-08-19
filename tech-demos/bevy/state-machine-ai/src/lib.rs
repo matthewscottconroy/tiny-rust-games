@@ -31,6 +31,8 @@
 //! ```
 //!
 //! Concept: state-machine
+//!
+//! Counterpart: tech-demos/godot/state-machine — the same concept in Godot.
 
 use bevy::prelude::*;
 

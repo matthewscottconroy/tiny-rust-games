@@ -19,6 +19,8 @@
 //!     .add_plugins(HelloWorldPlugin)
 //!     .run();
 //! ```
+//!
+//! Counterpart: tech-demos/godot/hello-world — the same concept in Godot.
 
 use bevy::prelude::*;
 

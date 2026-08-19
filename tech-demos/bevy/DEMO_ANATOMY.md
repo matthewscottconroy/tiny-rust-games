@@ -123,7 +123,7 @@ function, which is usually the better fix.)
 
 ## Duplication across engines is deliberate
 
-Nine concepts are implemented in both this suite and `tech-demos/godot/`, and
+Fifteen concepts are implemented in both this suite and `tech-demos/godot/`, and
 some of their pure functions (`hex_neighbors`, `axial_distance`, `cube_round`)
 are byte-identical. That is **not** an oversight waiting to be factored into a
 shared crate.
@@ -143,7 +143,18 @@ rather than accidental:
   fix it in the other engine's copy in the same change. Both copies of
   `cube_round` previously carried the same dead-assignment bug.
 - **Cross-link them.** Paired demos name their counterpart in the README index
-  and in their module rustdoc.
+  and in their module rustdoc, with a `Counterpart:` line.
+
+Both of those are now checked rather than merely asked for, by
+`tools/check-paired-demos.py`, which CI runs. It finds the pairs from each
+demo's `Concept:` tag (or its directory name), fails if either side does not
+name the other, and fails if a function listed as shared has drifted — comparing
+bodies with comments stripped, so a reformat is not mistaken for divergence.
+Add a function to its `MUST_MATCH` table when you copy one between suites.
+
+The check is what makes the trade above honest. Deliberate duplication is a
+defensible choice; duplication that silently diverges is just a bug in two
+places, and the difference between them is enforcement.
 - **Extract only when logic outgrows a demo.** If a helper becomes large enough
   that a reader would skip it anyway, it has stopped being teaching material
   and can move to a crate of its own.

@@ -26,6 +26,8 @@
 //!     .add_plugins(MinimapPlugin)
 //!     .run();
 //! ```
+//!
+//! Counterpart: tech-demos/godot/minimap — the same concept in Godot.
 
 use bevy::{camera::Viewport, math::UVec2, prelude::*};
 

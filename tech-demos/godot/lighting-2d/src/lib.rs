@@ -9,6 +9,8 @@
 //! - Exposing toggle / color controls via `#[func]` for GDScript callers.
 //! - Pure math helpers (`pulse_energy`, `lerp_color`, `energy_to_label`) that
 //!   are covered by unit tests without needing the Godot runtime.
+//!
+//! Counterpart: tech-demos/bevy/lighting-2d — the same concept in Bevy.
 
 use godot::classes::{INode2D, Node2D, PointLight2D};
 use godot::prelude::*;

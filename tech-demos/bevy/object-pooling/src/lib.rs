@@ -30,6 +30,8 @@
 //!     .add_plugins(ObjectPoolingPlugin)
 //!     .run();
 //! ```
+//!
+//! Counterpart: tech-demos/godot/object-pool — the same concept in Godot.
 
 use bevy::prelude::*;
 

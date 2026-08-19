@@ -10,6 +10,8 @@
 //! Press keys to simulate game events; the HUD reflects progress in real time.
 //!
 //! **Controls:** S — add score;  W — step;  K — kill enemy;  ESC — reset.
+//!
+//! Counterpart: tech-demos/bevy/achievement-system — the same concept in Bevy.
 
 use godot::classes::{INode2D, Input, Label, Node2D};
 use godot::prelude::*;

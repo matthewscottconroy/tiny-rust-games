@@ -8,6 +8,8 @@
 //! - Rendering a live HUD string on a `Label` child.
 //! - Pure cooldown helpers (`tick_cooldown`, `is_ready`, `cooldown_fraction`,
 //!   `format_cooldown`) fully covered by unit tests.
+//!
+//! Counterpart: tech-demos/bevy/ability-cooldowns — the same concept in Bevy.
 
 use godot::classes::{INode, Label};
 use godot::prelude::*;

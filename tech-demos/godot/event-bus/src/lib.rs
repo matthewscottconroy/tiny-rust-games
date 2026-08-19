@@ -11,6 +11,8 @@
 //! references to each other.
 //!
 //! Concept: events
+//!
+//! Counterpart: tech-demos/bevy/events — the same concept in Bevy.
 
 use godot::classes::{INode, Node};
 use godot::prelude::*;

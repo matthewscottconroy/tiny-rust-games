@@ -19,6 +19,8 @@
 //!     .add_plugins(CameraFollowPlugin)
 //!     .run();
 //! ```
+//!
+//! Counterpart: tech-demos/godot/camera-follow — the same concept in Godot.
 
 use bevy::prelude::*;
 

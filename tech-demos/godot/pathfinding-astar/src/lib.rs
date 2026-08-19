@@ -11,6 +11,8 @@
 //!   fully covered by unit tests.
 //!
 //! Concept: pathfinding
+//!
+//! Counterpart: tech-demos/bevy/pathfinding — the same concept in Bevy.
 
 use godot::classes::{AStar2D, INode2D, InputEvent, InputEventMouseButton};
 use godot::prelude::*;

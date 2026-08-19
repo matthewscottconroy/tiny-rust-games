@@ -8,6 +8,8 @@
 //! transition rules are unit-testable without an engine.
 //!
 //! Concept: state-machine
+//!
+//! Counterpart: tech-demos/bevy/state-machine-ai — the same concept in Bevy.
 
 use godot::classes::{INode2D, Input, Label, Node2D};
 use godot::prelude::*;

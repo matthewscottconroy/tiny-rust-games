@@ -30,6 +30,8 @@
 //!     .add_plugins(PathfindingPlugin)
 //!     .run();
 //! ```
+//!
+//! Counterpart: tech-demos/godot/pathfinding-astar — the same concept in Godot.
 
 use bevy::prelude::*;
 use std::cmp::Reverse;

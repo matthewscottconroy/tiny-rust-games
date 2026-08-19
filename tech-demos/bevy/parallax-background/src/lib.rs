@@ -23,6 +23,8 @@
 //!     .add_plugins(ParallaxBackgroundPlugin)
 //!     .run();
 //! ```
+//!
+//! Counterpart: tech-demos/godot/parallax-background — the same concept in Godot.
 
 use bevy::prelude::*;
 

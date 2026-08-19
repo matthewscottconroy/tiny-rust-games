@@ -22,6 +22,8 @@
 //!     .add_plugins(SaveLoadPlugin)
 //!     .run();
 //! ```
+//!
+//! Counterpart: tech-demos/godot/save-and-load — the same concept in Godot.
 
 use bevy::prelude::*;
 use serde::{Deserialize, Serialize};

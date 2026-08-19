@@ -28,6 +28,8 @@
 //!     .add_plugins(AchievementSystemPlugin)
 //!     .run();
 //! ```
+//!
+//! Counterpart: tech-demos/godot/achievement-system — the same concept in Godot.
 
 use bevy::prelude::*;
 

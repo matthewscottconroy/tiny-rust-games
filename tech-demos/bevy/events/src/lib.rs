@@ -23,6 +23,8 @@
 //!     .add_plugins(EventsPlugin)
 //!     .run();
 //! ```
+//!
+//! Counterpart: tech-demos/godot/event-bus — the same concept in Godot.
 
 use bevy::prelude::*;
 

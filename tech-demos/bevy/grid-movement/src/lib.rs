@@ -22,6 +22,8 @@
 //!     .add_plugins(GridMovementPlugin)
 //!     .run();
 //! ```
+//!
+//! Counterpart: tech-demos/godot/grid-movement — the same concept in Godot.
 
 use bevy::prelude::*;
 

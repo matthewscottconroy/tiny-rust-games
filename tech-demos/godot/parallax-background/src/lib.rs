@@ -10,6 +10,8 @@
 //! - Configuring `motion_scale` on `ParallaxLayer` children in `ready()`.
 //! - Exposing `reset_scroll` and `set_scroll_speed` as `#[func]` methods.
 //! - Pure helper functions for parallax math covered by unit tests.
+//!
+//! Counterpart: tech-demos/bevy/parallax-background — the same concept in Bevy.
 
 use godot::classes::{Camera2D, INode2D, Node2D, ParallaxLayer};
 use godot::prelude::*;

@@ -5,6 +5,8 @@
 //! `InputEventMouseButton` from `InputEventMouseMotion` while dragging.
 //!
 //! Concept: drag-and-drop
+//!
+//! Counterpart: tech-demos/bevy/drag-and-drop — the same concept in Bevy.
 
 use godot::classes::{Control, IControl, InputEvent, InputEventMouseButton, InputEventMouseMotion};
 use godot::prelude::*;
