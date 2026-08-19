@@ -3,8 +3,9 @@
 # The repository holds three kinds of crate — one Bevy workspace, 67 standalone
 # Godot crates, and four other standalone crates — so "run this across the repo"
 # is three different command shapes. These recipes wrap that up so you never
-# have to remember which is which, and so `just ci` reproduces exactly what
-# .github/workflows/ci.yml enforces.
+# have to remember which is which, and so `just ci` runs everything
+# .github/workflows/ci.yml enforces that does not need another operating system,
+# a browser, or Godot.
 
 bevy_manifest := "tech-demos/bevy/Cargo.toml"
 # Godot crates compile gdext once each unless they share a target directory.
@@ -15,8 +16,23 @@ godot_target := justfile_directory() / "tech-demos/godot/.shared-target"
 default:
     @just --list
 
-# Everything CI enforces: format, lint, and test every crate.
-ci: fmt-check clippy test
+# Everything CI enforces that a laptop can run: format, lint, test, and the
+# invariant checks. See `checks` for what is deliberately left to CI.
+ci: fmt-check clippy test checks
+
+# The generated docs and repository invariants, all of which CI also runs.
+#
+# These are cheap and compile nothing, so there is no reason for `just ci` to
+# skip them — and it used to, which quietly made "just ci reproduces exactly
+# what CI enforces" false in four different documents.
+checks:
+    python3 tools/catalogue.py --check
+    python3 tools/parity.py --check
+    python3 tools/learning-path.py --check
+    python3 tools/check-font-coverage.py
+    python3 tools/check-paired-demos.py
+    python3 tools/check-palette.py
+    python3 tools/check-tooling.py
 
 # --- Formatting ---
 
@@ -167,6 +183,7 @@ smoke:
 # Fail if colours that carry meaning become hard to tell apart.
 check-palette:
     python3 tools/check-palette.py
+    python3 tools/check-tooling.py
 
 # Fail if paired cross-engine demos lose their cross-links or drift apart.
 check-pairs:

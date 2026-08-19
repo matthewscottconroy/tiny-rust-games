@@ -56,7 +56,7 @@ genuinely needs three different command shapes:
 
 ```bash
 just              # list every recipe
-just ci           # exactly what CI enforces — run this before opening a PR
+just ci           # everything CI enforces locally — run before opening a PR
 just fmt          # reformat everything
 just bevy hex-grid    # run one Bevy demo
 just godot hex-grid   # build one Godot extension

@@ -96,8 +96,12 @@ CARGO_TARGET_DIR=/tmp/godot-shared cargo test --manifest-path tech-demos/godot/h
 cargo fmt --manifest-path <manifest> --all
 ```
 
-Prefer the `justfile` when it covers the task: `just ci` runs exactly what CI
-runs, `just fmt` reformats everything, `just sync-godot-locks` re-pins the 67
+Prefer the `justfile` when it covers the task: `just ci` runs every check CI
+runs that a laptop can — format, clippy, tests and the invariant checks. Five
+things are CI-only and cannot be reproduced locally in one command: the
+macOS/Windows matrix, the wasm build, loading every Godot project, comparing
+state digests across three platforms, and the browser smoke test of the
+published pages (`just smoke`, after `just web`), `just fmt` reformats everything, `just sync-godot-locks` re-pins the 67
 Godot lockfiles after a gdext bump.
 
 **Linux build dependencies.** Bevy and bracket-lib need ALSA, udev, wayland, and
@@ -129,6 +133,16 @@ compiles, passes every test, and renders as a tofu box — the only way to notic
 is to look at the running game, which is how it was found twice.
 `tools/check-font-coverage.py` scans for it and CI runs it. Window titles are
 exempt: the window manager draws those in a system font.
+
+**Claims in prose need something enforcing them.** This repository's
+characteristic defect is a sentence describing an intent nobody measured. Five
+have been found: `spatial-partitioning`'s "O(1) neighbour queries" (15x slower
+than brute force at its default size), `DT`'s "the ball never crosses a brick in
+a single step", `snake-lib`'s `no-std-compatible` keyword, Breakout's damaged
+bricks "dimmed, so the player can see it is weakened" (CIE ΔE 6 — nobody could),
+and `just ci` "reproduces exactly what CI enforces" (it ran none of the six
+invariant checks). Each is now enforced by something in `tools/`. When you write
+a claim, write the check with it.
 
 **Performance claims in docs need a benchmark.** `benchmarks/` measures them.
 The first run falsified one: `spatial-partitioning`'s grid is 15x *slower* than

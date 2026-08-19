@@ -245,7 +245,7 @@ cd tic-tac-toe/tic-tac-toe-godot && cargo build                  # then open in 
 ```
 
 With [`just`](https://github.com/casey/just) installed, `just` lists every
-task — `just ci` reproduces exactly what CI enforces, and `just play` starts the
+task — `just ci` runs every check CI does that a laptop can, and `just play` starts the
 terminal game.
 
 ### Linux prerequisites
