@@ -6,7 +6,7 @@ independent of any game library.
 
 | Crate | What it is |
 |-------|------------|
-| `tic-tac-toe-lib` | The rules: board, turn order, move validation, win/draw detection, winner lookup. No engine dependencies, unit tested. |
+| `tic-tac-toe-lib` | The rules: board, turn order, move validation, win/draw detection, winner lookup, and a searching opponent. No engine dependencies, `no_std`, unit tested. |
 | `tic-tac-toe-cli` | An interactive two-player game played in the terminal via stdin. |
 | `tic-tac-toe-brackets` | A mouse-driven version rendered with [bracket-lib](https://github.com/amethyst/bracket-lib). |
 | `tic-tac-toe-bevy` | The same game in [Bevy](https://bevyengine.org/), driven by ECS systems. |
@@ -127,3 +127,32 @@ cargo test --manifest-path ../tech-demos/bevy/Cargo.toml -p tic-tac-toe-bevy
 
 The CLI's game loop is generic over `BufRead`/`Write`, so its tests play whole
 games against in-memory buffers — no terminal required.
+
+## The opponent
+
+`ai::best_move` plays perfectly, by negamax with alpha-beta pruning. Try it with
+`cargo run -p tic-tac-toe-cli -- --vs-computer`.
+
+It lives in the rules crate, for the same reason the rules do: an opponent is
+not a property of Bevy or of a terminal. Put it in one frontend and the others
+either go without or grow their own, at which point two versions of "the
+computer" disagree about how hard the game is. Adding it to the CLI took one
+call and a flag, which is the whole argument in miniature.
+
+Two things make it testable to an unusual degree:
+
+- **Perfection is provable here.** Tic-tac-toe is a draw under perfect play, and
+  the tree is small enough to walk exhaustively — so the tests play *every* game
+  that can be forced against it, from both seats, and assert it never loses one.
+  That is the claim itself checked, not a proxy for it. Crippling the search to
+  pick the first empty square fails both tests immediately, while a tactical
+  test like "it blocks a row" still passes, because the blocking square happened
+  to come first in scan order. Examples are weak evidence about a player.
+- **Pruning must not change the answer.** Alpha-beta is an optimisation, so a
+  test compares it against a full-width search on the same positions. If it ever
+  disagrees, that is a bug rather than a preference.
+
+The search takes a depth limit because `TicTacToeGame` permits any board size
+and run length, and the tree grows as the factorial of the empty cells — a 5x5
+board is about 15 trillion positions. The default of nine plies is exhaustive on
+3x3, which is where the game is actually played.

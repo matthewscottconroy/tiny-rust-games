@@ -15,7 +15,7 @@
 
 use std::io::{self, BufRead, Write};
 
-use tic_tac_toe_lib::{Board, GameStatus, Player, TicTacToeGame};
+use tic_tac_toe_lib::{Board, GameStatus, Player, TicTacToeGame, ai};
 
 /// What a line typed at the prompt asked for.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -115,6 +115,7 @@ fn run(
     game: &mut TicTacToeGame,
     input: &mut impl BufRead,
     output: &mut impl Write,
+    computer: Option<char>,
 ) -> io::Result<()> {
     writeln!(
         output,
@@ -125,6 +126,30 @@ fn run(
     let mut line = String::new();
     while !game.is_game_over() {
         write!(output, "\n{}", render(game))?;
+
+        // The computer's whole turn. Every rule it plays by — which squares are
+        // legal, who has won, and now which move is best — comes from the
+        // library; this frontend only prints the result. That is the same split
+        // the Bevy and Godot frontends have, and the reason the opponent lives
+        // in `tic-tac-toe-lib::ai` rather than here.
+        if computer == Some(game.current_symbol()) {
+            match ai::best_move(game) {
+                Some(mv) => {
+                    let (row, column) = (mv.row(), mv.column());
+                    writeln!(
+                        output,
+                        "\n{} ({}) plays {row} {column}.",
+                        game.current_player().name(),
+                        game.current_symbol()
+                    )?;
+                    game.take_turn(row, column)
+                        .expect("the library only suggests legal moves");
+                }
+                None => writeln!(output, "\nThe computer has no move.")?,
+            }
+            continue;
+        }
+
         let player = game.current_player();
         writeln!(
             output,
@@ -159,6 +184,11 @@ fn run(
 }
 
 fn main() -> io::Result<()> {
+    // `--vs-computer` puts the searching opponent in O's seat.
+    let computer = std::env::args()
+        .any(|arg| arg == "--vs-computer")
+        .then_some('O');
+
     let mut game = TicTacToeGame::new(
         Board::new(3, 3),
         vec![
@@ -171,7 +201,7 @@ fn main() -> io::Result<()> {
     let stdin = io::stdin();
     let mut input = stdin.lock();
     let mut output = io::stdout();
-    run(&mut game, &mut input, &mut output)
+    run(&mut game, &mut input, &mut output, computer)
 }
 
 #[cfg(test)]
@@ -193,7 +223,7 @@ mod tests {
     fn play_script(game: &mut TicTacToeGame, script: &str) -> String {
         let mut input = script.as_bytes();
         let mut output = Vec::new();
-        run(game, &mut input, &mut output).expect("in-memory streams never fail");
+        run(game, &mut input, &mut output, None).expect("in-memory streams never fail");
         String::from_utf8(output).expect("output is valid UTF-8")
     }
 
@@ -289,5 +319,54 @@ mod tests {
         let output = play_script(&mut game, "0 0\n");
         assert_eq!(game.turn_count(), 1);
         assert!(output.contains("Input ended."), "{output}");
+    }
+
+    /// Plays a whole game with the computer in O's seat.
+    ///
+    /// The human plays a losing line on purpose: the point is that the
+    /// computer's moves come from the library and are always legal, and that
+    /// the game ends without the frontend ever deciding anything.
+    fn play_against_computer(script: &str) -> String {
+        let mut game = TicTacToeGame::new(
+            Board::new(3, 3),
+            vec![
+                Player::new(String::from("Human"), 'X'),
+                Player::new(String::from("Computer"), 'O'),
+            ],
+            3,
+        );
+        let mut input = script.as_bytes();
+        let mut output = Vec::new();
+        run(&mut game, &mut input, &mut output, Some('O')).expect("in-memory streams never fail");
+        String::from_utf8(output).expect("output is utf-8")
+    }
+
+    #[test]
+    fn the_computer_takes_its_own_turns() {
+        let output = play_against_computer("0 0\n1 0\n2 0\n");
+        assert!(
+            output.contains("plays"),
+            "the computer should announce a move"
+        );
+        // The human is running down column 0, and its third move is
+        // refused — because the computer already took that square to block.
+        // A fixed script colliding with the reply is not a flaw in the
+        // test; it is the opponent working.
+        assert!(
+            output.contains("Invalid move"),
+            "the computer should have blocked column 0 first:\n{output}"
+        );
+    }
+
+    #[test]
+    fn the_computer_never_loses_to_a_greedy_human() {
+        // X grabs the top row, which is exactly the threat a perfect O must
+        // block. If the frontend ever stopped consulting the library, or the
+        // search regressed, X would win here.
+        let output = play_against_computer("0 0\n0 1\n0 2\n1 0\n1 1\n2 2\n");
+        assert!(
+            !output.contains("Human (X) wins"),
+            "a perfect opponent lost:\n{output}"
+        );
     }
 }

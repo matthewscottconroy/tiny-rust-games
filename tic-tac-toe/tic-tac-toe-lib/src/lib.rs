@@ -49,6 +49,7 @@
 // continuous physics does not.
 extern crate alloc;
 
+pub mod ai;
 mod board;
 mod error;
 mod game;

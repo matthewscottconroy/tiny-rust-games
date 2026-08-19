@@ -228,6 +228,7 @@ just breakout
 
 # Tic-tac-toe, four ways:
 cd tic-tac-toe/tic-tac-toe-cli && cargo run                      # terminal
+cargo run -p tic-tac-toe-cli -- --vs-computer                    # ...against a perfect opponent
 cargo run --manifest-path tech-demos/bevy/Cargo.toml -p tic-tac-toe-bevy
 cd tic-tac-toe/tic-tac-toe-godot && cargo build                  # then open in Godot
 ```
