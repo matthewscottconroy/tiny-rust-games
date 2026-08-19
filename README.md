@@ -155,6 +155,10 @@ pull request. It enforces, across every crate:
 - that the generated catalogue, [parity matrix](docs/PARITY.md) and
   [learning path](docs/LEARNING-PATH.md) are not stale — the last also fails if
   it names a demo that no longer exists;
+- that colours carrying meaning stay **distinguishable**, including under
+  simulated colour blindness — Snake's food used to be red on a green snake,
+  which is ΔE 10.9 under deuteranopia and so invisible to about one man in
+  twelve;
 - that `tic-tac-toe-lib` and `snake-lib` build for a **bare-metal Cortex-M4**.
   `snake-lib` advertised `no-std-compatible` in its metadata while using
   `std::collections::VecDeque`, which nothing checked; the claim is now true and

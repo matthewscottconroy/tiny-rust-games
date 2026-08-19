@@ -164,6 +164,10 @@ no-std:
 smoke:
     python3 tools/smoke-web.py
 
+# Fail if colours that carry meaning become hard to tell apart.
+check-palette:
+    python3 tools/check-palette.py
+
 # Fail if paired cross-engine demos lose their cross-links or drift apart.
 check-pairs:
     python3 tools/check-paired-demos.py

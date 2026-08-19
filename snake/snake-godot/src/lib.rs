@@ -196,7 +196,7 @@ impl INode2D for SnakeBoard {
                 Vector2::new(CELL_PX - inset * 2.0, CELL_PX - inset * 2.0),
             );
             self.base_mut()
-                .draw_rect(rect, Color::from_rgb(0.95, 0.45, 0.35));
+                .draw_rect(rect, Color::from_rgb(0.95, 0.40, 0.85));
         }
     }
 }

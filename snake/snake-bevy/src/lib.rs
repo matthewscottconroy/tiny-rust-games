@@ -283,7 +283,7 @@ fn redraw(
         commands.spawn((
             Drawn,
             Sprite {
-                color: Color::srgb(0.95, 0.45, 0.35),
+                color: Color::srgb(0.95, 0.40, 0.85),
                 custom_size: Some(Vec2::splat(config.cell_px * 0.6)),
                 ..default()
             },

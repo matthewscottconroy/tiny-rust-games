@@ -148,3 +148,20 @@ If that ever stops holding on some target, the honest response is to document
 that Breakout replays are portable within a target rather than to force the
 digests to agree — the same principle that made the `spatial-partitioning`
 benchmark worth running when it falsified its own demo's documentation.
+
+## Colour carries meaning, so it is measured
+
+A brick with two hits left is drawn at full brightness and one with a single hit
+at half. That difference is the only cue that a brick will survive the next ball,
+so it has to be visible at a glance rather than on inspection.
+
+It was not. The dimming was 12%, which the docs described as "dimmed, so the
+player can see it is weakened" — about 6 units of CIE ΔE, which essentially
+nobody can see on a moving target, colour vision or not. Half brightness is
+ΔE 26 across every row.
+
+`tools/check-palette.py` measures every colour pair that carries meaning, under
+normal vision and under simulated protanopia, deuteranopia and tritanopia, and
+CI fails if one drops below ΔE 25. Snake failed it worse: its food was red on a
+green snake, ΔE 98 to ordinary vision and **10.9** under deuteranopia, so the
+food was invisible to roughly one man in twelve. It is magenta now.

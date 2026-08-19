@@ -97,25 +97,18 @@ pub fn status_line(game: &BreakoutGame) -> String {
 
 /// Colour for a brick, by row and remaining hits.
 pub fn brick_color(row: usize, hits: u8) -> Color {
-    let base = match row % 5 {
-        0 => Color::from_rgb(0.90, 0.35, 0.35),
-        1 => Color::from_rgb(0.90, 0.60, 0.30),
-        2 => Color::from_rgb(0.85, 0.85, 0.35),
-        3 => Color::from_rgb(0.40, 0.80, 0.45),
-        _ => Color::from_rgb(0.40, 0.65, 0.90),
+    let (r, g, b) = match row % 5 {
+        0 => (0.90, 0.35, 0.35),
+        1 => (0.90, 0.60, 0.30),
+        2 => (0.85, 0.85, 0.35),
+        3 => (0.40, 0.80, 0.45),
+        _ => (0.40, 0.65, 0.90),
     };
-    // A damaged two-hit brick is dimmed, so the player can see it is weakened.
-    //
-    // Scaled by hand rather than with `Color::darkened`, which is an engine
-    // call: it needs a running Godot runtime and so cannot be reached from a
-    // plain `cargo test`. Keeping the pure functions free of engine calls is
-    // what makes them testable at all.
-    if hits > 1 {
-        base
-    } else {
-        const DIM: f32 = 1.0 - 0.12;
-        Color::from_rgb(base.r * DIM, base.g * DIM, base.b * DIM)
-    }
+    // A damaged two-hit brick is drawn at half brightness, matching the Bevy
+    // frontend exactly. The two must agree: a player who learns what a weakened
+    // brick looks like in one should not have to relearn it in the other.
+    let k = if hits > 1 { 1.0 } else { 0.5 };
+    Color::from_rgb(r * k, g * k, b * k)
 }
 
 // ─── BreakoutBoard node ───────────────────────────────────────────────────────

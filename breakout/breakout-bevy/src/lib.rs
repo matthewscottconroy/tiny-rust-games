@@ -108,17 +108,26 @@ pub fn status_line(game: &BreakoutGame) -> String {
     }
 }
 
+/// How bright a brick with one hit left is drawn, relative to a fresh one.
+///
+/// It was 0.88, which is a change of about 6 units of CIE ΔE — the docs said a
+/// damaged brick "is dimmed, so the player can see it is weakened", and at that
+/// strength essentially nobody could, mid-play or otherwise. Half brightness is
+/// ΔE 26 across every brick row, which is unmistakable. Measured by
+/// `tools/check-palette.py` rather than eyeballed.
+const DAMAGED_BRIGHTNESS: f32 = 0.5;
+
 /// Colour for a brick, by row and remaining hits.
 pub fn brick_color(row: usize, hits: u8) -> Color {
-    let base = match row % 5 {
-        0 => Color::srgb(0.90, 0.35, 0.35),
-        1 => Color::srgb(0.90, 0.60, 0.30),
-        2 => Color::srgb(0.85, 0.85, 0.35),
-        3 => Color::srgb(0.40, 0.80, 0.45),
-        _ => Color::srgb(0.40, 0.65, 0.90),
+    let (r, g, b) = match row % 5 {
+        0 => (0.90, 0.35, 0.35),
+        1 => (0.90, 0.60, 0.30),
+        2 => (0.85, 0.85, 0.35),
+        3 => (0.40, 0.80, 0.45),
+        _ => (0.40, 0.65, 0.90),
     };
-    // A damaged two-hit brick is dimmed, so the player can see it is weakened.
-    if hits > 1 { base } else { base.darker(0.12) }
+    let k = if hits > 1 { 1.0 } else { DAMAGED_BRIGHTNESS };
+    Color::srgb(r * k, g * k, b * k)
 }
 
 // --- Components ---

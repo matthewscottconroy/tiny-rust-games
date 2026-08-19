@@ -379,6 +379,10 @@ jobs:
       - run: python3 tools/learning-path.py --check
       - run: python3 tools/check-font-coverage.py
       - run: python3 tools/check-paired-demos.py
+      - name: Meaningful colours stay distinguishable
+        run: |
+          pip install --quiet numpy
+          python3 tools/check-palette.py
 
   # CI compiled the Godot demos but never loaded one, which left a whole class
   # of breakage invisible: a .gdextension naming a library that does not exist,
