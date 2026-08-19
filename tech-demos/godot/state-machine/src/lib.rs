@@ -6,6 +6,8 @@
 //!
 //! Teaches: a stateless `transition` function driving a finite state machine, so the
 //! transition rules are unit-testable without an engine.
+//!
+//! Concept: state-machine
 
 use godot::classes::{INode2D, Input, Label, Node2D};
 use godot::prelude::*;

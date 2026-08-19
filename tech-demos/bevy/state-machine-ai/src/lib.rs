@@ -29,6 +29,8 @@
 //!     .add_plugins(StateMachineAiPlugin)
 //!     .run();
 //! ```
+//!
+//! Concept: state-machine
 
 use bevy::prelude::*;
 

@@ -6,6 +6,8 @@
 //!
 //! Teaches: hand-rolled JSON serialization written to `user://` through Godot's
 //! `FileAccess`, with no external crate dependency.
+//!
+//! Concept: save-load
 
 use godot::classes::{FileAccess, INode, Label, Node, file_access};
 use godot::prelude::*;

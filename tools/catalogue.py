@@ -130,8 +130,20 @@ def parse_demo(demo_dir: Path, engine: str) -> dict | None:
             controls = strip_markup(line.split("Controls:", 1)[1])
             break
 
+    # An explicit `Concept:` line lets two demos of the same idea be paired even
+    # when their directories are named differently, without renaming a crate —
+    # which for a Godot demo would mean touching its .gdextension, its [lib]
+    # name and its lockfile, and for either engine would break every existing
+    # link to it.
+    concept = demo_dir.name
+    for line in doc:
+        if line.startswith("Concept:"):
+            concept = strip_markup(line.split(":", 1)[1]).strip()
+            break
+
     return {
         "name": demo_dir.name,
+        "concept": concept,
         "engine": engine,
         "summary": summary,
         "teaches": teaches,

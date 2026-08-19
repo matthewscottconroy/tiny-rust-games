@@ -9,6 +9,8 @@
 //!   and draw a polyline along the found path.
 //! - Pure helpers (`grid_to_id`, `id_to_grid`, `grid_to_world`, `manhattan`)
 //!   fully covered by unit tests.
+//!
+//! Concept: pathfinding
 
 use godot::classes::{AStar2D, INode2D, InputEvent, InputEventMouseButton};
 use godot::prelude::*;

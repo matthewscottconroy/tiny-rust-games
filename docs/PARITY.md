@@ -9,11 +9,16 @@ where that stands — and a gap here is not a defect, it is a suggestion. A demo
 that exists for one engine and not another is the cheapest possible contribution
 to make, because the hard part (deciding what to teach) is already done.
 
-Concepts are matched by directory name, which **undercounts**: `object-pool`
-and `object-pooling` are the same idea filed under two names. The last section
-lists those near-misses rather than guessing, because the fix is a judgement
-call — either they are the same demo and one should be renamed, or they are
-genuinely different and the similar names are the problem.
+Concepts are matched by directory name, or by an explicit `Concept:` line in a
+demo's module docs when the two engines file the same idea under different
+names — `object-pool` and `object-pooling`, say. Tagging beats renaming here: a
+Godot crate's name is wired into its `.gdextension`, its `[lib]` name and its
+lockfile, and renaming either side would break every existing link to the demo.
+
+The last section lists names that merely *look* alike, as candidates for a tag
+rather than as matches. They need a human: `godot/navigation` is
+NavigationAgent2D path-following and `bevy/menu-navigation` is an arrow-key
+menu, which a string-similarity check happily pairs and a reader does not.
 
 
 | Engine | Demos |
@@ -21,9 +26,9 @@ genuinely different and the similar names are the problem.
 | Bevy | 82 |
 | Godot | 67 |
 | bracket-lib | 2 |
-| **In both Bevy and Godot** | **9** |
+| **In both Bevy and Godot** | **15** |
 
-9 concepts are demonstrated in both engines. 73 exist only in Bevy and 58 only in Godot; those two lists are the backlog.
+15 concepts are demonstrated in both engines. 67 exist only in Bevy and 52 only in Godot; those two lists are the backlog.
 
 ## Every concept
 
@@ -59,14 +64,12 @@ genuinely different and the similar names are the problem.
 | `destructible-terrain` | ✓ | · | · |
 | `dialog-system` | ✓ | · | · |
 | `dialogue-tree` | · | ✓ | · |
-| `drag-and-drop` | ✓ | · | · |
-| `drag-and-drop-ui` | · | ✓ | · |
+| `drag-and-drop` | ✓ | ✓ | · |
 | `draw-window` | ✓ | · | · |
 | `ecs-ascii-sim` | ✓ | · | · |
 | `editor-plugin` | · | ✓ | · |
 | `enemy-chase-ai` | ✓ | · | · |
-| `event-bus` | · | ✓ | · |
-| `events` | ✓ | · | · |
+| `events` | ✓ | ✓ | · |
 | `exported-properties` | · | ✓ | · |
 | `fixed-timestep` | ✓ | · | · |
 | `floating-text` | ✓ | · | · |
@@ -106,16 +109,14 @@ genuinely different and the similar names are the problem.
 | `noise-generation` | · | ✓ | · |
 | `noise-map` | ✓ | · | · |
 | `notification-system` | ✓ | · | · |
-| `object-pool` | · | ✓ | · |
-| `object-pooling` | ✓ | · | · |
+| `object-pooling` | ✓ | ✓ | · |
 | `observer-events` | ✓ | · | · |
 | `one-shot-collision` | · | ✓ | · |
 | `one-shot-systems` | ✓ | · | · |
 | `parallax-background` | ✓ | ✓ | · |
 | `particle-system` | ✓ | · | · |
 | `particles-2d` | · | ✓ | · |
-| `pathfinding` | ✓ | · | · |
-| `pathfinding-astar` | · | ✓ | · |
+| `pathfinding` | ✓ | ✓ | · |
 | `pickup-and-inventory` | ✓ | · | · |
 | `pixel-perfect-camera` | ✓ | · | · |
 | `platformer-physics` | ✓ | · | · |
@@ -130,8 +131,7 @@ genuinely different and the similar names are the problem.
 | `rigid-body-2d` | · | ✓ | · |
 | `rope-simulation` | ✓ | · | · |
 | `rubber-band-selection` | ✓ | · | · |
-| `save-and-load` | · | ✓ | · |
-| `save-load` | ✓ | · | · |
+| `save-load` | ✓ | ✓ | · |
 | `scene-instancing` | · | ✓ | · |
 | `scene-manager` | · | ✓ | · |
 | `scene-pause` | ✓ | · | · |
@@ -149,8 +149,7 @@ genuinely different and the similar names are the problem.
 | `split-screen` | · | ✓ | · |
 | `sprite-demo` | ✓ | · | · |
 | `spritesheet-animation` | ✓ | · | · |
-| `state-machine` | · | ✓ | · |
-| `state-machine-ai` | ✓ | · | · |
+| `state-machine` | ✓ | ✓ | · |
 | `status-effects` | ✓ | · | · |
 | `stealth-ai` | ✓ | · | · |
 | `steering-behaviors` | · | ✓ | · |
@@ -191,11 +190,9 @@ Candidates for a Godot port:
 - `day-night-cycle`
 - `destructible-terrain`
 - `dialog-system`
-- `drag-and-drop`
 - `draw-window`
 - `ecs-ascii-sim`
 - `enemy-chase-ai`
-- `events`
 - `fixed-timestep`
 - `floating-text`
 - `flow-field-pathfinding`
@@ -213,11 +210,9 @@ Candidates for a Godot port:
 - `movable-sprite`
 - `noise-map`
 - `notification-system`
-- `object-pooling`
 - `observer-events`
 - `one-shot-systems`
 - `particle-system`
-- `pathfinding`
 - `pickup-and-inventory`
 - `pixel-perfect-camera`
 - `platformer-physics`
@@ -227,7 +222,6 @@ Candidates for a Godot port:
 - `required-components`
 - `rope-simulation`
 - `rubber-band-selection`
-- `save-load`
 - `scene-pause`
 - `scene-transition`
 - `screen-shake`
@@ -236,7 +230,6 @@ Candidates for a Godot port:
 - `spatial-partitioning`
 - `sprite-demo`
 - `spritesheet-animation`
-- `state-machine-ai`
 - `status-effects`
 - `stealth-ai`
 - `tilemap`
@@ -265,9 +258,7 @@ Candidates for a Bevy port:
 - `command-pattern`
 - `custom-resource`
 - `dialogue-tree`
-- `drag-and-drop-ui`
 - `editor-plugin`
-- `event-bus`
 - `exported-properties`
 - `game-clock`
 - `gdscript-interop`
@@ -284,16 +275,13 @@ Candidates for a Bevy port:
 - `navigation`
 - `node-lifecycle`
 - `noise-generation`
-- `object-pool`
 - `one-shot-collision`
 - `particles-2d`
-- `pathfinding-astar`
 - `player-movement`
 - `quest-system`
 - `ray-casting`
 - `rich-text-label`
 - `rigid-body-2d`
-- `save-and-load`
 - `scene-instancing`
 - `scene-manager`
 - `scene-tree`
@@ -303,7 +291,6 @@ Candidates for a Bevy port:
 - `singleton-autoload`
 - `spawner`
 - `split-screen`
-- `state-machine`
 - `steering-behaviors`
 - `tilemap-basic`
 - `tilemap-procedural`
@@ -315,14 +302,8 @@ Candidates for a Bevy port:
 
 ## Probably the same concept, filed under two names
 
-Counted as gaps above, because the matrix matches on directory name. Each pair is either one demo needing a consistent name, or two demos whose names should be less alike:
+Counted as gaps above. Each pair is either the same idea needing a shared `Concept:` tag, or two genuinely different demos whose names happen to look alike — a distinction only a reader can make:
 
 | Godot | Bevy |
 |-------|------|
-| `drag-and-drop-ui` | `drag-and-drop` |
-| `event-bus` | `events` |
 | `navigation` | `menu-navigation` |
-| `object-pool` | `object-pooling` |
-| `pathfinding-astar` | `pathfinding` |
-| `save-and-load` | `save-load` |
-| `state-machine` | `state-machine-ai` |

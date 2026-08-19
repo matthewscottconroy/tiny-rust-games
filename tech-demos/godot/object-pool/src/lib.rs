@@ -8,6 +8,8 @@
 //!
 //! The pool avoids the overhead of `new_alloc` + `queue_free` per projectile —
 //! nodes are simply shown/hidden and their process mode toggled.
+//!
+//! Concept: object-pooling
 
 use godot::classes::{INode2D, Label, Node, Node2D, Sprite2D};
 use godot::prelude::*;

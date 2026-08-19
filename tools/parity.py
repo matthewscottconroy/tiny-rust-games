@@ -43,11 +43,16 @@ where that stands — and a gap here is not a defect, it is a suggestion. A demo
 that exists for one engine and not another is the cheapest possible contribution
 to make, because the hard part (deciding what to teach) is already done.
 
-Concepts are matched by directory name, which **undercounts**: `object-pool`
-and `object-pooling` are the same idea filed under two names. The last section
-lists those near-misses rather than guessing, because the fix is a judgement
-call — either they are the same demo and one should be renamed, or they are
-genuinely different and the similar names are the problem.
+Concepts are matched by directory name, or by an explicit `Concept:` line in a
+demo's module docs when the two engines file the same idea under different
+names — `object-pool` and `object-pooling`, say. Tagging beats renaming here: a
+Godot crate's name is wired into its `.gdextension`, its `[lib]` name and its
+lockfile, and renaming either side would break every existing link to the demo.
+
+The last section lists names that merely *look* alike, as candidates for a tag
+rather than as matches. They need a human: `godot/navigation` is
+NavigationAgent2D path-following and `bevy/menu-navigation` is an arrow-key
+menu, which a string-similarity check happily pairs and a reader does not.
 
 """
 
@@ -57,9 +62,9 @@ def build() -> str:
 
     by_engine: dict[str, set[str]] = {key: set() for key, _ in ENGINES}
     for demo in demos:
-        by_engine.setdefault(demo["engine"], set()).add(demo["name"])
+        by_engine.setdefault(demo["engine"], set()).add(demo["concept"])
 
-    every_name = sorted({demo["name"] for demo in demos})
+    every_name = sorted({demo["concept"] for demo in demos})
 
     lines = [HEADER]
 
@@ -120,9 +125,9 @@ def build() -> str:
     lines.append("")
     if near:
         lines.append(
-            "Counted as gaps above, because the matrix matches on directory "
-            "name. Each pair is either one demo needing a consistent name, or "
-            "two demos whose names should be less alike:"
+            "Counted as gaps above. Each pair is either the same idea needing a "
+            "shared `Concept:` tag, or two genuinely different demos whose "
+            "names happen to look alike — a distinction only a reader can make:"
         )
         lines.append("")
         lines.append("| Godot | Bevy |")

@@ -9,6 +9,8 @@
 //!
 //! Teaches: an autoloaded signal hub, so publishers and subscribers never hold direct
 //! references to each other.
+//!
+//! Concept: events
 
 use godot::classes::{INode, Node};
 use godot::prelude::*;

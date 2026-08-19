@@ -3,6 +3,8 @@
 //!
 //! Teaches: handling `Control::_gui_input` and distinguishing
 //! `InputEventMouseButton` from `InputEventMouseMotion` while dragging.
+//!
+//! Concept: drag-and-drop
 
 use godot::classes::{Control, IControl, InputEvent, InputEventMouseButton, InputEventMouseMotion};
 use godot::prelude::*;
