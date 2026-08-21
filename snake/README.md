@@ -103,3 +103,23 @@ look:
   run, including a win condition where `width * height` could be replaced by
   `width + height` undetected — because the only win test used a 2×2 board,
   where both are 4. The tests that kill each mutant are marked in `src/tests.rs`.
+
+## Lockstep, and what mutation testing said about it
+
+`snake-lockstep` started at 27 mutants caught and 34 missed — worse than any
+hand-written estimate would have guessed, and the misses pointed straight at two
+real gaps.
+
+`winner()` was untested. The integration test asserted that the two peers
+*agreed* on a winner, which a `winner` returning `None` forever satisfies
+perfectly: it tested agreement rather than correctness. The decision is now a
+pure `decide_winner` with all four cases pinned, and the integration test checks
+the answer as well as the agreement.
+
+The demo binary had no tests at all. `Link` and `scripted_turn` are logic rather
+than wiring — a latency queue and a deterministic input source, both of which the
+demo's conclusions depend on — so they have tests now.
+
+That took it to 49 caught and 14 missed, and every remaining miss is inside
+`fn main()`: argument parsing and the demo loop, which is the wiring the
+repository's own bar exempts.

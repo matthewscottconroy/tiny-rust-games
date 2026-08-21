@@ -145,6 +145,35 @@ fn a_depth_of_zero_still_returns_a_legal_move() {
     let game = standard();
     let mv = best_move_to_depth(&game, 0).expect("a move exists");
     assert!(game.board().is_entry_empty(mv.row(), mv.column()));
+    // With no search every move scores the same, so the documented row-major
+    // tie-break decides — and that is what makes the opponent reproducible.
+    // Mutation testing found nothing pinned this: flipping the comparison to
+    // keep the *last* equal move instead of the first passed every test.
+    assert_eq!((mv.row(), mv.column()), (0, 0), "ties go to the first cell");
+}
+
+#[test]
+fn the_depth_limit_actually_limits() {
+    // A search that ignored `max_depth` would still play well — better, even —
+    // so no test of move quality can catch it. What proves the limit works is
+    // that a shallow search and a deep one ever *disagree*.
+    let disagreement = [(0usize, 0usize), (1, 1), (0, 1), (2, 0), (1, 0)]
+        .into_iter()
+        .any(|opening| {
+            let mut game = standard();
+            play(&mut game, &[opening]);
+            let shallow = best_move_to_depth(&game, 2);
+            let deep = best_move(&game);
+            match (shallow, deep) {
+                (Some(a), Some(b)) => (a.row(), a.column()) != (b.row(), b.column()),
+                _ => false,
+            }
+        });
+    assert!(
+        disagreement,
+        "a two-ply search agreed with a nine-ply one everywhere, so the depth \
+         limit is not being applied"
+    );
 }
 
 #[test]

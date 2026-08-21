@@ -194,3 +194,105 @@ fn main() {
         }
     );
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    // `Link` and `scripted_turn` are logic, not wiring, and mutation testing
+    // found every one of their mutants surviving — the binary had no tests at
+    // all. A demo harness still gets to be correct.
+
+    #[test]
+    fn a_link_with_no_latency_delivers_at_once() {
+        let mut link = Link::new(0);
+        link.send(
+            0,
+            Message::Input {
+                tick: 1,
+                turn: None,
+            },
+        );
+        assert_eq!(link.deliver(0).len(), 1);
+        assert!(
+            link.deliver(0).is_empty(),
+            "delivered messages are consumed"
+        );
+    }
+
+    #[test]
+    fn a_link_holds_a_message_for_exactly_its_latency() {
+        let mut link = Link::new(3);
+        link.send(
+            10,
+            Message::Input {
+                tick: 1,
+                turn: None,
+            },
+        );
+        for now in 10..13 {
+            assert!(link.deliver(now).is_empty(), "too early at {now}");
+        }
+        assert_eq!(link.deliver(13).len(), 1, "due at 13");
+    }
+
+    #[test]
+    fn a_link_delivers_everything_already_due() {
+        let mut link = Link::new(2);
+        for tick in 0..5 {
+            link.send(tick, Message::Input { tick, turn: None });
+        }
+        // By tick 4, the ones sent at 0, 1 and 2 are due.
+        assert_eq!(link.deliver(4).len(), 3);
+    }
+
+    #[test]
+    fn a_link_preserves_order() {
+        let mut link = Link::new(1);
+        for tick in 0..4 {
+            link.send(0, Message::Input { tick, turn: None });
+        }
+        let ticks: Vec<u64> = link
+            .deliver(1)
+            .into_iter()
+            .map(|m| match m {
+                Message::Input { tick, .. } => tick,
+                Message::Checksum { tick, .. } => tick,
+            })
+            .collect();
+        assert_eq!(ticks, vec![0, 1, 2, 3]);
+    }
+
+    #[test]
+    fn the_script_is_a_pure_function_of_seed_and_round() {
+        // Both peers derive their inputs from this, so it has to give the same
+        // answer every time or the demo would desync for the wrong reason.
+        for round in 0..50 {
+            assert_eq!(scripted_turn(1, round), scripted_turn(1, round));
+        }
+    }
+
+    #[test]
+    fn the_script_reaches_every_direction_and_also_stands_still() {
+        let seen: Vec<Turn> = (0..200).map(|r| scripted_turn(1, r)).collect();
+        for direction in [
+            Direction::Up,
+            Direction::Down,
+            Direction::Left,
+            Direction::Right,
+        ] {
+            assert!(
+                seen.contains(&Some(direction)),
+                "{direction:?} never came up"
+            );
+        }
+        assert!(seen.contains(&None), "the script never holds its course");
+    }
+
+    #[test]
+    fn different_seeds_give_different_scripts() {
+        let a: Vec<Turn> = (0..40).map(|r| scripted_turn(1, r)).collect();
+        let b: Vec<Turn> = (0..40).map(|r| scripted_turn(2, r)).collect();
+        assert_ne!(a, b, "both players would press the same keys");
+    }
+}

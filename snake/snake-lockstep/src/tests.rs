@@ -136,7 +136,34 @@ fn both_peers_agree_on_the_winner() {
         pair.round(turn(tick), turn(tick + 1)).expect("no desync");
     }
     assert!(pair.host.is_over(), "someone should have died");
+    // Agreement is necessary but nowhere near sufficient: a `winner` that
+    // always answered None would satisfy it. Assert the actual answer too.
     assert_eq!(pair.host.winner(), pair.guest.winner());
+    let expected = decide_winner(
+        pair.host.game(Seat::Host).is_over(),
+        pair.host.game(Seat::Guest).is_over(),
+    );
+    assert_eq!(pair.host.winner(), expected);
+}
+
+#[test]
+fn the_winner_is_whichever_snake_is_still_alive() {
+    // All four cases, which no amount of playing matches would reliably reach.
+    assert_eq!(decide_winner(true, false), Some(Seat::Guest));
+    assert_eq!(decide_winner(false, true), Some(Seat::Host));
+    assert_eq!(
+        decide_winner(false, false),
+        None,
+        "both alive: no winner yet"
+    );
+    assert_eq!(decide_winner(true, true), None, "both died at once: a draw");
+}
+
+#[test]
+fn the_agreed_input_delay_is_reported() {
+    for delay in [1u64, 2, 7] {
+        assert_eq!(Lockstep::new(Seat::Host, W, H, SEEDS, delay).delay(), delay);
+    }
 }
 
 #[test]
@@ -315,7 +342,14 @@ fn inputs_are_scheduled_contiguously_even_when_a_peer_runs_several_ticks() {
     let mut host = Lockstep::new(Seat::Host, W, H, SEEDS, 3);
 
     // Advance as far as the pre-filled inputs allow, without sending anything.
-    while host.try_step().expect("no desync") {}
+    // Bounded deliberately: a `try_step` that always claimed progress would
+    // spin here forever, and a hanging test is a worse diagnosis than a failing
+    // one.
+    let mut drained = 0;
+    while host.try_step().expect("no desync") {
+        drained += 1;
+        assert!(drained < 100, "try_step never stopped reporting progress");
+    }
     assert_eq!(host.tick(), 3, "the pre-filled ticks should have run");
 
     // The next input must be for tick 3 — the tick we are about to need — not

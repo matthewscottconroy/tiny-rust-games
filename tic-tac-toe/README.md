@@ -156,3 +156,19 @@ The search takes a depth limit because `TicTacToeGame` permits any board size
 and run length, and the tree grows as the factorial of the empty cells — a 5x5
 board is about 15 trillion positions. The default of nine plies is exhaustive on
 3x3, which is where the game is actually played.
+
+Mutation testing (`cargo mutants -d tic-tac-toe-lib --file src/ai.rs`) catches 25
+of 36 viable mutants, and the eleven survivors were worth reading rather than
+chasing: every one widens the alpha-beta window, lowers the initial `best`, or
+picks the last of several equal scores instead of the first. None can change the
+move chosen — which is exactly what
+`alpha_beta_does_not_change_the_move_chosen` already proves against a
+full-width search. They are equivalent mutants, and the honest score is 25 of 25
+that mean anything.
+
+Two survivors were real, and both are now pinned. Nothing asserted the
+documented row-major tie-break, so an opponent that preferred the *last* equally
+good move passed every test. And nothing proved the depth limit limited: a
+search that ignored `max_depth` plays better, not worse, so no test of move
+quality can catch it — what catches it is that a two-ply search and a nine-ply
+one must sometimes disagree.

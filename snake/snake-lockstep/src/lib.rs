@@ -122,6 +122,23 @@ pub enum Desync {
     },
 }
 
+/// Who has won, given whether each side's snake has died.
+///
+/// Split out from [`Lockstep::winner`] so the decision can be tested on its own
+/// four cases rather than by playing matches until the right one turns up.
+/// Mutation testing is what prompted this: the integration test asserted only
+/// that the two peers *agreed* on a winner, which a `winner` that always
+/// answered `None` satisfies perfectly.
+pub fn decide_winner(host_is_over: bool, guest_is_over: bool) -> Option<Seat> {
+    match (host_is_over, guest_is_over) {
+        // A dead snake loses, so the *other* seat wins.
+        (true, false) => Some(Seat::Guest),
+        (false, true) => Some(Seat::Host),
+        // Both alive, or both dead on the same tick: nobody has won.
+        _ => None,
+    }
+}
+
 /// How often peers compare checksums, in ticks.
 ///
 /// Every tick would be wasteful and never would be negligent; the cost of a
@@ -218,11 +235,7 @@ impl Lockstep {
     /// tick, which is a draw — and is reachable, because both games advance on
     /// the same tick.
     pub fn winner(&self) -> Option<Seat> {
-        match (self.games[0].is_over(), self.games[1].is_over()) {
-            (true, false) => Some(Seat::Guest),
-            (false, true) => Some(Seat::Host),
-            _ => None,
-        }
+        decide_winner(self.games[0].is_over(), self.games[1].is_over())
     }
 
     /// Queues this peer's input for the next unscheduled tick, and returns the
