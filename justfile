@@ -33,6 +33,7 @@ checks:
     python3 tools/check-paired-demos.py
     python3 tools/check-palette.py
     python3 tools/check-tooling.py
+    python3 tools/check-crate-hygiene.py
 
 # --- Formatting ---
 
@@ -184,6 +185,7 @@ smoke:
 check-palette:
     python3 tools/check-palette.py
     python3 tools/check-tooling.py
+    python3 tools/check-crate-hygiene.py
 
 # Fail if paired cross-engine demos lose their cross-links or drift apart.
 check-pairs:

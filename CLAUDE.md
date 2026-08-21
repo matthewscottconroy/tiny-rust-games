@@ -69,7 +69,9 @@ none.
 
 **Bevy demos inherit lints from the workspace.** Every member `Cargo.toml` ends
 with `[lints]\nworkspace = true`. A new demo that omits it silently opts out of
-`-D warnings`. Three clippy lints are allowed workspace-wide
+`-D warnings` — which was true of the warning and not of any check until
+`tools/check-crate-hygiene.py` existed. It also verifies workspace membership
+independently of the pre-commit hook, since hooks are per-clone and bypassable. Three clippy lints are allowed workspace-wide
 (`type_complexity`, `too_many_arguments`, `needless_range_loop`) because Bevy
 system signatures are wide and grid code reads better with indices; the
 rationale is in `tech-demos/bevy/Cargo.toml`. Do not add more allows to dodge a

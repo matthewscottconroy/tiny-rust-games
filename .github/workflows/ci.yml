@@ -380,6 +380,7 @@ jobs:
       - run: python3 tools/check-font-coverage.py
       - run: python3 tools/check-paired-demos.py
       - run: python3 tools/check-tooling.py
+      - run: python3 tools/check-crate-hygiene.py
       - name: Meaningful colours stay distinguishable
         run: |
           pip install --quiet numpy
