@@ -378,6 +378,72 @@ fn the_ball_cannot_cross_a_brick_in_one_step() {
     );
 }
 
+#[test]
+fn the_paddle_steers_harder_the_further_from_centre_it_is_struck() {
+    // The test above proves the bounce goes the right *way*; this proves it
+    // goes the right *amount*. Mutation testing found the difference mattered:
+    // replacing the division by the paddle half-width with a multiplication
+    // survived every test, because the result then clamps to full deflection
+    // for any hit more than a fiftieth of a pixel off centre. The ball still
+    // went left when struck left — it just did so at maximum angle always,
+    // which is the whole feel of the game gone.
+    let bounce_vx = |offset: f32| {
+        let layout = BreakoutGame::default_layout();
+        let radius = layout.ball_radius;
+        let mut g = BreakoutGame::new(layout);
+        let paddle = g.paddle_rect();
+        // Placed rather than played: an exact offset is the point here.
+        g.place_ball(
+            Vec2::new(g.paddle_x() + offset, paddle.top() - radius + 1.0),
+            Vec2::new(0.0, 120.0),
+        );
+        let outcome = g.step();
+        assert!(outcome.hit_paddle, "no bounce at offset {offset}");
+        g.ball_velocity().x
+    };
+
+    let centre = bounce_vx(0.0);
+    let middle = bounce_vx(15.0);
+    let edge = bounce_vx(50.0);
+
+    assert!(
+        centre.abs() < 1.0,
+        "a centre hit should go straight up: {centre}"
+    );
+    assert!(middle > 0.0, "right of centre must send it right: {middle}");
+    assert!(
+        edge > middle * 1.5,
+        "an edge hit must deflect much harder than a near-centre one: \
+         {middle} vs {edge}"
+    );
+
+    // Deflection is capped below the ball's own speed, so even the most extreme
+    // hit still travels upward. Without the cap the sideways component can
+    // exceed the total speed, the vertical component collapses to its floor,
+    // and the ball leaves the paddle almost horizontally — never coming back.
+    // A ratio test cannot see that, because scaling both offsets equally keeps
+    // their ratio; it takes an absolute bound.
+    let speed = BreakoutGame::default_layout().ball_speed;
+    assert!(
+        edge < speed * 0.9,
+        "the sideways component {edge} is too close to the total speed {speed}"
+    );
+
+    let mut g = BreakoutGame::new(BreakoutGame::default_layout());
+    let paddle = g.paddle_rect();
+    let radius = BreakoutGame::default_layout().ball_radius;
+    g.place_ball(
+        Vec2::new(g.paddle_x() + 54.0, paddle.top() - radius + 1.0),
+        Vec2::new(0.0, 120.0),
+    );
+    assert!(g.step().hit_paddle);
+    let v = g.ball_velocity();
+    assert!(
+        v.y < -speed * 0.4,
+        "even an edge hit must send the ball up, not sideways: {v:?}"
+    );
+}
+
 // ── Losing ───────────────────────────────────────────────────────────────────
 
 #[test]
@@ -859,6 +925,20 @@ fn breaking_a_brick_scores_more_than_merely_hitting_it() {
     assert!(
         g.score() - after_hit > after_hit,
         "destroying should score more than a glancing hit"
+    );
+
+    // The exact amounts, not just their order. Mutation testing found the
+    // relative check was satisfied by *multiplying* the score instead of adding
+    // to it, which scores more and so passes — while turning a fixed reward
+    // into a runaway one. These are game rules; pinning them is the point.
+    assert_eq!(
+        after_hit, 10,
+        "a hit that leaves the brick standing scores 10"
+    );
+    assert_eq!(
+        g.score(),
+        35,
+        "destroying it adds 10 for the hit and 15 more"
     );
 }
 

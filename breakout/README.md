@@ -114,13 +114,30 @@ coincidence, not a test, so there is a `#[cfg(test)]` helper that puts the ball
 exactly where a case needs it — kept test-only so the public API stays honest
 about what a player can do.
 
-Mutation testing (`cargo mutants -d breakout-lib`) catches 201 of 225 viable
+Mutation testing (`cargo mutants -d breakout-lib`) catches 208 of 225 viable
 mutants. The first run caught 47 survivors and was worth every minute: the whole
 of `collide_bricks` — the most intricate code in the game — turned out to be
 reachable only through full games that never asserted *how* the ball bounced.
-The 24 that remain are exact-boundary comparisons and layout constants whose
-mutations are physically indistinguishable without pinning float literals, which
-would trade readability for a number.
+
+A later run found two more that were worth fixing, both in the paddle bounce,
+and both invisible to tests that looked correct:
+
+- The steering test proved the ball went the right *way* but never the right
+  *amount*, so replacing the division by the paddle half-width with a
+  multiplication survived: every hit more than a fiftieth of a pixel off centre
+  then clamps to full deflection. The ball still went left when struck left, and
+  the entire feel of the game was gone.
+- Scaling the deflection by `speed + 0.75` instead of `speed * 0.75` survived a
+  ratio test, because scaling both offsets equally preserves their ratio. Its
+  consequence is real: the sideways component can then exceed the ball's total
+  speed, the vertical component collapses to its floor, and the ball leaves the
+  paddle almost horizontally and never returns. Catching it took an absolute
+  bound rather than a relative one.
+
+The 17 that remain are exact-boundary comparisons (`<` against `<=`, where the
+two differ only when a float lands precisely on an edge) and `default_layout`
+constants, whose mutations are physically indistinguishable without pinning
+float literals — which would trade readability for a number.
 
 ## Is it deterministic across machines?
 
