@@ -124,6 +124,30 @@ impl fmt::Display for Board {
 
 #[cfg(test)]
 mod tests {
+    #[test]
+    fn the_first_cell_past_each_edge_is_outside_the_board() {
+        // The boundary itself, not a number far outside it. Mutation testing
+        // found `<` could become `<=` unnoticed, because every existing test
+        // asked about coordinates like (9, 9) on a 3x3 board — which both
+        // versions reject. Only (3, 0) and (0, 3) tell them apart, and those
+        // are exactly the cells an off-by-one would let through into a `place`
+        // that indexes straight into the row vectors.
+        let board = Board::new(3, 3);
+        assert!(board.contains(2, 2), "the last real cell is inside");
+        assert!(!board.contains(3, 0), "one row past the end is outside");
+        assert!(!board.contains(0, 3), "one column past the end is outside");
+        assert!(!board.contains(3, 3));
+    }
+
+    #[test]
+    fn a_non_square_board_knows_which_edge_is_which() {
+        // Rows and columns are easy to swap; a square board hides it.
+        let board = Board::new(2, 5); // 2 rows, 5 columns
+        assert!(board.contains(1, 4));
+        assert!(!board.contains(2, 4), "only 2 rows");
+        assert!(!board.contains(1, 5), "only 5 columns");
+    }
+
     use super::*;
 
     #[test]

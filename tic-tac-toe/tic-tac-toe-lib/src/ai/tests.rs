@@ -191,6 +191,22 @@ fn a_shallow_search_still_takes_a_win_in_one() {
 /// The AI moves for `ai_symbol`; the other side tries *everything*. Returns
 /// false as soon as any line ends with the AI having lost.
 fn ai_never_loses(game: &TicTacToeGame, ai_symbol: char) -> bool {
+    ai_never_loses_within(game, ai_symbol, 0)
+}
+
+/// The recursion behind [`ai_never_loses`], with a ply budget.
+///
+/// A 3x3 game lasts nine plies, so the bound is never reached by working code.
+/// It is here because mutation testing showed what happens without it: a mutant
+/// that stops `check_for_win` detecting a line, or stops `place` writing to the
+/// board, means no game ever ends — and an exhaustive search then explores
+/// forever. The suite hung rather than failed, which named no line and turned a
+/// seconds-long mutation run into a five-minute one.
+fn ai_never_loses_within(game: &TicTacToeGame, ai_symbol: char, ply: usize) -> bool {
+    assert!(
+        ply <= 9,
+        "a 3x3 game cannot last {ply} plies — the board is not filling up"
+    );
     match game.status() {
         GameStatus::Won(player) => return player.symbol() == ai_symbol,
         GameStatus::Draw => return true,
@@ -204,13 +220,13 @@ fn ai_never_loses(game: &TicTacToeGame, ai_symbol: char) -> bool {
         let mut next = game.clone();
         next.take_turn(mv.row(), mv.column())
             .expect("AI move is legal");
-        return ai_never_loses(&next, ai_symbol);
+        return ai_never_loses_within(&next, ai_symbol, ply + 1);
     }
 
     empty_cells(game).into_iter().all(|(row, column)| {
         let mut next = game.clone();
         next.take_turn(row, column).expect("legal");
-        ai_never_loses(&next, ai_symbol)
+        ai_never_loses_within(&next, ai_symbol, ply + 1)
     })
 }
 

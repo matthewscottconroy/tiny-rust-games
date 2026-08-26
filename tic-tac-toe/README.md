@@ -172,3 +172,31 @@ good move passed every test. And nothing proved the depth limit limited: a
 search that ignored `max_depth` plays better, not worse, so no test of move
 quality can catch it — what catches it is that a two-ply search and a nine-ply
 one must sometimes disagree.
+
+## What mutation testing said about the rules
+
+`cargo mutants -d tic-tac-toe-lib` reports 126 caught, 10 detected by timeout
+and 11 missed of 147 viable mutants. Every one of the 11 is in `ai.rs` and
+equivalent, as described above; outside the search, nothing survives.
+
+Two things came out of the run worth keeping.
+
+`Board::contains` could have its `<` become `<=` unnoticed. Every existing test
+asked about coordinates like `(9, 9)` on a 3x3 board, which both versions
+reject — only `(3, 0)` and `(0, 3)` tell them apart, and those are exactly the
+cells an off-by-one would let through into a `place` that indexes straight into
+the row vectors. Test the boundary, not a number comfortably past it.
+
+The ten timeouts are more interesting, and they are not a defect. They are all
+mutants that stop the board being written or a win being noticed — `place` doing
+nothing, `is_entry_empty` always true, `check_for_win` never matching. The board
+then never fills, so the exhaustive opponent test explores a tree whose branching
+factor never shrinks: 387,420,489 positions before the depth cap, rather than the
+few thousand a real game reaches. They are caught by exceeding the time budget
+instead of by an assertion.
+
+That is worth naming, because it is a property of exhaustive tests in general:
+they are a *slow* oracle for any mutant that removes termination. The recursion
+carries a ply bound so a genuinely non-advancing search fails with a message
+rather than hanging, but a search that still terminates and merely got
+enormous can only be caught by the clock.
