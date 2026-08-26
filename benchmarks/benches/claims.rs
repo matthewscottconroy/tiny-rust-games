@@ -28,6 +28,7 @@ use std::hint::black_box;
 use criterion::{BenchmarkId, Criterion, criterion_group, criterion_main};
 
 use bevy::math::{IVec2, Vec2};
+use flow_field_pathfinding::compute_flow_field;
 use snake_lib::{Direction, SnakeGame};
 use spatial_partitioning::{brute_pairs, cell_of, neighbour_cells};
 use tic_tac_toe_lib::{Board, Player, TicTacToeGame};
@@ -187,11 +188,139 @@ fn tic_tac_toe_winner(c: &mut Criterion) {
     group.finish();
 }
 
+// ── flow-field-pathfinding ───────────────────────────────────────────────────
+//
+// The demo says agents look up a direction in O(1) "instead of running A* per
+// agent". The first half is a statement about a array index and needs no
+// defending. The second half is a comparison, and comparisons are what the
+// `spatial-partitioning` measurement showed can be confidently wrong.
+//
+// The honest question is not whether one lookup beats one search — of course it
+// does — but how many agents it takes before precomputing the whole field is
+// worth it at all. Below that count the demo's own advice is to do the simple
+// thing.
+//
+// Both sides use BFS, so the comparison isolates *sharing the work* rather than
+// smuggling in a difference between search algorithms.
+
+/// A grid with a diagonal scattering of walls, deterministic across runs.
+fn walled_grid(width: usize, height: usize) -> Vec<bool> {
+    let mut walls = vec![false; width * height];
+    for y in 0..height {
+        for x in 0..width {
+            // A repeating broken-diagonal pattern: enough obstruction to make
+            // the search do real work, never enough to seal the goal off.
+            if (x + y * 3) % 11 == 0 && x % 4 != 0 {
+                walls[y * width + x] = true;
+            }
+        }
+    }
+    walls[0] = false;
+    walls[width * height - 1] = false;
+    walls
+}
+
+/// One agent searching for itself: BFS from its own cell to the goal.
+///
+/// The baseline the demo says it beats. Returns the first step to take.
+fn search_from(
+    walls: &[bool],
+    width: usize,
+    height: usize,
+    start: (usize, usize),
+    goal: (usize, usize),
+) -> Option<(i32, i32)> {
+    let mut came: Vec<Option<(usize, usize)>> = vec![None; width * height];
+    let mut seen = vec![false; width * height];
+    let mut queue = std::collections::VecDeque::new();
+    seen[start.1 * width + start.0] = true;
+    queue.push_back(start);
+
+    while let Some((cx, cy)) = queue.pop_front() {
+        if (cx, cy) == goal {
+            // Walk back to the step adjacent to the start.
+            let (mut px, mut py) = (cx, cy);
+            while let Some(prev) = came[py * width + px] {
+                if prev == start {
+                    return Some((px as i32 - start.0 as i32, py as i32 - start.1 as i32));
+                }
+                (px, py) = prev;
+            }
+            return None;
+        }
+        for (dx, dy) in [(1i32, 0i32), (-1, 0), (0, 1), (0, -1)] {
+            let (nx, ny) = (cx as i32 + dx, cy as i32 + dy);
+            if nx < 0 || ny < 0 || nx >= width as i32 || ny >= height as i32 {
+                continue;
+            }
+            let (nx, ny) = (nx as usize, ny as usize);
+            let ni = ny * width + nx;
+            if walls[ni] || seen[ni] {
+                continue;
+            }
+            seen[ni] = true;
+            came[ni] = Some((cx, cy));
+            queue.push_back((nx, ny));
+        }
+    }
+    None
+}
+
+/// Agent starting cells, spread deterministically over the grid.
+fn agent_cells(count: usize, width: usize, height: usize) -> Vec<(usize, usize)> {
+    (0..count)
+        .map(|i| ((i * 7) % width, (i * 13) % height))
+        .collect()
+}
+
+fn bench_flow_field(c: &mut Criterion) {
+    // The demo's own grid.
+    let (width, height) = (flow_field_pathfinding::COLS, flow_field_pathfinding::ROWS);
+    let walls = walled_grid(width, height);
+    let goal = (width - 1, height - 1);
+
+    let mut group = c.benchmark_group("flow_field_vs_search_per_agent");
+    for count in [1usize, 2, 4, 8, 16, 50, 200, 1000] {
+        let agents = agent_cells(count, width, height);
+
+        // Worst case for the field: rebuilt every frame, as it is whenever the
+        // goal moves. Steady state (no rebuild) is just the lookups.
+        group.bench_function(BenchmarkId::new("flow_field_rebuilt", count), |b| {
+            b.iter(|| {
+                let field = compute_flow_field(black_box(&walls), width, height, goal);
+                let mut sum = 0i32;
+                for &(x, y) in &agents {
+                    if let Some((dx, dy)) = field[y * width + x] {
+                        sum += dx + dy;
+                    }
+                }
+                black_box(sum)
+            });
+        });
+
+        group.bench_function(BenchmarkId::new("search_per_agent", count), |b| {
+            b.iter(|| {
+                let mut sum = 0i32;
+                for &start in &agents {
+                    if let Some((dx, dy)) =
+                        search_from(black_box(&walls), width, height, start, goal)
+                    {
+                        sum += dx + dy;
+                    }
+                }
+                black_box(sum)
+            });
+        });
+    }
+    group.finish();
+}
+
 criterion_group!(
     benches,
     spatial_partitioning,
     pair_counting,
     snake_step,
-    tic_tac_toe_winner
+    tic_tac_toe_winner,
+    bench_flow_field,
 );
 criterion_main!(benches);

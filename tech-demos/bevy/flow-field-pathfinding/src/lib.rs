@@ -6,6 +6,23 @@
 //! The field itself is recomputed with a single BFS from the goal outward,
 //! costing O(grid size) once per goal/wall change.
 //!
+//! That comparison is measured rather than asserted — see `benchmarks/`, and
+//! `spatial-partitioning` for why this repository stopped trusting the
+//! unmeasured kind. On this demo's own 30x20 grid, against BFS run separately
+//! per agent, and rebuilding the field every frame (its worst case):
+//!
+//! | agents | flow field | per-agent search |
+//! |-------:|-----------:|-----------------:|
+//! | 1      | 2.4 us     | 2.3 us           |
+//! | 2      | 2.4 us     | 4.5 us           |
+//! | 50     | 2.5 us     | 88 us            |
+//! | 1000   | 3.0 us     | 1735 us          |
+//!
+//! The claim holds, and the crossover is at **two agents** — below that, search
+//! per agent is simpler and no slower. The flow field's cost barely moves from
+//! one agent to a thousand, which is the O(1) lookup showing up as a flat line:
+//! a thousand lookups add about 0.6 us in total.
+//!
 //! Drop [`FlowFieldPathfindingPlugin`] into any Bevy app with
 //! `app.add_plugins(FlowFieldPathfindingPlugin)` and it manages a grid, a goal,
 //! walls, and agents that follow the field. The plugin never adds

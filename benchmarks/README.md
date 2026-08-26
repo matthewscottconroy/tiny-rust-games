@@ -83,3 +83,34 @@ implementation is the right one, and now that is a measurement rather than an
 assumption. Growth is roughly quadratic in board side, so this would want
 revisiting if the library ever targeted much larger boards — Go's 361 points are
 already at the edge of the table above.
+
+## flow-field-pathfinding: the claim holds
+
+`flow-field-pathfinding` says agents look up a direction in O(1) "instead of
+running A* per agent". The first half is a statement about an array index. The
+second is a comparison, and `spatial-partitioning` is why comparisons here get
+measured.
+
+Against BFS run separately per agent on the demo's own 30x20 grid, rebuilding
+the field every frame — its worst case, since a stationary goal needs no rebuild
+at all:
+
+| agents | flow field | per-agent search | ratio |
+|-------:|-----------:|-----------------:|------:|
+| 1      | 2.38 us    | 2.31 us          | 1.0x  |
+| 2      | 2.40 us    | 4.49 us          | 1.9x  |
+| 8      | 2.44 us    | 13.5 us          | 5.5x  |
+| 50     | 2.49 us    | 88.3 us          | 35x   |
+| 1000   | 3.00 us    | 1735 us          | 579x  |
+
+The crossover is **two agents**. Below that the simple thing is also the fast
+thing; above it the field wins immediately and then keeps winning.
+
+Both sides use BFS on purpose. Comparing a flow field against A* would fold two
+different questions together — whether sharing the work pays, and whether one
+search algorithm beats another — and only the first is what the demo claims.
+
+Worth stating plainly: this is a *confirmation*. The rule is not "documented
+claims are usually wrong", it is that nobody knows which ones are until they are
+measured. One of the two claims measured here was off by a factor of fifteen in
+the wrong direction; the other is off by a factor of 579 in the right one.

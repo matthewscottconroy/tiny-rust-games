@@ -13,6 +13,7 @@ publish = false
 [dependencies]
 bevy.workspace = true
 snake-lib = { path = "../snake/snake-lib" }
+flow-field-pathfinding = { path = "../tech-demos/bevy/flow-field-pathfinding" }
 spatial-partitioning = { path = "../tech-demos/bevy/spatial-partitioning" }
 tic-tac-toe-lib = { path = "../tic-tac-toe/tic-tac-toe-lib" }
 

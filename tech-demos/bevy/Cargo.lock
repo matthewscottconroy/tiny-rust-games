@@ -405,6 +405,7 @@ version = "0.1.0"
 dependencies = [
  "bevy",
  "criterion",
+ "flow-field-pathfinding",
  "snake-lib",
  "spatial-partitioning",
  "tic-tac-toe-lib",
