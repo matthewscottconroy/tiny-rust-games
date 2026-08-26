@@ -104,6 +104,26 @@ look:
   `width + height` undetected — because the only win test used a 2×2 board,
   where both are 4. The tests that kill each mutant are marked in `src/tests.rs`.
 
+## What mutation testing said
+
+`snake-lib` catches **151 of 151** viable mutants. Getting there needed no new
+assertions — the property tests and the replay fuzzing already covered the
+rules — but it did need two loops to stop being unbounded.
+
+A mutant that makes `contains` always true produces an immortal snake, and a
+test that loops until the snake dies then hangs instead of failing. A hang is a
+far worse diagnosis than a failure: it names no line. `run_into_wall` is bounded
+now, and the fuzz property calls `play` with a bound rather than `play_out`,
+whose length comes from the file and so from whoever wrote it.
+
+The last one was nearly a mistake. A mutant broke the index that walks the turn
+list, spinning forever, and the tempting fix was to stop `from_text` accepting
+two turns on one tick. A test already documented that behaviour as deliberate —
+a player really can queue two turns before a step, and keeping both reproduces
+the live game — so changing it would have been the tool dictating the design.
+`play` now walks the list with an iterator instead of an index it increments
+itself, which reads better and has no counter to break.
+
 ## Lockstep, and what mutation testing said about it
 
 `snake-lockstep` started at 27 mutants caught and 34 missed — worse than any

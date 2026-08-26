@@ -12,13 +12,19 @@ fn game() -> SnakeGame {
 }
 
 /// Runs the snake into the right-hand wall and returns the fatal outcome.
+///
+/// Bounded, though a 10x10 board kills it within a handful of steps. Mutation
+/// testing is why: a mutant that makes `contains` always true produces an
+/// immortal snake, and an unbounded loop turns that into a hung test rather
+/// than a failed one. A hang is a far worse diagnosis — it names no line.
 fn run_into_wall(game: &mut SnakeGame) -> StepOutcome {
-    loop {
+    for _ in 0..1_000 {
         let outcome = game.step();
         if matches!(outcome, StepOutcome::Died(_) | StepOutcome::Ended) {
             return outcome;
         }
     }
+    panic!("the snake never hit the wall, so it cannot leave the board");
 }
 
 // ── Ticker ───────────────────────────────────────────────────────────────────

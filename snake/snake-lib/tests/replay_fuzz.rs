@@ -135,7 +135,11 @@ proptest! {
     #[test]
     fn every_accepted_replay_can_be_played(text in near_valid_text()) {
         if let Ok(replay) = Replay::from_text(&text) {
-            let game = replay.play_out(20);
+            // `play`, not `play_out`: the generator can produce a turn at tick
+            // four billion, and play_out would honour it. The property under
+            // test is that an accepted replay runs without panicking, which a
+            // bounded run demonstrates just as well and in finite time.
+            let game = replay.play(200);
             // Not merely "it did not panic": the replayed game must also be
             // internally consistent, which is the same invariant the property
             // tests assert for a game played live.

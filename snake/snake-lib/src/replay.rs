@@ -200,18 +200,21 @@ impl Replay {
     /// Stops early if the snake dies, exactly as the live game would.
     pub fn play(&self, ticks: u64) -> SnakeGame {
         let mut game = SnakeGame::new(self.width, self.height, self.seed);
-        let mut next = 0;
+        let mut turns = self.turns.iter().peekable();
         for _ in 0..ticks {
             if game.is_over() {
                 break;
             }
-            // Apply every turn recorded for this tick, in order.
-            while let Some((tick, direction)) = self.turns.get(next) {
-                if *tick != game.ticks() {
-                    break;
-                }
+            // Apply every turn recorded for this tick, in order. A file may
+            // legitimately repeat a tick — a player can queue two turns before
+            // a step, and the last one wins — so this consumes all of them.
+            //
+            // Driven by the iterator rather than an index it increments itself:
+            // the loop then advances because `next()` advances, and there is no
+            // separate counter whose failure to move would spin here forever.
+            while turns.peek().is_some_and(|(tick, _)| *tick == game.ticks()) {
+                let (_, direction) = turns.next().expect("peeked");
                 game.queue_turn(*direction);
-                next += 1;
             }
             game.step();
         }
@@ -222,6 +225,14 @@ impl Replay {
     ///
     /// Convenient for "play this back to the death" without the caller having to
     /// know how long the game ran.
+    ///
+    /// # Cost
+    /// The number of steps comes from the *file*: a replay whose last turn is at
+    /// tick four billion asks for four billion steps. A game normally ends long
+    /// before that and the loop stops, but a caller replaying something it did
+    /// not produce should prefer [`play`](Self::play) with a bound it chooses.
+    /// Parsing is hardened against hostile input; running time is the one thing
+    /// the parser cannot bound for you.
     pub fn play_out(&self, extra: u64) -> SnakeGame {
         self.play(self.last_turn_tick().map_or(0, |t| t + 1) + extra)
     }
